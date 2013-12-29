@@ -8,7 +8,7 @@
   [:div#top-nav [:h1#logo "Chocolatier"]])
 
 (def app-main
-  [:div#main "hello this is the main"])
+  [:div#main])
 
 (defn init-html! []
   (info "Initializing base html")
@@ -23,26 +23,25 @@
   (set! (.-anchor.x sprite) x)
   (set! (.-anchor.y sprite) y))
 
-(defn empty-stage [stage]
-  (doall (map
-          (fn [target]
-            (.log js/console target)
-            (. stage removeChild target))
-             ;; do a slice 0 here to copy the array as the stage array
-          ;; mutates with removes
-          (.slice (.-children stage) 0))))
+(defn empty-stage
+  "Remove all children from a stage instance"
+  [stage]
+  (doseq [child (.slice (.-children stage) 0)]
+    (.removeChild stage child)))
 
 (defn update-world [bunny]
   (aset bunny "rotation" (+ 0.05 (aget bunny "rotation"))))
 
-(defn animate [renderer stage bunny]
+(defn animate
+  "The main draw function called repeatedly"
+  [renderer stage bunny]
   #(do
-     (js/requestAnimFrame (animate renderer stage bunny))
      (update-world bunny)
-     (. renderer render stage)))
+     (. renderer render stage)
+     (js/requestAnimFrame (animate renderer stage bunny))))
 
 (defn create-simple [stage sprite]
-  (set-position sprite 200 100)
+  (set-position sprite 400 300)
   (set-anchor sprite 0.5 0.5)
   (. stage addChild sprite)
   sprite)
@@ -51,18 +50,18 @@
   ;; FIX use webgl with canvas fallback
   ;; Can't restart the app due to texture cache being specific to a
   ;; webgl context, so resetting the app via repl causes an error
-  (let [renderer (js/PIXI.CanvasRenderer. 400 300)
+  (let [renderer (js/PIXI.CanvasRenderer. 800 600)
         stage (js/PIXI.Stage. 0x66ff99)
         bunny-texture (js/PIXI.Texture.fromImage "static/images/bunny.png")
-        bunny (js/PIXI.Sprite. bunny-texture)]
+        bunny (js/PIXI.Sprite. bunny-texture)
+        draw (animate renderer stage bunny)]
     (dom/append! (sel1 :#main) (.-view renderer))
     (empty-stage stage)
     (create-simple stage bunny)
-    ;; TODO replace this with a draw loop
-    (js/requestAnimFrame (animate renderer stage bunny))))
+    (draw)))
 
 (defn reset-app!
-  "Reload dom first then bind events"
+  "Reload the entire application html and canvas app"
   []
   (info "Resetting html")
   (try (do (dom/remove! (sel1 :#top-nav))
