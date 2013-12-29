@@ -1,5 +1,5 @@
 (defproject chocolatier "0.1.0-SNAPSHOT"
-  :description ""
+  :description "Chocolatier prototype"
   :source-paths ["src/clj" "src/cljs"]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-1889"]

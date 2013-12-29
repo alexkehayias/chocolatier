@@ -1,4 +1,4 @@
-(ns chocolatier.core
+(ns chocolatier.app
   (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:use-macros [dommy.macros :only [node sel sel1]])
   (:require [clojure.browser.repl :as repl]
