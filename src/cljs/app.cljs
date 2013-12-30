@@ -29,9 +29,15 @@
   (doseq [child (.slice (.-children stage) 0)]
     (.removeChild stage child)))
 
-(defn update-world [bunny]
-  (aset bunny "rotation" (+ 0.05 (aget bunny "rotation"))))
+(def pause (atom false))
 
+(defn update-world [bunny]
+  (when-not @pause
+    (aset bunny "rotation" (+ 0.05 (aget bunny "rotation")))))
+
+(def global (atom {}))
+
+;; TODO macro that takes a body and draws it repeatedly
 (defn animate
   "The main draw function called repeatedly"
   [renderer stage bunny]
