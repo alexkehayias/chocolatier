@@ -12,13 +12,13 @@
 
 ;; TODO make a record and protocol for an entity
 (defn create-entity!
-  [stage img]
+  [stage img pos-x pos-y anc-x anc-y]
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (js/PIXI.Sprite. texture)]
-    (set! (.-position.x sprite) 500)
-    (set! (.-position.y sprite) 300)
-    (set! (.-anchor.x sprite) .05)
-    (set! (.-anchor.y sprite) .05)
+    (set! (.-position.x sprite) pos-x)
+    (set! (.-position.y sprite) pos-y)
+    (set! (.-anchor.x sprite) anc-x)
+    (set! (.-anchor.y sprite) anc-y)
     (swap! entities conj sprite)))
 
 (defn render-entity [stage e]
@@ -71,6 +71,6 @@
     (.setInterval js/window #(draw renderer stage) (/ 1000 60))))
 
 (defn start []
-  (create-entity! stage "static/images/bunny.png")
+  (create-entity! stage "static/images/bunny.png" 500 500 0.05 0.05)
   (render-loop)
   (game-loop))
