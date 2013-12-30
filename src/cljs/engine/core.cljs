@@ -30,24 +30,18 @@
    Iterates through all the entities and renders them to the stage.
    Renders the stage to the screen"
   [renderer stage]
-  (clear-stage stage)
   (info "draw function called")
   (when-not @paused
     (doseq [e @entities]
           (render-entity stage e))
     (.render renderer stage)))
 
-(defn clear-stage
-  "Remove all children from a stage instance"
-  [stage]
-  (doseq [child (.slice (.-children stage) 0)]
-    (.removeChild stage child)))
-
 (defn update-entity [entity]
   ;; (-> entity
   ;;     update-movement
   ;;     update-collisions
   ;;     )
+  (aset entity "rotation" (+ 0.05 (aget entity "rotation")))
   entity)
 
 (defn tick-game
@@ -59,11 +53,9 @@
 (defn game-loop
   "Calculate changes based on the time since last change"
   []
-  ;; TODO start timer
-  ;; TODO stop timer
   ;; TODO Calculate the changes since the last game tick
   ;; TODO should this be async? Allows skipping frames
-  (.setInterval js/window #(tick-game time) 1000))
+  (.setInterval js/window #(tick-game time) (/ 1000 60)))
 
 (def stage (js/PIXI.Stage. 0x66ff99))
 
@@ -76,7 +68,7 @@
         height 600
         renderer (js/PIXI.CanvasRenderer. width height)]
     (dom/append! (sel1 :body) (.-view renderer))
-    (.setInterval js/window #(draw renderer stage) 1000)))
+    (.setInterval js/window #(draw renderer stage) (/ 1000 60))))
 
 (defn start []
   (create-entity! stage "static/images/bunny.png")
