@@ -6,15 +6,27 @@
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 
-;; TODO need a defonce so we can eval more than once
+;; TODO need a defonce so we can eval theo whole namespace more than once
 ;; Global game state
 (def game (atom nil))
+
+;; System example:
+;; Render
+;; (when (satisfies? obj renderable)
+;;       (draw obj))
 (def systems (atom []))
+
+;; TODO entities should be a hashmap for easy removal from the game
+;; state without having to iterate through the whole list
 (def entities (atom []))
 (def paused? (atom false))
 
+;; TODO a function to inspect/capture all of the current state
+;; TODO a function that takes a state hashmap and starts the game from it
+
 ;; TODO make a record and protocol for an entity
 (defn create-entity!
+  "Create a new entity and add to the list of global entities"
   [stage img pos-x pos-y anc-x anc-y]
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (js/PIXI.Sprite. texture)]
@@ -33,7 +45,6 @@
    Iterates through all the entities and renders them to the stage.
    Renders the stage to the screen"
   [renderer stage]
-  (info "draw function called")
   (when-not @paused?
     (doseq [e @entities]
           (render-entity stage e))
@@ -44,7 +55,7 @@
   ;;     update-movement
   ;;     update-collisions
   ;;     )
-  (aset entity "rotation" (+ 0.05 (aget entity "rotation")))
+  (aset entity "rotation" (+ 0.02 (aget entity "rotation")))
   entity)
 
 (defn tick-game
