@@ -102,9 +102,6 @@
 ;; Start, stop, reset the game. Game is stored in an atom and
 ;; referenced directly in these functions
 (defn start-game! []
-  (create-entity! stage "static/images/bunny.png" 500 500 0.05 0.05)
-  (create-entity! stage "static/images/bunny.png" 400 400 0.05 0.05)
-  (create-entity! stage "static/images/bunny.png" 200 200 0.05 0.05)
   (reset! game (init-game)))
 
 (defn stop-game!
@@ -118,4 +115,7 @@
   "End the"
   []
   (stop-game!)
-  (reset! game (start-game!)))
+  (reset! game (start-game!))
+  (create-entity! stage "static/images/bunny.png" 500 500 0.05 0.05)
+  (create-entity! stage "static/images/bunny.png" 400 400 0.05 0.05)
+  (create-entity! stage "static/images/bunny.png" 200 200 0.05 0.05))

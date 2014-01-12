@@ -8,9 +8,10 @@
                  [enlive "1.1.1"]
                  [prismatic/dommy "0.1.1"]]
   :profiles {:dev {:plugins [[com.cemerick/austin "0.1.3"]
-                             [lein-cljsbuild "0.3.2"]]
+                             [lein-cljsbuild "1.0.1"]]
                    :cljsbuild {:builds [{:source-paths ["src/cljs"]
-                                         :compiler {:output-to "resources/public/scripts/app.js"
+                                         :compiler {:output-dir "resources/public/scripts"
+                                                    :output-to "resources/public/scripts/app.js"
                                                     :optimizations :simple
                                                     :pretty-print true
                                                     :source-map "resources/public/scripts/app.js.map"}}]}}})

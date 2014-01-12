@@ -3,8 +3,8 @@
 
 
 (defrecord Bunny [id]
-  Entity
-  (tick [this] (println "ticking!"))
+  c/Entity
+  (c/tick [this] (println "ticking!"))
   
-  Renderable
-  (render [this] (println "rendering!!" this)))
+  c/Renderable
+  (c/render [this] (println "rendering!!" this)))
