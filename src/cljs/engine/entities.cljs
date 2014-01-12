@@ -1,8 +1,10 @@
 (ns chocolatier.engine.entities
-  (:require [chocolatier.engine.components]))
+  (:require [chocolatier.engine.components :as c]))
 
-(defrecord Bunny [id])
 
-(extend-type Bunny
+(defrecord Bunny [id]
+  Entity
+  (tick [this] (println "ticking!"))
+  
   Renderable
-  (render [self] (println "rendering!!" self)))
+  (render [this] (println "rendering!!" this)))

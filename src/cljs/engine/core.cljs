@@ -1,9 +1,7 @@
 (ns chocolatier.engine.core
   (:use [chocolatier.utils.logging :only [debug info warn error]])
-  (:require [cljs.core.async :refer [chan <! >!]]
-            [dommy.core :as dom])
-  (:use-macros [dommy.macros :only [node sel sel1]])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+  (:require [dommy.core :as dom])
+  (:use-macros [dommy.macros :only [node sel sel1]]))
 
 
 ;; TODO need a defonce so we can eval theo whole namespace more than once
@@ -112,7 +110,7 @@
 (defn stop-game!
   "Stop the game loop and remove the canvas"
   []
-  (when @game
+  (when-not (empty? @game)
     (dom/remove! (sel1 :canvas))
     (:end @game)))
 
