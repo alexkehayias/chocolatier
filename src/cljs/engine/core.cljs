@@ -1,6 +1,10 @@
 (ns chocolatier.engine.core
   (:use [chocolatier.utils.logging :only [debug info warn error]])
-  (:require [dommy.core :as dom])
+  (:require [dommy.core :as dom]
+            ;; Imports all the component protocols
+            [chocolatier.engine.components :as c] 
+            ;; Imports the entity records
+            [chocolatier.engine.entities :as e])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
 
@@ -26,16 +30,15 @@
 (defn create-entity!
   "Create a new entity and add to the list of global entities"
   [stage img pos-x pos-y anc-x anc-y]
+  (info stage img pos-x pos-y anc-x anc-y)
   (let [texture (js/PIXI.Texture.fromImage img)
-        sprite (js/PIXI.Sprite. texture)]
-    (set! (.-position.x sprite) pos-x)
-    (set! (.-position.y sprite) pos-y)
-    (set! (.-anchor.x sprite) anc-x)
-    (set! (.-anchor.y sprite) anc-y)
-    (swap! entities conj sprite)))
-
-(defn render-entity [stage e]
-  (.addChild stage e))
+        sprite (js/PIXI.Sprite. texture)
+        bunny (new e/Bunny (keyword (gensym)) sprite 0 0)]
+    (set! (.-position.x (:sprite bunny)) pos-x)
+    (set! (.-position.y (:sprite bunny)) pos-y)
+    (set! (.-anchor.x (:sprite bunny)) anc-x)
+    (set! (.-anchor.y (:sprite bunny)) anc-y)
+    (swap! entities conj bunny)))
 
 (defn draw
   "Renders all the things to the screen.
@@ -45,22 +48,15 @@
   [renderer stage]
   (when-not @paused?
     (doseq [e @entities]
-          (render-entity stage e))
+          (c/render e stage))
     (.render renderer stage)))
-
-(defn update-entity [entity]
-  ;; (-> entity
-  ;;     update-movement
-  ;;     update-collisions
-  ;;     )
-  (aset entity "rotation" (+ 0.02 (aget entity "rotation")))
-  entity)
 
 (defn tick-game
   "Tick the game by miliseconds of time"
   []
-  ;; Update the global entities state atom 
-  (swap! entities #(map update-entity %)))
+  ;; Update the global entities state atom
+  (doseq [e @entities]
+    (c/tick e)))
 
 ;; TODO combine the game-loop and render-loop as systems that
 ;; run synchronously
@@ -115,7 +111,5 @@
   "End the"
   []
   (stop-game!)
-  (reset! game (start-game!))
-  (create-entity! stage "static/images/bunny.png" 500 500 0.05 0.05)
-  (create-entity! stage "static/images/bunny.png" 400 400 0.05 0.05)
-  (create-entity! stage "static/images/bunny.png" 200 200 0.05 0.05))
+  (start-game!)
+  (create-entity! (:stage @game) "static/images/bunny.png" 500 500 0.05 0.05))

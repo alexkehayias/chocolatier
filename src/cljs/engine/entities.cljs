@@ -1,10 +1,16 @@
 (ns chocolatier.engine.entities
-  (:require [chocolatier.engine.components :as c]))
+  (:require [chocolatier.engine.components :refer [Entity Renderable Attackable]]))
 
 
-(defrecord Bunny [id]
-  c/Entity
-  (c/tick [this] (println "ticking!"))
+(defrecord Bunny [id sprite x y]
+  Entity
+  (tick [this]
+    (let [sprite (:sprite this)])
+    (aset sprite "rotation" (+ 0.02 (aget sprite "rotation"))))
   
-  c/Renderable
-  (c/render [this] (println "rendering!!" this)))
+  Renderable
+  (render [this stage]
+    (.addChild stage (:sprite this)))
+
+  Attackable
+  (attack [this] (println "owww")))

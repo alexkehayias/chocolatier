@@ -8,5 +8,10 @@
 
 (defprotocol Renderable
   "Render to the the screen"
-  (render [this]
+  (render [this stage]
     "Render this to the stage"))
+
+(defprotocol Attackable
+  "Render to the the screen"
+  (attack [this]
+    "Attack this entity"))
