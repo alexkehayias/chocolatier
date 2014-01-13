@@ -15,3 +15,6 @@
   "Render to the the screen"
   (attack [this]
     "Attack this entity"))
+
+(defprotocol TestComp
+  (test-it [this]))

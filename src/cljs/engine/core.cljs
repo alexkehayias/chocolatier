@@ -1,9 +1,12 @@
 (ns chocolatier.engine.core
   (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:require [dommy.core :as dom]
-            ;; Imports all the component protocols
+            ;; NOTE to use protocols from another ns, require them
+            ;; using :as and call with c/my-component-method
             [chocolatier.engine.components :as c] 
             ;; Imports the entity records
+            ;; TODO can I explicitely import just the entity? or must
+            ;; I mark it with :as?
             [chocolatier.engine.entities :as e])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
@@ -111,5 +114,6 @@
   "End the"
   []
   (stop-game!)
+  (reset! entities [])
   (start-game!)
   (create-entity! (:stage @game) "static/images/bunny.png" 500 500 0.05 0.05))
