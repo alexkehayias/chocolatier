@@ -29,11 +29,10 @@
 ;; TODO a function to inspect/capture all of the current state
 ;; TODO a function that takes a state hashmap and starts the game from it
 
-;; TODO make a record and protocol for an entity
 (defn create-entity!
   "Create a new entity and add to the list of global entities"
   [stage img pos-x pos-y anc-x anc-y]
-  (info stage img pos-x pos-y anc-x anc-y)
+  (info "Creating entity" stage img pos-x pos-y anc-x anc-y)
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (js/PIXI.Sprite. texture)
         bunny (new e/Bunny (keyword (gensym)) sprite 0 0)]
@@ -85,8 +84,8 @@
   []
   (let [;; TODO get the screen height and width
         ;; TODO allow the screen height and width to be variable?
-        width 800
-        height 600
+        width (aget js/window "innerWidth")
+        height (aget js/window "innerHeight")
         frame-rate 60
         stage (js/PIXI.Stage. 0x66ff99)
         renderer (js/PIXI.CanvasRenderer. width height)

@@ -4,7 +4,9 @@ A work-in-progress web game engine for repl driven game development written in C
 
 ## Usage
 
-Load `chocolatier.server` to start the test server and a browser repl. Load `chocoloatier.engine.core` and call `(reset-game!)` to start the game.
+1. Compile the javascript using `lein cljsbuild once`
+2. Load `chocolatier.server` to start the test server and a browser repl
+3. Load `chocoloatier.engine.core` and call `(reset-game!)` to start the game
 
 ## Entity Component System
 
