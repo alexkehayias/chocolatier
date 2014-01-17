@@ -9,8 +9,9 @@
 (defrecord Bunny [id sprite x y]
   Entity
   (tick [this]
-    (let [sprite (:sprite this)])
-    (aset sprite "rotation" (+ 0.01 (aget sprite "rotation"))))
+    (let [sprite (:sprite this)
+          old-rotation (aget sprite "rotation")]
+      (aset sprite "rotation" (+ 0.01 old-rotation))))
   
   Renderable
   (render [this stage]
