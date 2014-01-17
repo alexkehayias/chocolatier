@@ -1,13 +1,12 @@
 (ns chocolatier.engine.input
   "Handles input from the user"
   (:use [chocolatier.utils.logging :only [debug info warn error]])
-  ;;(:require-macros [chocolatier.utils.macros :refer [defonce]])
-  )
+  (:require-macros [chocolatier.macros :refer [defonce]]))
 
 
 ;; TODO use fan out channel to stream the input to multiple sources
 ;; Tracks the current state of user input
-(def input-state (atom {}))
+(defonce input-state (atom {}))
 
 (defn debug-watcher [key state old-val new-val]
   (when (not= old-val new-val)
