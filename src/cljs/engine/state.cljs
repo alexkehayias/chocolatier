@@ -15,9 +15,12 @@
 
 (defonce systems (atom {}))
 
-(defn get-state
-  "Return all objects in the game"
-  []
-  {:entities entitities
-   :systems? systems
-   :game game})
+(def state
+  {:game game
+   :systems systems
+   :entities entities})
+
+(defn reset-state! []
+  (reset! game nil)
+  (reset! entities [])
+  (reset! systems {}))

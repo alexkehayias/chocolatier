@@ -1,16 +1,14 @@
 (ns chocolatier.engine.core
-  (:use [chocolatier.utils.logging :only [debug info warn error]])
+  (:use [chocolatier.utils.logging :only [debug info warn error]]
+        [chocolatier.engine.systems.core :only [init-systems!]])
   (:require [dommy.core :as dom]
-            ;; NOTE to use protocols from another ns, require them
-            ;; using :as and call with c/my-component-method
-            [chocolatier.engine.components :as c] 
             ;; Imports the entity records
             ;; TODO can I explicitely import just the entity? or must
-            ;; I mark it with :as?
+            ;; I always mark it with :as?
             [chocolatier.engine.entities :as e]
-            [chocolatier.engine.state :as s])
+            [chocolatier.engine.state :as s]
+            )
   (:use-macros [dommy.macros :only [node sel sel1]]))
-
 
 
 ;; TODO a function that takes a state hashmap and starts the game from it
@@ -28,34 +26,23 @@
     (set! (.-anchor.y (:sprite bunny)) anc-y)
     (swap! s/entities conj bunny)))
 
-(defn draw
-  "Renders all the things to the screen.
-
-   Iterates through all the entities and renders them to the stage.
-   Renders the stage to the screen"
-  [renderer stage]
-  (when-not (:paused @s/game)
-    (doseq [e @s/entities]
-          (c/render e stage))
-    (.render renderer stage)))
-
-(defn tick-game
-  "Tick the game by miliseconds of time"
-  []
-  ;; Update the global entities state atom
-  (doseq [e @s/entities]
-    (c/tick e)))
-
-;; TODO combine the game-loop and render-loop as systems that
-;; run synchronously
+(defn iter-systems
+  "Call each system registered in s/system in order with the 
+   global state and time since last iteration"
+  [state time]
+  (doseq [[k f] (seq @(:systems state))]
+    ;; (debug "iter-systems running" k)
+    (f state time)))
 
 (defn game-loop
-  "Calculate changes based on the time since last change"
+  "Calculate changes based on the time since last change and 
+   call all systems with the current state"
   [renderer stage]
-  ;; TODO Calculate the changes since the last game tick
   (when-not (:paused @s/game)
-    (tick-game)
-    (draw renderer stage)))
+    ;; TODO Calculate the changes since the last game tick and pass
+    ;; it to systems call
+    ;; TODO use requestAnimation
+    (iter-systems s/state nil)))
 
 (defn set-interval
   "Creates an interval loop of n calls to function f per second.
@@ -74,6 +61,9 @@
         frame-rate 60
         stage (js/PIXI.Stage. 0x66ff99)
         renderer (js/PIXI.CanvasRenderer. width height)
+        _ (init-systems!)
+        ;; TODO replace this with a function that calls each system
+        ;; with the game state
         main-loop (set-interval #(game-loop renderer stage) 60)]
     (dom/append! (sel1 :body) (.-view renderer))
     ;; TODO return a function that also cleans up the canvas 
@@ -86,20 +76,28 @@
 ;; Start, stop, reset the game. Game is stored in an atom and
 ;; referenced directly in these functions
 (defn start-game! []
+  (debug "Starting game")
   (reset! s/game (init-game)))
 
 (defn stop-game!
   "Stop the game loop and remove the canvas"
   []
   (when-not (empty? @s/game)
+    (debug "Removing the canvas")
     (dom/remove! (sel1 :canvas))
+    (debug "Ending the game loop")
     (:end @s/game)))
 
-(defn reset-game!
-  "End the"
-  []
+(defn pause-game! []
+  (swap! s/game assoc :paused true))
+
+(defn unpause-game! []
+  (swap! s/game assoc :paused false))
+
+(defn reset-game! []
+  (debug "Resetting game")
   (stop-game!)
-  (reset! s/entities [])
+  (s/reset-state!)
   (start-game!)
   (create-entity! (:stage @s/game)
                   "static/images/bunny.png"
