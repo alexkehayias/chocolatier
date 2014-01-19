@@ -101,6 +101,8 @@
   (stop-game!)
   (s/reset-state!)
   (start-game!)
-  (create-entity! (:stage @s/game)
-                  "static/images/bunny.png"
-                  500 500 0.05 0.05))
+  (let [x (/ (aget js/window "innerWidth") 2) 
+        y (/ (aget js/window "innerHeight") 2)]
+    (create-entity! (:stage @s/game)
+                    "static/images/bunny.png"
+                    x y 0 0)))
