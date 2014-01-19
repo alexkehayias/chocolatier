@@ -10,10 +10,7 @@
 
 (defrecord Bunny [id sprite x y]
   Entity
-  (tick [this]
-    (let [sprite (:sprite this)
-          old-rotation (aget sprite "rotation")]
-      (aset sprite "rotation" (+ 0.01 old-rotation))))
+  (tick [this] nil)
   
   Renderable
   (render [this stage]
@@ -22,7 +19,6 @@
   Controllable
   (react-to-user-input [this state time]
     (let [sprite (:sprite this)
-          control-keys #{:W :A :S :D}
           input @(:input state)
           move-rate 1
           move #(condp = %
@@ -34,7 +30,17 @@
                                (+ (.-position.y sprite) move-rate))
                       :D (set! (.-position.x sprite)
                                (+ (.-position.x sprite) move-rate))
-                      :else nil)]
+                      :& (set! (.-position.y sprite)
+                               (- (.-position.y sprite) move-rate))
+                      :% (set! (.-position.x sprite)
+                               (- (.-position.x sprite) move-rate))
+                      ;; Parenths are reserved so wrap it in keyword call
+                      (keyword "(") (set! (.-position.y sprite)
+                                            (+ (.-position.y sprite) move-rate))
+                      :' (set! (.-position.x sprite)
+                               (+ (.-position.x sprite) move-rate))
+                      ;; Otherwise do nothing
+                      nil)]
       (doseq [[k v] input]
         (when (= v "on")
           (move k))))))
