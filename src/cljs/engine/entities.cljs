@@ -2,8 +2,10 @@
   ;; NOTE to use protocols from another ns, import them explicitely by
   ;; name and not their methods
   ;; Use them in this ns by refering to the name
-  (:require [chocolatier.engine.components :refer [Entity Renderable
-                                                   Attackable TestComp]]))
+  (:use [chocolatier.utils.logging :only [debug info warn error]])  
+  (:require [chocolatier.engine.components :refer [Entity
+                                                   Renderable
+                                                   Controllable]]))
 
 
 (defrecord Bunny [id sprite x y]
@@ -17,8 +19,22 @@
   (render [this stage]
     (.addChild stage (:sprite this)))
 
-  Attackable
-  (attack [this] (println "owww"))
-
-  TestComp
-  (test-it [this] (println "testing")))
+  Controllable
+  (react-to-user-input [this state time]
+    (let [sprite (:sprite this)
+          control-keys #{:W :A :S :D}
+          input @(:input state)
+          move-rate 1
+          move #(condp = %
+                      :W (set! (.-position.y sprite)
+                               (- (.-position.y sprite) move-rate))
+                      :A (set! (.-position.x sprite)
+                               (- (.-position.x sprite) move-rate))
+                      :S (set! (.-position.y sprite)
+                               (+ (.-position.y sprite) move-rate))
+                      :D (set! (.-position.x sprite)
+                               (+ (.-position.x sprite) move-rate))
+                      :else nil)]
+      (doseq [[k v] input]
+        (when (= v "on")
+          (move k))))))

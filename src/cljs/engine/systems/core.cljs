@@ -2,7 +2,8 @@
   "Describes the various systems for controlling the game logic"
   (:use [chocolatier.utils.logging :only [debug info warn error]]
         [chocolatier.engine.systems.render :only [render-system]]
-        [chocolatier.engine.systems.tick :only [tick-system]])
+        [chocolatier.engine.systems.tick :only [tick-system]]
+        [chocolatier.engine.systems.input :only [input-system]])
   (:require [chocolatier.engine.state :as s])
   (:require-macros [chocolatier.macros :refer [defonce]]))
 
@@ -17,8 +18,11 @@
 
 
 (defn init-systems! []
-  (doseq [[name system] [[:render render-system] [:tick tick-system]]]
-    (register-system! name system)))
+  (let [systems [[:render render-system]
+                 [:tick tick-system]
+                 [:input input-system]]]
+    (doseq [[name system] systems]
+      (register-system! name system))))
 
 ;; TODO add in all the core systems
 ;; TODO How do we allow the order and list of systems to be set?
