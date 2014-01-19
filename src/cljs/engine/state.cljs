@@ -8,6 +8,8 @@
 ;; Global game state
 (defonce game (atom nil))
 
+(defonce input (atom {}))
+
 ;; TODO Should entities be a hashmap for easy removal from the game
 ;; state without having to iterate through the whole list? Or will we
 ;; need to be filtering the whole list any way
@@ -18,9 +20,11 @@
 (def state
   {:game game
    :systems systems
+   :input input
    :entities entities})
 
 (defn reset-state! []
   (reset! game nil)
   (reset! entities [])
+  (reset! input {})
   (reset! systems {}))

@@ -1,12 +1,13 @@
 (ns chocolatier.engine.core
-  (:use [chocolatier.utils.logging :only [debug info warn error]]
-        [chocolatier.engine.systems.core :only [init-systems!]])
+  (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:require [dommy.core :as dom]
             ;; Imports the entity records
             ;; TODO can I explicitely import just the entity? or must
             ;; I always mark it with :as?
             [chocolatier.engine.entities :as e]
             [chocolatier.engine.state :as s]
+            [chocolatier.engine.systems.core :refer [init-systems!]]
+            [chocolatier.engine.input :refer [reset-input!]]
             )
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
@@ -62,6 +63,7 @@
         stage (js/PIXI.Stage. 0x66ff99)
         renderer (js/PIXI.CanvasRenderer. width height)
         _ (init-systems!)
+        _ (reset-input!)
         ;; TODO replace this with a function that calls each system
         ;; with the game state
         main-loop (set-interval #(game-loop renderer stage) 60)]

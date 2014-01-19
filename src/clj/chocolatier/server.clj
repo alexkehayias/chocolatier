@@ -34,6 +34,7 @@
   (resources "/static")
   (GET "/app" req (app))
   ;; TODO disable based on env
+  ;; HACK for serving source maps via the server
   (GET source-root req (source-files))
   ;;(GET "/*" req (homepage))
   )

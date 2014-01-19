@@ -1,49 +1,52 @@
 (ns chocolatier.engine.input
   "Handles input from the user"
   (:use [chocolatier.utils.logging :only [debug info warn error]])
+  (:require [chocolatier.engine.state :as s])
   (:require-macros [chocolatier.macros :refer [defonce]]))
 
 
 ;; TODO use fan out channel to stream the input to multiple sources
 ;; Tracks the current state of user input
-(defonce input-state (atom {}))
 
 (defn debug-watcher [key state old-val new-val]
   (when (not= old-val new-val)
     (debug "State changed" key old-val "->" new-val )))
 
 (defn keydown [e]
+  (.preventDefault e)
   (let [key (String.fromCharCode (aget e "keyCode"))]
-    (swap! input-state assoc (keyword key) "on")
-    (debug "Keydown:" e)))
+    (swap! s/input assoc (keyword key) "on")))
 
 (defn keyup [e]
+  (.preventDefault e)
   (let [key (String.fromCharCode (aget e "keyCode"))]
-    (swap! input-state assoc (keyword key) "off")
-    (debug "Keyup:" e)))
+    (swap! s/input assoc (keyword key) "off")))
 
-(defn init-keyboard!
-  "Adds event listener to keyboard events. Assoc's a removal function to 
-   the input-state"  
+(defn init-input!
+  "Adds event listener to input events. Assoc's a removal function to 
+   the s/input"  
   []
   (.addEventListener js/document "keydown" keydown)
-  (swap! input-state
+  (swap! s/input
          assoc
          :keydown
          #(.removeEventListener js/document "keydown" keydown))
   (.addEventListener js/document "keyup" keyup)
-  (swap! input-state
+  (swap! s/input
          assoc
          :keyup
          #(.removeEventListener js/document "keyup" keyup)))
 
-(defn start-keyboard! []
-  (init-keyboard!)
-  (add-watch input-state :input-debug debug-watcher))
+(defn start-input! []
+  (init-input!)
+  (add-watch s/input :input-debug debug-watcher))
 
-(defn reset-keyboard! []
-  (doseq [k [:keydown :keyup]]
-    (let [f (k @input-state)]
-      (f)))
-  (remove-watch input-state :input-debug)
-  (start-keyboard!))
+(defn reset-input! []
+  (debug "Resetting input")
+  (when-not (empty? @s/input)
+    (debug "Removing input listeners")
+    (doseq [k [:keydown :keyup]]
+    (let [f (k @s/input)]
+      (f))))  
+  (remove-watch s/input :input-debug)
+  (start-input!))
