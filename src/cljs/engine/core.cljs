@@ -60,10 +60,10 @@
           (do
             (render-system s/state)
             (request-animation #(game-loop now dt step)))
-          ;; FIX paused game will end the game loop
-          (when-not (:paused @s/game)
-            (iter-systems s/state step)
-            (recur (- dt step))))))))
+          (if (:paused @s/game)
+            (recur (- dt step))
+            (do (iter-systems s/state step)
+                (recur (- dt step)))))))))
 
 (defn set-interval
   "Creates an interval loop of n calls to function f per second.
