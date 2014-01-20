@@ -8,7 +8,7 @@
             [chocolatier.engine.state :as s]
             [chocolatier.engine.systems.core :refer [init-systems!]]
             [chocolatier.engine.input :refer [reset-input!]]
-            )
+            [chocolatier.engine.systems.render :refer [render-system]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
 
@@ -29,21 +29,41 @@
 
 (defn iter-systems
   "Call each system registered in s/system in order with the 
-   global state and time since last iteration"
+   global state and fixed time to compute."
   [state time]
   (doseq [[k f] (seq @(:systems state))]
-    ;; (debug "iter-systems running" k)
     (f state time)))
 
+(defn request-animation [f]
+  (js/requestAnimationFrame f))
+
 (defn game-loop
-  "Calculate changes based on the time since last change and 
-   call all systems with the current state"
-  [renderer stage]
-  (when-not (:paused @s/game)
-    ;; TODO Calculate the changes since the last game tick and pass
-    ;; it to systems call
-    ;; TODO use requestAnimation
-    (iter-systems s/state nil)))
+  "Fixed timestep gameloop that calculates changes based on the 
+   time duration since last run.
+
+   Calls all systems with the current state n times where n
+   is the number of steps in the duration.
+
+   The render system is called separately."
+  [last-timestamp duration step]
+  (let [now (timestamp)
+        delta (- now last-timestamp)
+        ;; Minimum duration processed is 1 second        
+        duration (+ duration (Math.min 1 (/ delta 1000)))]
+    ;; Throw an error if we get into a bad state
+    (when (< duration 0)
+      (throw (js/Error. "Bad state, duration is < 0")))
+    (when-not (:stop @s/game)
+      (loop [dt duration]
+        (if (< (- dt step) step)
+          ;; Break the loop, render, and request the next frame
+          (do
+            (render-system s/state)
+            (request-animation #(game-loop now dt step)))
+          ;; FIX paused game will end the game loop
+          (when-not (:paused @s/game)
+            (iter-systems s/state step)
+            (recur (- dt step))))))))
 
 (defn set-interval
   "Creates an interval loop of n calls to function f per second.
@@ -52,7 +72,20 @@
   (.setInterval js/window f (/ 1000 n))
   #(.clearInterval f (/ 1000 n)))
 
-(defn init-game
+(defn timestamp
+  "Get the current timestamp using performance.now. 
+   Fall back to Date.getTime for older browsers"
+  []
+  (if (and (exists? (aget js/window "performance"))
+           (exists? (aget js/window "performance" "now")))
+    (js/window.performance.now)
+    ((aget (new js/Date) "getTime"))))
+
+
+;; Start, stop, reset the game. Game and all state is stored in
+;; an atom and referenced directly in the game loop
+
+(defn start-game!
   "Renders the game every n seconds.
    Hashmap of game properties."
   []
@@ -62,33 +95,28 @@
         frame-rate 60
         stage (js/PIXI.Stage. 0x66ff99)
         renderer (js/PIXI.CanvasRenderer. width height)
-        _ (init-systems!)
-        _ (reset-input!)
-        ;; TODO replace this with a function that calls each system
-        ;; with the game state
-        main-loop (set-interval #(game-loop renderer stage) 60)]
+        init-timestamp (timestamp)
+        init-duration 0
+        step (/ 1 frame-rate)
+        game-state {:renderer renderer
+                    :stage stage
+                    :stop false
+                    :paused false}]
     (dom/append! (sel1 :body) (.-view renderer))
-    ;; TODO return a function that also cleans up the canvas 
-    {:renderer renderer
-     :stage stage
-     :end main-loop
-     :paused false}))
-
-
-;; Start, stop, reset the game. Game is stored in an atom and
-;; referenced directly in these functions
-(defn start-game! []
-  (debug "Starting game")
-  (reset! s/game (init-game)))
+    (init-systems!)
+    (reset-input!)
+    (reset! s/game game-state)
+    ;; Start the game loop
+    (request-animation #(game-loop init-timestamp init-duration step))))
 
 (defn stop-game!
   "Stop the game loop and remove the canvas"
   []
   (when-not (empty? @s/game)
-    (debug "Removing the canvas")
-    (dom/remove! (sel1 :canvas))
     (debug "Ending the game loop")
-    (:end @s/game)))
+    (swap! s/game assoc :stop true)
+    (debug "Removing the canvas")
+    (dom/remove! (sel1 :canvas))))
 
 (defn pause-game! []
   (swap! s/game assoc :paused true))

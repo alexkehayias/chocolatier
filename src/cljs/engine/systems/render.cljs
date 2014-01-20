@@ -5,7 +5,7 @@
             [chocolatier.engine.components :as c]))
 
 
-(defn render-system [state time]
+(defn render-system [state]
   (let [entities @(:entities state)
         stage (-> state :game deref :stage)
         renderer (-> state :game deref :renderer)]

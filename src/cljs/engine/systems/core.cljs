@@ -18,8 +18,7 @@
 
 
 (defn init-systems! []
-  (let [systems [[:render render-system]
-                 [:tick tick-system]
+  (let [systems [[:tick tick-system]
                  [:input input-system]]]
     (doseq [[name system] systems]
       (register-system! name system))))
