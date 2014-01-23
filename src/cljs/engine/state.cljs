@@ -17,6 +17,8 @@
 
 (defonce systems (atom {}))
 
+(defonce tile-map (atom {}))
+
 (def state
   {:game game
    :systems systems
@@ -27,4 +29,5 @@
   (reset! game nil)
   (reset! entities [])
   (reset! input {})
-  (reset! systems {}))
+  (reset! systems {})
+  (reset! tile-map {}))

@@ -3,7 +3,8 @@
   (:use [chocolatier.utils.logging :only [debug info warn error]]
         [chocolatier.engine.systems.render :only [render-system]]
         [chocolatier.engine.systems.tick :only [tick-system]]
-        [chocolatier.engine.systems.input :only [input-system]])
+        [chocolatier.engine.systems.input :only [input-system]]
+        [chocolatier.engine.systems.tile :only [tile-system]])
   (:require [chocolatier.engine.state :as s])
   (:require-macros [chocolatier.macros :refer [defonce]]))
 
@@ -19,7 +20,8 @@
 
 (defn init-systems! []
   (let [systems [[:tick tick-system]
-                 [:input input-system]]]
+                 [:input input-system]
+                 [:tile tile-system]]]
     (doseq [[name system] systems]
       (register-system! name system))))
 

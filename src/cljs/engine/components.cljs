@@ -23,3 +23,9 @@
 
 (defprotocol TestComp
   (test-it [this]))
+
+(defprotocol Tile
+  (move-by-offset [this offset-x offset-y]
+    "Move this tile by offset amount")
+  (traversable? [this]
+    "Boolean of whether this tile is traversable or not"))

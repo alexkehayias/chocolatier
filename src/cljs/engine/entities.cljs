@@ -2,7 +2,7 @@
   ;; NOTE to use protocols from another ns, import them explicitely by
   ;; name and not their methods
   ;; Use them in this ns by refering to the name
-  (:use [chocolatier.utils.logging :only [debug info warn error]])  
+  (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:require [chocolatier.engine.components :refer [Entity
                                                    Renderable
                                                    Controllable]]))
