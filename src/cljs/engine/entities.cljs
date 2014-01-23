@@ -13,14 +13,13 @@
   (tick [this] nil)
   
   Renderable
-  (render [this stage]
-    (.addChild stage (:sprite this)))
+  (render [this stage] nil)
 
   Controllable
   (react-to-user-input [this state time]
     (let [sprite (:sprite this)
           input @(:input state)
-          move-rate 0.25
+          move-rate 1
           move #(condp = %
                       :W (set! (.-position.y sprite)
                                (- (.-position.y sprite) move-rate))

@@ -25,6 +25,7 @@
     (set! (.-position.y (:sprite bunny)) pos-y)
     (set! (.-anchor.x (:sprite bunny)) anc-x)
     (set! (.-anchor.y (:sprite bunny)) anc-y)
+    (.addChild stage (:sprite bunny))
     (swap! s/entities conj bunny)))
 
 (defn iter-systems
