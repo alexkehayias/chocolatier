@@ -23,7 +23,8 @@
   {:game game
    :systems systems
    :input input
-   :entities entities})
+   :entities entities
+   :tile-map tile-map})
 
 (defn reset-state! []
   (reset! game nil)
