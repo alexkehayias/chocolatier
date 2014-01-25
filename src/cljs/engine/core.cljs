@@ -4,7 +4,7 @@
             ;; Imports the entity records
             ;; TODO can I explicitely import just the entity? or must
             ;; I always mark it with :as?
-            [chocolatier.engine.entities :as e]
+            [chocolatier.entities.player :as p]
             [chocolatier.engine.state :as s]
             [chocolatier.engine.systems.core :refer [init-systems!]]
             [chocolatier.engine.input :refer [reset-input!]]
@@ -20,13 +20,13 @@
   (info "Creating entity" stage img pos-x pos-y anc-x anc-y)
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (js/PIXI.Sprite. texture)
-        bunny (new e/Bunny (keyword (gensym)) sprite 0 0)]
-    (set! (.-position.x (:sprite bunny)) pos-x)
-    (set! (.-position.y (:sprite bunny)) pos-y)
-    (set! (.-anchor.x (:sprite bunny)) anc-x)
-    (set! (.-anchor.y (:sprite bunny)) anc-y)
-    (.addChild stage (:sprite bunny))
-    (swap! s/entities conj bunny)))
+        player (new p/Player (keyword (gensym)) sprite 0 0)]
+    (set! (.-position.x (:sprite player)) pos-x)
+    (set! (.-position.y (:sprite player)) pos-y)
+    (set! (.-anchor.x (:sprite player)) anc-x)
+    (set! (.-anchor.y (:sprite player)) anc-y)
+    (.addChild stage (:sprite player))
+    (swap! s/entities conj player)))
 
 (defn iter-systems
   "Call each system registered in s/system in order with the 
