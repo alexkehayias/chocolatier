@@ -4,7 +4,8 @@
         [chocolatier.engine.systems.render :only [render-system]]
         [chocolatier.engine.systems.tick :only [tick-system]]
         [chocolatier.engine.systems.input :only [input-system]]
-        [chocolatier.engine.systems.tile :only [tile-system]])
+        [chocolatier.engine.systems.tile :only [tile-system]]
+        [chocolatier.engine.systems.collision :only [collision-system]])
   (:require [chocolatier.engine.state :as s])
   (:require-macros [chocolatier.macros :refer [defonce]]))
 
@@ -21,11 +22,11 @@
 (defn init-systems! []
   (let [systems [[:tick tick-system]
                  [:input input-system]
-                 [:tile tile-system]]]
+                 [:tile tile-system]
+                 [:collision collision-system]]]
     (doseq [[name system] systems]
       (register-system! name system))))
 
-;; TODO add in all the core systems
 ;; TODO How do we allow the order and list of systems to be set?
 ;; Some sort of editable sort ordering based on system name?
 ;; Built in systems can have reserved system names
@@ -36,6 +37,7 @@
 ;; an argument
 
 ;; TODO macro defsystem defines a system and adds it to systems
+;; TODO macro for defining the systems ordering
 
 ;; Example:
 ;; (defn render-system [state]
