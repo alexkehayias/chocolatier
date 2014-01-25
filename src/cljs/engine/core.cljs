@@ -38,6 +38,15 @@
 (defn request-animation [f]
   (js/requestAnimationFrame f))
 
+(defn timestamp
+  "Get the current timestamp using performance.now. 
+   Fall back to Date.getTime for older browsers"
+  []
+  (if (and (exists? (aget js/window "performance"))
+           (exists? (aget js/window "performance" "now")))
+    (js/window.performance.now)
+    ((aget (new js/Date) "getTime"))))
+
 (defn game-loop
   "Fixed timestep gameloop that calculates changes based on the 
    time duration since last run.
@@ -72,16 +81,6 @@
   [f n]
   (.setInterval js/window f (/ 1000 n))
   #(.clearInterval f (/ 1000 n)))
-
-(defn timestamp
-  "Get the current timestamp using performance.now. 
-   Fall back to Date.getTime for older browsers"
-  []
-  (if (and (exists? (aget js/window "performance"))
-           (exists? (aget js/window "performance" "now")))
-    (js/window.performance.now)
-    ((aget (new js/Date) "getTime"))))
-
 
 ;; Start, stop, reset the game. Game and all state is stored in
 ;; an atom and referenced directly in the game loop

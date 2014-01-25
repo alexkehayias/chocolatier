@@ -13,36 +13,7 @@
       (set! (.-position.x sprite) x)
       (set! (.-position.y sprite) y)))
   
-  (traversable? [this] true)
-
-  UserInput
-  (react-to-user-input [this state time]
-    (let [sprite (:sprite this)
-          input @(:input state)
-          move-rate 1
-          move #(condp = %
-                  :W (set! (.-position.y sprite)
-                           (- (.-position.y sprite) move-rate))
-                  :A (set! (.-position.x sprite)
-                           (- (.-position.x sprite) move-rate))
-                  :S (set! (.-position.y sprite)
-                           (+ (.-position.y sprite) move-rate))
-                  :D (set! (.-position.x sprite)
-                           (+ (.-position.x sprite) move-rate))
-                  :& (set! (.-position.y sprite)
-                           (- (.-position.y sprite) move-rate))
-                  :% (set! (.-position.x sprite)
-                           (- (.-position.x sprite) move-rate))
-                  ;; Parenths are reserved so wrap it in keyword call
-                  (keyword "(") (set! (.-position.y sprite)
-                                      (+ (.-position.y sprite) move-rate))
-                  :' (set! (.-position.x sprite)
-                           (+ (.-position.x sprite) move-rate))
-                  ;; Otherwise do nothing
-                  nil)]
-      (doseq [[k v] input]
-        (when (= v "on")
-          (move k))))))
+  (traversable? [this] true))
 
 (defn create-tile [stage img height width x y traversable]
   (let [texture (js/PIXI.Texture.fromImage img)
