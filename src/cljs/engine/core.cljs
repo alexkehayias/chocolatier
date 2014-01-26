@@ -51,7 +51,7 @@
    Calls all systems with the current state n times where n
    is the number of steps in the duration.
 
-   The render system is called separately."
+   The render system is called separately so that animation stays smooth."
   [last-timestamp duration step]
   (let [now (timestamp)
         delta (- now last-timestamp)

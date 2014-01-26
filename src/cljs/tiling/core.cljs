@@ -17,9 +17,10 @@
   ;; the tile position has changed
   (render [this state]
     (let [sprite (:sprite this)]
-      (if (and (not= (.-position.x sprite) (:x this))
-               (not= (.-position.y sprite) (:y this)))
+      (if (or (not= (.-position.x sprite) (:x this))
+              (not= (.-position.y sprite) (:y this)))
         (do
+          (debug "Moving tiles!")
           (set! (.-position.x sprite) (:x this))
           (set! (.-position.y sprite) (:y this))
           (assoc this :sprite sprite))
