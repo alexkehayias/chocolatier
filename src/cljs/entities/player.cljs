@@ -29,7 +29,7 @@
   (react-to-user-input [this state time]
     (let [sprite (:sprite this)
           input @(:input state)
-          move-rate 2.0
+          move-rate 1.0
           move #(condp = %2
                   :W (assoc %1 :y (- (:y %1) move-rate))
                   :A (assoc %1 :x (- (:x %1) move-rate))

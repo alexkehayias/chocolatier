@@ -10,7 +10,7 @@ A work-in-progress web game engine for repl driven game development written in C
 
 ## Entity Component System
 
-An entity component system is implemented using `defrecord` and `defprotocol`. When loading changes to protocols or records in the repl make sure to delete any old instances and replace with new ones for the changes to take effect. 
+An entity component system is implemented using `defrecord` and `defprotocol`. Changes to defprotocols or defrecords take effect immediately since all system transactions produce new records.
 
 When including protocols from a separate namespace, refer them explicitely by name. You do not need to refer their method names. When calling method names, refer the namespace containing the method you want to use using `refer :as`.
 
