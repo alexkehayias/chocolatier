@@ -21,11 +21,38 @@
       (assoc this :sprite sprite)))
 
   UserInput
+  ;; TODO update the player's velocity, direction
+  ;; Maybe move this to collision detection system
+  ;; Calculate given their velocity if they will be colliding with
+  ;; something
+  ;;(assoc this :x (+ 1 (:x this)))
   (react-to-user-input [this state time]
-    ;; TODO update the player's velocity, direction
-    ;; Maybe move this to collision detection system
-    ;; Calculate given their velocity if they will be colliding with
-    ;; something
-    ;;(assoc this :x (+ 1 (:x this)))
-    this
-    ))
+    (let [sprite (:sprite this)
+          input @(:input state)
+          move-rate 0.25          
+          move #(condp = %2
+                  :W (assoc %1 :y (- (:y %1) move-rate))
+                  :A (assoc %1 :x (- (:x %1) move-rate))
+                  :S (assoc %1 :y (+ (:y %1) move-rate))
+                  :D (assoc %1 :x (+ (:x %1) move-rate))
+                  ;; :& (set! (.-position.y sprite)
+                  ;;          (- (.-position.y sprite) move-rate))
+                  ;; :% (set! (.-position.x sprite)
+                  ;;          (- (.-position.x sprite) move-rate))
+                  ;; ;; Parenths are reserved so
+                  ;; ;; wrap it in keyword call
+                  ;; (keyword "(") (set! (.-position.y sprite)
+                  ;;                     (+ (.-position.y sprite) move-rate))
+                  ;; :' (set! (.-position.x sprite)
+                  ;;          (+ (.-position.x sprite) move-rate))
+                  ;; Otherwise do nothing
+                  %1)]
+      ;; Apply all the changes to the record in a recursive loop
+      (loop [out this
+             i (seq input)]
+        (let [[k v] (first i)
+              remaining (rest i)
+              updated (if (= v "on") (move out k) out)]
+          (if (empty? remaining)
+            updated
+            (recur updated remaining)))))))

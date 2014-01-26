@@ -1,5 +1,7 @@
 (ns chocolatier.engine.systems.core
-  "Describes the various systems for controlling the game logic"
+  "Describes the various systems for controlling the game logic.
+   Systems control all state changes of all entities in the game.
+   Ordering of systems is important."
   (:use [chocolatier.utils.logging :only [debug info warn error]]
         [chocolatier.engine.systems.render :only [render-system]]
         [chocolatier.engine.systems.tick :only [tick-system]]

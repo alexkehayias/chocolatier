@@ -4,6 +4,10 @@
             [chocolatier.engine.state :as s]))
 
 
+
+;; TODO create a TileMap record that takes a list of tiles and can
+;; transform all of them without a loop over each tile
+
 (defrecord BackgroundTile [sprite height width x y traverse?]
   Tile
   (traversable? [this] true)
