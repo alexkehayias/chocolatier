@@ -21,11 +21,7 @@
   (info "Creating entity" stage img pos-x pos-y anc-x anc-y)
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (js/PIXI.Sprite. texture)
-        player (new p/Player (keyword (gensym)) sprite 0 0)]
-    (set! (.-position.x (:sprite player)) pos-x)
-    (set! (.-position.y (:sprite player)) pos-y)
-    (set! (.-anchor.x (:sprite player)) anc-x)
-    (set! (.-anchor.y (:sprite player)) anc-y)
+        player (new p/Player (keyword (gensym)) sprite pos-x pos-y)]
     (.addChild stage (:sprite player))
     (swap! s/entities conj player)))
 
