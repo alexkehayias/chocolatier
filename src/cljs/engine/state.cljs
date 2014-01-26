@@ -17,18 +17,18 @@
 
 (defonce systems (atom {}))
 
-(defonce tile-map (atom {}))
+(defonce tiles (atom []))
 
 (def state
   {:game game
    :systems systems
    :input input
    :entities entities
-   :tile-map tile-map})
+   :tiles tiles})
 
 (defn reset-state! []
   (reset! game nil)
   (reset! entities [])
   (reset! input {})
   (reset! systems {})
-  (reset! tile-map {}))
+  (reset! tiles []))

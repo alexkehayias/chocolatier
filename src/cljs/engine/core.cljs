@@ -8,7 +8,8 @@
             [chocolatier.engine.state :as s]
             [chocolatier.engine.systems.core :refer [init-systems!]]
             [chocolatier.engine.input :refer [reset-input!]]
-            [chocolatier.engine.systems.render :refer [render-system]])
+            [chocolatier.engine.systems.render :refer [render-system]]
+            [chocolatier.tiling.core :refer [load-test-tile-map!]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
 
@@ -93,8 +94,8 @@
         width (aget js/window "innerWidth")
         height (aget js/window "innerHeight")
         frame-rate 60
-        stage (js/PIXI.Stage. 0x66ff99)
-        renderer (js/PIXI.CanvasRenderer. width height)
+        stage (new js/PIXI.Stage)
+        renderer (js/PIXI.CanvasRenderer. width height nil true)
         init-timestamp (timestamp)
         init-duration 0
         step (/ 1 frame-rate)
@@ -130,7 +131,7 @@
   (s/reset-state!)
   (start-game!)
   (let [x (/ (aget js/window "innerWidth") 2) 
-        y (/ (aget js/window "innerHeight") 2)]
-    (create-entity! (:stage @s/game)
-                    "static/images/bunny.png"
-                    x y 0 0)))
+        y (/ (aget js/window "innerHeight") 2)
+        stage (:stage @s/game)]
+    (load-test-tile-map! stage)
+    (create-entity! stage "static/images/bunny.png" x y 0 0)))
