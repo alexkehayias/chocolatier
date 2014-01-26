@@ -7,6 +7,6 @@
 
 
 (defn tick-system [state time]
-  (doseq [entity @(:entities state)]
-    (when (satisfies? Entity entity)
-      (c/tick entity))))
+  (swap! (:entities state)
+         (fn [ents]
+           (map #(when (satisfies? Entity %) (c/tick %)) ents))))

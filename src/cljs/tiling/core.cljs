@@ -13,10 +13,11 @@
   (render [this state]
     (let [sprite (:sprite this)]
       (set! (.-position.x sprite) (:x this))
-      (set! (.-position.y sprite) (:y this)))))
+      (set! (.-position.y sprite) (:y this))
+      (assoc this :sprite sprite))))
 
 (defn create-tile! [stage img height width x y traversable]
-  (debug "Creating tile" stage img height width x y traversable)
+  ;; (debug "Creating tile" stage img height width x y traversable)
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (new js/PIXI.TilingSprite texture height width)
         tile (new BackgroundTile sprite height width x y traversable)]

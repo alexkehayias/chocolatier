@@ -5,6 +5,5 @@
 
 
 (defn tile-system [state time]
-  (doseq [tile @(:tiles state)]
-    nil
-))
+  nil
+)

@@ -8,8 +8,8 @@
             [chocolatier.engine.state :as s]
             [chocolatier.engine.systems.core :refer [init-systems!]]
             [chocolatier.engine.input :refer [reset-input!]]
-            [chocolatier.engine.systems.render :refer [render-system]]
-            [chocolatier.tiling.core :refer [load-test-tile-map!]])
+            [chocolatier.tiling.core :refer [load-test-tile-map!]]
+            [chocolatier.engine.systems.render :refer [render-system]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
 
