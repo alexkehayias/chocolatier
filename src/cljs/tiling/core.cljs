@@ -13,12 +13,17 @@
   (traversable? [this] true)
   
   Renderable
-  ;; Render sets the x y position of the tile on the screen
+  ;; Render sets the x y position of the tile on the screen only if
+  ;; the tile position has changed
   (render [this state]
     (let [sprite (:sprite this)]
-      (set! (.-position.x sprite) (:x this))
-      (set! (.-position.y sprite) (:y this))
-      (assoc this :sprite sprite))))
+      (if (and (not= (.-position.x sprite) (:x this))
+               (not= (.-position.y sprite) (:y this)))
+        (do
+          (set! (.-position.x sprite) (:x this))
+          (set! (.-position.y sprite) (:y this))
+          (assoc this :sprite sprite))
+        this))))
 
 (defn create-tile! [stage img height width x y traversable]
   ;; (debug "Creating tile" stage img height width x y traversable)
