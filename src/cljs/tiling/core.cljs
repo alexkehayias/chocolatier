@@ -1,12 +1,17 @@
 (ns chocolatier.tiling.core
   (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:require [chocolatier.engine.components :refer [Tile Renderable]]
+            [chocolatier.engine.components :as c]
             [chocolatier.engine.state :as s]))
-
 
 
 ;; TODO create a TileMap record that takes a list of tiles and can
 ;; transform all of them without a loop over each tile
+(defrecord TileMap [tiles x y]
+  Renderable
+  (render [this state]
+    (let [updated-tiles (map #(c/render % state) (:tiles this))]
+      (assoc this :tiles updated-tiles))))
 
 (defrecord BackgroundTile [sprite height width x y traverse?]
   Tile
@@ -26,7 +31,7 @@
           (assoc this :sprite sprite))
         this))))
 
-(defn create-tile! [stage img height width x y traversable]
+(defn create-tile [stage img height width x y traversable]
   ;; (debug "Creating tile" stage img height width x y traversable)
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (new js/PIXI.TilingSprite texture height width)
@@ -35,7 +40,7 @@
     (set! (.-position.x sprite) x)
     (set! (.-position.y sprite) y)
     (.addChild stage sprite)
-    (swap! s/tiles conj tile)))
+    tile))
 
 (defn load-tile-map!
   "Create a tile map from a hash-map spec.
@@ -56,7 +61,9 @@
 (defn load-test-tile-map!
   "Create a test tile map of 50 x 50 tiles"
   [stage]
-  (doseq [x (range 0 500 50)
-          y (range 0 500 50)]
-    (create-tile! stage "static/images/tile.png" 50 50 x y true)))
+  (let [tiles (for [x (range 0 500 50)
+                    y (range 0 500 50)]
+                (create-tile stage "static/images/tile.png"
+                             50 50 x y true))]
+    (reset! s/tile-map (new TileMap (doall tiles) 0 0))))
 

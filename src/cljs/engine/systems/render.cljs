@@ -7,17 +7,16 @@
 
 (defn render-system [state]
   (let [entities (:entities state)
-        tiles (:tiles state)
+        tile-map (:tile-map state)
         {:keys [stage renderer]} (-> state :game deref)]
     ;; Render changes to entities
     (swap! entities (fn [ents]
                        (map #(when (satisfies? Renderable %)
                                (c/render % stage))
                             ents)))
-    ;; Render changes to tiles
-    (swap! tiles (fn [ts]
-                   (map #(when (satisfies? Renderable %)
-                           (c/render % stage))
-                        ts)))
+    ;; Render tile map changes
+    ;; tile-map may be an empty hash
+    (when (satisfies? Renderable tile-map)
+      (swap! tile-map #(c/render % state)))
     ;; Render to the stage
     (.render renderer stage)))

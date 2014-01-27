@@ -39,7 +39,8 @@
 
 (defn start-input! []
   (init-input!)
-  (add-watch s/input :input-debug debug-watcher))
+  ;; (add-watch s/input :input-debug debug-watcher)
+  )
 
 (defn reset-input! []
   (debug "Resetting input")

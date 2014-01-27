@@ -60,7 +60,10 @@
     ;; Throw an error if we get into a bad state
     (when (< duration 0)
       (throw (js/Error. "Bad state, duration is < 0")))
-    (when-not (:stop @s/game)
+    ;; FIX this exit flag does not get thrown
+    (if (-> s/state :game deref :stop)
+      (do (debug ":stop flag thrown, stopping game loop")
+        (swap! (:game s/state) assoc :stopped true)) 
       (loop [dt duration]
         (if (< (- dt step) step)
           ;; Break the loop, render, and request the next frame
@@ -96,24 +99,44 @@
         init-duration 0
         step (/ 1 frame-rate)
         game-state {:renderer renderer
-                    :stage stage
-                    :stop false
-                    :paused false}]
+                    :stage stage}]
+    
+    ;; Append the canvas to the dom
     (dom/append! (sel1 :body) (.-view renderer))
+    
+    ;; Initialize state
+    (s/reset-state!)
     (init-systems!)
     (reset-input!)
     (reset! s/game game-state)
+
+    ;; Initial game tiles and player
+    (let [x (/ width 2) 
+          y (/ height 2)]
+      (load-test-tile-map! stage)
+      (create-entity! stage "static/images/bunny.png" x y 0 0))
+    
     ;; Start the game loop
-    (request-animation #(game-loop init-timestamp init-duration step))))
+    (game-loop init-timestamp init-duration step)))
 
 (defn stop-game!
   "Stop the game loop and remove the canvas"
-  []
+  [callback]
   (when-not (empty? @s/game)
     (debug "Ending the game loop")
+    ;; Throws a state flag to stop the game-loop
     (swap! s/game assoc :stop true)
-    (debug "Removing the canvas")
-    (dom/remove! (sel1 :canvas))))
+    ;; Watch for the game loop to confirm the stop
+    (add-watch s/game
+               :game-end
+               (fn [k s o n]
+                 (when (:stopped n)
+                   (callback))))))
+
+(defn cleanup! []
+  (remove-watch s/game :game-end)
+  (try (dom/remove! (sel1 :canvas))
+       (catch js/Object e (error (str e)))))
 
 (defn pause-game! []
   (swap! s/game assoc :paused true))
@@ -123,11 +146,6 @@
 
 (defn reset-game! []
   (debug "Resetting game")
-  (stop-game!)
-  (s/reset-state!)
-  (start-game!)
-  (let [x (/ (aget js/window "innerWidth") 2) 
-        y (/ (aget js/window "innerHeight") 2)
-        stage (:stage @s/game)]
-    (load-test-tile-map! stage)
-    (create-entity! stage "static/images/bunny.png" x y 0 0)))
+  (stop-game! #(do ((cleanup!)
+                    (start-game!))))
+  nil)
