@@ -111,10 +111,9 @@
     (reset! s/game game-state)
 
     ;; Initial game tiles and player
-    (let [x (/ width 2) 
-          y (/ height 2)]
-      (load-test-tile-map! stage)
-      (create-player! stage "static/images/bunny.png" x y 0 0))
+    (load-test-tile-map! stage)
+    (create-player! stage "static/images/bunny.png"
+                    (/ width 2) (/ height 2) 0 0)
     
     ;; Start the game loop
     (game-loop init-timestamp init-duration step)))
@@ -122,18 +121,15 @@
 (defn stop-game!
   "Stop the game loop and remove the canvas"
   [callback]
-  (if (empty? @s/game)
-    (callback)
+  (if @s/game
     (do
       (debug "Ending the game loop")
       ;; Throws a state flag to stop the game-loop
       (swap! s/game assoc :stop true)
       ;; Watch for the game loop to confirm the stop
-      (add-watch s/game
-                 :game-end
-                 (fn [k s o n]
-                   (when (:stopped n)
-                     (callback)))))))
+      (add-watch s/game :game-end
+                 (fn [k s o n] (when (:stopped n) (callback)))))
+    (callback)))
 
 (defn cleanup! []
   (remove-watch s/game :game-end)
@@ -148,6 +144,6 @@
 
 (defn reset-game! []
   (debug "Resetting game")
-  (stop-game! #(do ((cleanup!)
-                    (start-game!))))
+  (stop-game! #(do (cleanup!)
+                   (start-game!)))
   nil)

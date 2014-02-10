@@ -21,12 +21,11 @@
   (move-layer [this state]
     (let [{:keys [map-x map-y]} (first (filter :player @(:entities state)))
           tiles (:tiles this)
-          ;; TODO translate map coords to screen coords
+          ;; TODO translate map coords to screen coords so we can move
+          ;; all tiles accordingly
           ;; Compare the player map coords to the TileMap coords and
           ;; apply the offset to all the tiles
           updated-tiles (map #(offset % (:screen-x %) (:screen-y %)) tiles)]
-      ;; TODO apply an offset 
-      ;;(println (first updated-tiles))
       (assoc this :tiles updated-tiles))))
 
 (defrecord BackgroundTile [sprite height width traverse?
