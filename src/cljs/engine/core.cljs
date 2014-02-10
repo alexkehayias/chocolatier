@@ -57,19 +57,26 @@
         delta (- now last-timestamp)
         ;; Minimum duration processed is 1 second        
         duration (+ duration (Math.min 1 (/ delta 1000)))]
+    
     ;; Throw an error if we get into a bad state
     (when (< duration 0)
       (throw (js/Error. "Bad state, duration is < 0")))
-    ;; FIX this exit flag does not get thrown
+
+    ;; Check if the stop flag has been thrown otherwise iterate
+    ;; through all systems then request the next animation
     (if (-> s/state :game deref :stop)
       (do (debug ":stop flag thrown, stopping game loop")
-        (swap! (:game s/state) assoc :stopped true)) 
+          (swap! (:game s/state) assoc :stopped true))
+      ;; Calculate all changes for each step in the duration since the
+      ;; last run through the game loop
       (loop [dt duration]
         (if (< (- dt step) step)
           ;; Break the loop, render, and request the next frame
           (do
             (render-system s/state)
             (request-animation #(game-loop now dt step)))
+          ;; If the game is paused, keep the loop going but don't
+          ;; calculate any changes
           (if (:paused @s/game)
             (recur (- dt step))
             (do (iter-systems s/state step)
