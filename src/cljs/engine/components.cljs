@@ -8,7 +8,7 @@
 
 (defprotocol Renderable
   "Render to the the screen"
-  (render [this stage]
+  (render [this state]
     "Render this to the stage"))
 
 (defprotocol UserInput
@@ -23,6 +23,10 @@
 
 (defprotocol TestComp
   (test-it [this]))
+
+(defprotocol BackgroundLayer
+  (move-layer [this state]
+    "Move layer based on some game state such as the player's position"))
 
 (defprotocol Tile
   (traversable? [this]

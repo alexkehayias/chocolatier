@@ -15,13 +15,13 @@
 
 ;; TODO a function that takes a state hashmap and starts the game from it
 
-(defn create-entity!
+(defn create-player!
   "Create a new entity and add to the list of global entities"
   [stage img pos-x pos-y anc-x anc-y]
-  (info "Creating entity" stage img pos-x pos-y anc-x anc-y)
+  (info "Creating player" stage img pos-x pos-y anc-x anc-y)
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (js/PIXI.Sprite. texture)
-        player (new p/Player (keyword (gensym)) sprite pos-x pos-y)]
+        player (new p/Player :player sprite pos-x pos-y 0 0)]
     (.addChild stage (:sprite player))
     (swap! s/entities conj player)))
 
@@ -114,7 +114,7 @@
     (let [x (/ width 2) 
           y (/ height 2)]
       (load-test-tile-map! stage)
-      (create-entity! stage "static/images/bunny.png" x y 0 0))
+      (create-player! stage "static/images/bunny.png" x y 0 0))
     
     ;; Start the game loop
     (game-loop init-timestamp init-duration step)))
@@ -122,16 +122,18 @@
 (defn stop-game!
   "Stop the game loop and remove the canvas"
   [callback]
-  (when-not (empty? @s/game)
-    (debug "Ending the game loop")
-    ;; Throws a state flag to stop the game-loop
-    (swap! s/game assoc :stop true)
-    ;; Watch for the game loop to confirm the stop
-    (add-watch s/game
-               :game-end
-               (fn [k s o n]
-                 (when (:stopped n)
-                   (callback))))))
+  (if (empty? @s/game)
+    (callback)
+    (do
+      (debug "Ending the game loop")
+      ;; Throws a state flag to stop the game-loop
+      (swap! s/game assoc :stop true)
+      ;; Watch for the game loop to confirm the stop
+      (add-watch s/game
+                 :game-end
+                 (fn [k s o n]
+                   (when (:stopped n)
+                     (callback)))))))
 
 (defn cleanup! []
   (remove-watch s/game :game-end)

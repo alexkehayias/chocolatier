@@ -1,27 +1,33 @@
 (ns chocolatier.tiling.core
   (:use [chocolatier.utils.logging :only [debug info warn error]])
-  (:require [chocolatier.engine.components :refer [Tile Renderable]]
+  (:require [chocolatier.engine.components :refer [Tile Renderable
+                                                   BackgroundLayer]]
             [chocolatier.engine.components :as c]
             [chocolatier.engine.state :as s]))
 
 
-;; TODO create a TileMap record that takes a list of tiles and can
-;; transform all of them without a loop over each tile
 (defrecord TileMap [tiles x y]
-  ;; TODO need a component that can take an offset and apply it to all
-  ;; tiles in the tile map
   Renderable
   (render [this state]
+    (info "hello from tilemap?")
     (let [updated-tiles (map #(c/render % state) (:tiles this))]
-      (assoc this :tiles updated-tiles))))
+      (assoc this :tiles updated-tiles)))
+
+  ;; Apply an offset to the tile map based on player's position
+  BackgroundLayer
+  (move-layer [this state]
+    (let [{:keys [map-x map-y]} (first (filter :player @(:entities state)))]
+      ;; TODO apply an offset 
+      (debug "Player position" map-x map-y)
+      nil 
+      )
+    ))
 
 (defrecord BackgroundTile [sprite height width x y traverse?]
   Tile
   (traversable? [this] true)
   
   Renderable
-  ;; Render sets the x y position of the tile on the screen only if
-  ;; the tile position has changed
   (render [this state]
     (let [sprite (:sprite this)]
       (if (or (not= (.-position.x sprite) (:x this))
@@ -66,6 +72,6 @@
   (let [tiles (for [x (range 0 500 50)
                     y (range 0 500 50)]
                 (create-tile! stage "static/images/tile.png"
-                             50 50 x y true))]
+                              50 50 x y true))]
     (reset! s/tile-map (new TileMap (doall tiles) 0 0))))
 
