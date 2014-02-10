@@ -16,7 +16,7 @@
                             ents)))
     ;; Render tile map changes
     ;; tile-map may be an empty hash
-    (when (satisfies? Renderable tile-map)
+    (when (satisfies? Renderable @tile-map)
       (swap! tile-map #(c/render % state)))
     ;; Render to the stage
     (.render renderer stage)))

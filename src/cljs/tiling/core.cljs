@@ -6,49 +6,68 @@
             [chocolatier.engine.state :as s]))
 
 
+(defn offset
+  [m x y]
+  (assoc m :screen-x (+ x 1) :screen-y (+ y 1)))
+
 (defrecord TileMap [tiles x y]
   Renderable
   (render [this state]
-    (info "hello from tilemap?")
     (let [updated-tiles (map #(c/render % state) (:tiles this))]
-      (assoc this :tiles updated-tiles)))
+      (assoc this :tiles (doall updated-tiles))))
 
   ;; Apply an offset to the tile map based on player's position
   BackgroundLayer
   (move-layer [this state]
-    (let [{:keys [map-x map-y]} (first (filter :player @(:entities state)))]
+    (let [{:keys [map-x map-y]} (first (filter :player @(:entities state)))
+          tiles (:tiles this)
+          ;; TODO translate map coords to screen coords
+          ;; Compare the player map coords to the TileMap coords and
+          ;; apply the offset to all the tiles
+          updated-tiles (map #(offset % (:screen-x %) (:screen-y %)) tiles)]
       ;; TODO apply an offset 
-      ;;(debug "Player position" map-x map-y)
-      nil 
-      )
-    ))
+      ;;(println (first updated-tiles))
+      (assoc this :tiles updated-tiles))))
 
-(defrecord BackgroundTile [sprite height width x y traverse?]
+(defrecord BackgroundTile [sprite height width traverse?
+                           screen-x screen-y
+                           map-x map-y]
   Tile
   (traversable? [this] true)
   
   Renderable
   (render [this state]
     (let [sprite (:sprite this)]
-      (if (or (not= (.-position.x sprite) (:x this))
-              (not= (.-position.y sprite) (:y this)))
+      (if (or (not= (.-position.x sprite) (:screen-x this))
+              (not= (.-position.y sprite) (:screen-y this)))
         (do
-          (debug "Moving tiles!")
-          (set! (.-position.x sprite) (:x this))
-          (set! (.-position.y sprite) (:y this))
+          (set! (.-position.x sprite) (:screen-x this))
+          (set! (.-position.y sprite) (:screen-y this))
           (assoc this :sprite sprite))
         this))))
 
-(defn create-tile! [stage img height width x y traversable]
+(defn create-tile! [stage img height width traversable
+                    screen-x screen-y
+                    map-x map-y]
   ;; (debug "Creating tile" stage img height width x y traversable)
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (new js/PIXI.TilingSprite texture height width)
-        tile (new BackgroundTile sprite height width x y traversable)]
+        tile (new BackgroundTile sprite height width traversable
+                  screen-x screen-y map-x map-y)]
     ;; Initialize the position on the screen
-    (set! (.-position.x sprite) x)
-    (set! (.-position.y sprite) y)
+    (set! (.-position.x sprite) screen-x)
+    (set! (.-position.y sprite) screen-y)
     (.addChild stage sprite)
     tile))
+
+(defn load-test-tile-map!
+  "Create a test tile map of 50 x 50 tiles"
+  [stage]
+  (let [tiles (for [x (range 0 500 50)
+                    y (range 0 500 50)]
+                (create-tile! stage "static/images/tile.png" 
+                              50 50 true x y x y))]
+    (reset! s/tile-map (new TileMap (doall tiles) 0 0))))
 
 (defn load-tile-map!
   "Create a tile map from a hash-map spec.
@@ -63,15 +82,9 @@
    }
   "
   [stage map-spec]
-  (doseq [{:keys [height width x y traversable? img]} (:tiles map-spec)]
-    (create-tile! stage img height width x y traversable?)))
-
-(defn load-test-tile-map!
-  "Create a test tile map of 50 x 50 tiles"
-  [stage]
-  (let [tiles (for [x (range 0 500 50)
-                    y (range 0 500 50)]
-                (create-tile! stage "static/images/tile.png"
-                              50 50 x y true))]
-    (reset! s/tile-map (new TileMap (doall tiles) 0 0))))
-
+  (doseq [{:keys [img height width traversable?
+                  screen-x screen-y
+                  map-x map-y]} (:tiles map-spec)]
+    (create-tile! stage img height width traversable?
+                  screen-x screen-y
+                  map-x map-y)))

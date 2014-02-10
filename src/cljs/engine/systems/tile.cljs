@@ -5,4 +5,4 @@
 
 
 (defn tile-system [state time]
-  (c/move-layer @(:tile-map state) state))
+  (swap! (:tile-map state) #(c/move-layer % state)))
