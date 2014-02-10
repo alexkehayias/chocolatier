@@ -18,7 +18,7 @@
   (move-layer [this state]
     (let [{:keys [map-x map-y]} (first (filter :player @(:entities state)))]
       ;; TODO apply an offset 
-      (debug "Player position" map-x map-y)
+      ;;(debug "Player position" map-x map-y)
       nil 
       )
     ))

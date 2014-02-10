@@ -26,10 +26,6 @@
 
   UserInput
   ;; TODO update the player's velocity, direction
-  ;; Maybe move this to collision detection system
-  ;; Calculate given their velocity if they will be colliding with
-  ;; something
-  ;;(assoc this :x (+ 1 (:x this)))
   (react-to-user-input [this state time]
     (let [sprite (:sprite this)
           input @(:input state)

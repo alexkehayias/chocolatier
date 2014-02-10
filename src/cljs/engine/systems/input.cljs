@@ -11,6 +11,5 @@
   (swap! (:entities state)
          (fn [ents]
            (map #(when (satisfies? UserInput %)
-                   (debug "react-to-user" (c/react-to-user-input % state time))
                    (c/react-to-user-input % state time))
                 ents))))
