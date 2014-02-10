@@ -5,7 +5,8 @@
   (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:require [chocolatier.engine.components :refer [Entity
                                                    Renderable
-                                                   UserInput]]))
+                                                   UserInput]]
+            [chocolatier.engine.state :as s]))
 
 
 (defrecord Player [id sprite screen-x screen-y map-x map-y]
@@ -46,3 +47,13 @@
           (if (empty? remaining)
             updated
             (recur updated remaining)))))))
+
+(defn create-player!
+  "Create a new entity and add to the list of global entities"
+  [stage img pos-x pos-y anc-x anc-y]
+  (info "Creating player" stage img pos-x pos-y anc-x anc-y)
+  (let [texture (js/PIXI.Texture.fromImage img)
+        sprite (js/PIXI.Sprite. texture)
+        player (new Player :player sprite pos-x pos-y 0 0)]
+    (.addChild stage (:sprite player))
+    (swap! s/entities conj player)))

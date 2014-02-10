@@ -15,16 +15,6 @@
 
 ;; TODO a function that takes a state hashmap and starts the game from it
 
-(defn create-player!
-  "Create a new entity and add to the list of global entities"
-  [stage img pos-x pos-y anc-x anc-y]
-  (info "Creating player" stage img pos-x pos-y anc-x anc-y)
-  (let [texture (js/PIXI.Texture.fromImage img)
-        sprite (js/PIXI.Sprite. texture)
-        player (new p/Player :player sprite pos-x pos-y 0 0)]
-    (.addChild stage (:sprite player))
-    (swap! s/entities conj player)))
-
 (defn iter-systems
   "Call each system registered in s/system in order with the 
    global state and fixed time to compute."
@@ -119,7 +109,7 @@
 
     ;; Initial game tiles and player
     (load-test-tile-map! stage)
-    (create-player! stage "static/images/bunny.png"
+    (p/create-player! stage "static/images/bunny.png"
                     (/ width 2) (/ height 2) 0 0)
     
     ;; Start the game loop
