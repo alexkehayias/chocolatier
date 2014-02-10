@@ -8,6 +8,8 @@
 ;; TODO create a TileMap record that takes a list of tiles and can
 ;; transform all of them without a loop over each tile
 (defrecord TileMap [tiles x y]
+  ;; TODO need a component that can take an offset and apply it to all
+  ;; tiles in the tile map
   Renderable
   (render [this state]
     (let [updated-tiles (map #(c/render % state) (:tiles this))]
@@ -31,7 +33,7 @@
           (assoc this :sprite sprite))
         this))))
 
-(defn create-tile [stage img height width x y traversable]
+(defn create-tile! [stage img height width x y traversable]
   ;; (debug "Creating tile" stage img height width x y traversable)
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (new js/PIXI.TilingSprite texture height width)
@@ -63,7 +65,7 @@
   [stage]
   (let [tiles (for [x (range 0 500 50)
                     y (range 0 500 50)]
-                (create-tile stage "static/images/tile.png"
+                (create-tile! stage "static/images/tile.png"
                              50 50 x y true))]
     (reset! s/tile-map (new TileMap (doall tiles) 0 0))))
 

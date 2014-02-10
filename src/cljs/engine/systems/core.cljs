@@ -21,7 +21,7 @@
   (swap! s/systems assoc k f))
 
 
-(defn init-systems! []
+(defn reset-systems! []
   (let [systems [[:tick tick-system]
                  [:input input-system]
                  [:tile tile-system]

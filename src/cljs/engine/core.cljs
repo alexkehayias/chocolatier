@@ -6,7 +6,7 @@
             ;; I always mark it with :as?
             [chocolatier.entities.player :as p]
             [chocolatier.engine.state :as s]
-            [chocolatier.engine.systems.core :refer [init-systems!]]
+            [chocolatier.engine.systems.core :refer [reset-systems!]]
             [chocolatier.engine.input :refer [reset-input!]]
             [chocolatier.tiling.core :refer [load-test-tile-map!]]
             [chocolatier.engine.systems.render :refer [render-system]])
@@ -106,7 +106,7 @@
     
     ;; Initialize state
     (s/reset-state!)
-    (init-systems!)
+    (reset-systems!)
     (reset-input!)
     (reset! s/game game-state)
 
