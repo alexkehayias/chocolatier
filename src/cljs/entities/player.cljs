@@ -9,7 +9,15 @@
             [chocolatier.engine.state :as s]))
 
 
-(defrecord Player [id sprite screen-x screen-y map-x map-y]
+(defrecord Player [id sprite
+                   ;; Where they are on the screen
+                   screen-x screen-y
+                   ;; Where they are on the world map
+                   map-x map-y
+                   ;; Which direction they are going
+                   dir ;; :up :down :left :right nil
+                   ;; How fast they are moving
+                   vel-x vel-y]
   Entity
   (tick [this] this)
   
@@ -27,6 +35,9 @@
 
   UserInput
   ;; TODO update the player's velocity, direction
+  ;; TODO this should set the intended direction and movement NOT
+  ;; commit it to the screen. Commits of movement need to happen in
+  ;; the movement system
   (react-to-user-input [this state time]
     (let [sprite (:sprite this)
           input @(:input state)

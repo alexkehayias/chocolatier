@@ -7,6 +7,7 @@
         [chocolatier.engine.systems.tick :only [tick-system]]
         [chocolatier.engine.systems.input :only [input-system]]
         [chocolatier.engine.systems.tile :only [tile-system]]
+        [chocolatier.engine.systems.movement :only [movement-system]]
         [chocolatier.engine.systems.collision :only [collision-system]])
   (:require [chocolatier.engine.state :as s])
   (:require-macros [chocolatier.macros :refer [defonce]]))
@@ -24,6 +25,8 @@
 (defn reset-systems! []
   (let [systems [[:tick tick-system]
                  [:input input-system]
+                 [:move movement-system]
+                 ;; TODO add movement system here
                  [:tile tile-system]
                  [:collision collision-system]]]
     (doseq [[name system] systems]

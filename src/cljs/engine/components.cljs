@@ -21,8 +21,10 @@
   (attack [this]
     "Attack this entity"))
 
-(defprotocol TestComp
-  (test-it [this]))
+(defprotocol Moveable
+  "Calculate changes in movement for all moveable entities"
+  (move [this state]
+    "Attack this entity"))
 
 (defprotocol BackgroundLayer
   (move-layer [this state]

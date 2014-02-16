@@ -2,7 +2,8 @@
   (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:use-macros [dommy.macros :only [node sel sel1]])
   (:require [clojure.browser.repl :as repl]
-            [dommy.core :as dom]))
+            [dommy.core :as dom]
+            [chocolatier.engine.core :as engine]))
 
 (def top-nav
   [:div#top-nav [:h1#logo "Chocolatier"]])
@@ -22,6 +23,7 @@
   (try (do (dom/remove! (sel1 :#top-nav))
            (dom/remove! (sel1 :#main)))
        (catch js/Error e (error e)))
-  (init-html!))
+  (init-html!)
+  (engine/start-game!))
 
 (reset-app!)
