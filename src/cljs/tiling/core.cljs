@@ -8,7 +8,9 @@
 
 (defn offset
   [m x y]
-  (assoc m :screen-x (+ x 1) :screen-y (+ y 1)))
+  (assoc m
+    :screen-x (+ (:screen-x m) x)
+    :screen-y (+ (:screen-y m) y)))
 
 (defrecord TileMap [tiles x y]
   Renderable
@@ -19,13 +21,11 @@
   ;; Apply an offset to the tile map based on player's position
   BackgroundLayer
   (move-layer [this state]
-    (let [{:keys [map-x map-y]} (first (filter :player @(:entities state)))
+    (let [player (first (filter #(= (:id %) :player)
+                                @(:entities state)))
+          {:keys [offset-x offset-y]} player
           tiles (:tiles this)
-          ;; TODO translate map coords to screen coords so we can move
-          ;; all tiles accordingly
-          ;; Compare the player map coords to the TileMap coords and
-          ;; apply the offset to all the tiles
-          updated-tiles (map #(offset % (:screen-x %) (:screen-y %)) tiles)]
+          updated-tiles (map #(offset % offset-x offset-y) tiles)]
       (assoc this :tiles updated-tiles))))
 
 (defrecord BackgroundTile [sprite height width traverse?

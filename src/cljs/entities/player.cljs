@@ -28,12 +28,14 @@
     (let [sprite (:sprite this)
           {:keys [screen-x screen-y]} this
           [sprite-x sprite-y] (map #(aget sprite "position" %) ["x" "y"])]
-      (if (or (not= sprite-x screen-x) (not= sprite-y screen-y))
-        (do
-          (set! (.-position.x sprite) screen-x)
-          (set! (.-position.y sprite) screen-y)
-          (assoc this :sprite sprite))
-        this)))
+      ;; TODO only move the player if we are at the edge of a map
+      ;; (if (or (not= sprite-x screen-x) (not= sprite-y screen-y))
+      ;;   (do
+      ;;     (set! (.-position.x sprite) screen-x)
+      ;;     (set! (.-position.y sprite) screen-y)
+      ;;     (assoc this :sprite sprite))
+      ;;   this)
+      this))
 
   Moveable
   ;; Apply the offset to the screen x and y
@@ -79,5 +81,7 @@
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (js/PIXI.Sprite. texture)
         player (new Player :player sprite pos-x pos-y 0 0 :s 0 0)]
+    (set! (.-position.x sprite) pos-x)
+    (set! (.-position.y sprite) pos-y)
     (.addChild stage (:sprite player))
     (swap! s/entities conj player)))
