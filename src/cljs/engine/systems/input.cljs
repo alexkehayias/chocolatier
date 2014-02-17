@@ -11,5 +11,5 @@
   (swap! (:entities state)
          (fn [ents]
            (map #(when (satisfies? UserInput %)
-                   (c/react-to-user-input % state time))
+                   (c/react-to-user-input % state))
                 ents))))

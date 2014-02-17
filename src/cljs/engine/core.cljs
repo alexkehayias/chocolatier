@@ -110,7 +110,7 @@
     ;; Initial game tiles and player
     (load-test-tile-map! stage)
     (p/create-player! stage "static/images/bunny.png"
-                    (/ width 2) (/ height 2) 0 0)
+                      (/ width 2) (/ height 2) 0 0)
     
     ;; Start the game loop
     (game-loop init-timestamp init-duration step)))

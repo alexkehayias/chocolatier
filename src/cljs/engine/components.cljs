@@ -13,7 +13,7 @@
 
 (defprotocol UserInput
   "Can be controlled by user input"
-  (react-to-user-input [this state time]
+  (react-to-user-input [this state]
     "React to user input state from a keyboard or controller"))
 
 (defprotocol Attackable

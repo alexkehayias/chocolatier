@@ -5,7 +5,8 @@
   (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:require [chocolatier.engine.components :refer [Entity
                                                    Renderable
-                                                   UserInput]]
+                                                   UserInput
+                                                   Moveable]]
             [chocolatier.engine.state :as s]))
 
 
@@ -14,10 +15,11 @@
                    screen-x screen-y
                    ;; Where they are on the world map
                    map-x map-y
-                   ;; Which direction they are going
-                   dir ;; :up :down :left :right nil
-                   ;; How fast they are moving
-                   vel-x vel-y]
+                   ;; Which direction they are going :{n/s}{e/w}
+                   direction
+                   ;; How far x and y to move based on how fast they
+                   ;; are moving
+                   offset-x offset-y]
   Entity
   (tick [this] this)
   
@@ -33,23 +35,32 @@
           (assoc this :sprite sprite))
         this)))
 
+  Moveable
+  ;; Apply the offset to the screen x and y
+  (move [this state]
+    (let [{:keys [screen-x screen-y offset-x offset-y]} this]
+      (assoc this :screen-x (+ screen-x offset-x)
+                  :screen-y (+ screen-y offset-y))))
+
   UserInput
-  ;; TODO update the player's velocity, direction
-  ;; TODO this should set the intended direction and movement NOT
+  ;; This should set the intended direction and movement NOT
   ;; commit it to the screen. Commits of movement need to happen in
   ;; the movement system
-  (react-to-user-input [this state time]
+  ;; FIX this does not ever stand still
+  (react-to-user-input [this state]
     (let [sprite (:sprite this)
           input @(:input state)
-          move-rate 5.0
+          move-rate 1.0
           move #(condp = %2
-                  :W (assoc %1 :screen-y (- (:screen-y %1) move-rate))
-                  :A (assoc %1 :screen-x (- (:screen-x %1) move-rate))
-                  :S (assoc %1 :screen-y (+ (:screen-y %1) move-rate))
-                  :D (assoc %1 :screen-x (+ (:screen-x %1) move-rate))
-                  ;; Otherwise do nothing
-                  %1)]
-      ;; Apply all the changes to the record in a recursive loop
+                  :W (assoc %1 :offset-y (* -1 move-rate))
+                  :A (assoc %1 :offset-x (* -1 move-rate))
+                  :S (assoc %1 :offset-y (* 1 move-rate))
+                  :D (assoc %1 :offset-x (* 1 move-rate))
+                  ;; Otherwise set the offset to 0 to denote the
+                  ;; player is standing still 
+                  (assoc %1 :offset-x 0 :offset-y 0))]
+      ;; Apply all the changes to the record in a recursive loop this
+      ;; allows for handling key combinations
       (loop [out this
              i (seq input)]
         (let [[k v] (first i)
@@ -61,10 +72,10 @@
 
 (defn create-player!
   "Create a new entity and add to the list of global entities"
-  [stage img pos-x pos-y anc-x anc-y]
-  (info "Creating player" stage img pos-x pos-y anc-x anc-y)
+  [stage img pos-x pos-y map-x map-y]
+  (info "Creating player" stage img pos-x pos-y map-x map-y)
   (let [texture (js/PIXI.Texture.fromImage img)
         sprite (js/PIXI.Sprite. texture)
-        player (new Player :player sprite pos-x pos-y 0 0)]
+        player (new Player :player sprite pos-x pos-y 0 0 :s 0 0)]
     (.addChild stage (:sprite player))
     (swap! s/entities conj player)))
