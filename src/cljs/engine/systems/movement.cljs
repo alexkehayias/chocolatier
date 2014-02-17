@@ -8,4 +8,5 @@
 (defn movement-system [state time]
   (swap! (:entities state)
          (fn [ents]
-           (map #(when (satisfies? Moveable %) (c/move % state)) ents))))
+           (map #(when (satisfies? Moveable %)
+                   (c/move % state)) ents))))

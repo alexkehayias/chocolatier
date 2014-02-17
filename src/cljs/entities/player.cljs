@@ -39,25 +39,27 @@
   ;; Apply the offset to the screen x and y
   (move [this state]
     (let [{:keys [screen-x screen-y offset-x offset-y]} this]
-      (assoc this :screen-x (+ screen-x offset-x)
-                  :screen-y (+ screen-y offset-y))))
+      (assoc this
+        :screen-x (+ screen-x offset-x)
+        :screen-y (+ screen-y offset-y)
+        ;; Reset offset to 0
+        :offset-x 0
+        :offset-y 0)))
 
   UserInput
   ;; This should set the intended direction and movement NOT
   ;; commit it to the screen. Commits of movement need to happen in
   ;; the movement system
-  ;; FIX this does not ever stand still
   (react-to-user-input [this state]
-    (let [sprite (:sprite this)
-          input @(:input state)
-          move-rate 1.0
+    (let [input @(:input state)
+          move-rate 5.0
           move #(condp = %2
                   :W (assoc %1 :offset-y (* -1 move-rate))
                   :A (assoc %1 :offset-x (* -1 move-rate))
                   :S (assoc %1 :offset-y (* 1 move-rate))
                   :D (assoc %1 :offset-x (* 1 move-rate))
                   ;; Otherwise set the offset to 0 to denote the
-                  ;; player is standing still 
+                  ;; player is standing still
                   (assoc %1 :offset-x 0 :offset-y 0))]
       ;; Apply all the changes to the record in a recursive loop this
       ;; allows for handling key combinations

@@ -26,4 +26,5 @@
   (init-html!)
   (engine/start-game!))
 
-(reset-app!)
+;; Start the game on page load
+(set! (.-onload js/window) engine/start-game!)
