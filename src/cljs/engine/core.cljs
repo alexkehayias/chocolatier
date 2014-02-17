@@ -90,6 +90,7 @@
         width (aget js/window "innerWidth")
         height (aget js/window "innerHeight")
         frame-rate 60
+        _ (info "Setting renderer to" width "x" height "frame-rate" frame-rate)
         stage (new js/PIXI.Stage)
         renderer (js/PIXI.CanvasRenderer. width height nil true)
         init-timestamp (timestamp)
