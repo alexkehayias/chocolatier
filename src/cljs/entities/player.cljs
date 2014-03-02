@@ -56,10 +56,10 @@
     (let [input @(:input state)
           move-rate 5.0
           move #(condp = %2
-                  :W (assoc %1 :offset-y (* -1 move-rate))
-                  :A (assoc %1 :offset-x (* -1 move-rate))
-                  :S (assoc %1 :offset-y (* 1 move-rate))
-                  :D (assoc %1 :offset-x (* 1 move-rate))
+                  :W (assoc %1 :offset-y (* 1 move-rate))
+                  :A (assoc %1 :offset-x (* 1 move-rate))
+                  :S (assoc %1 :offset-y (* -1 move-rate))
+                  :D (assoc %1 :offset-x (* -1 move-rate))
                   ;; Otherwise set the offset to 0 to denote the
                   ;; player is standing still
                   (assoc %1 :offset-x 0 :offset-y 0))]

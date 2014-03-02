@@ -1,4 +1,4 @@
-(ns chocolatier.tiling.core
+(ns chocolatier.engine.tiling
   (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:require [chocolatier.engine.components :refer [Tile Renderable
                                                    BackgroundLayer]]
