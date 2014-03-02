@@ -92,29 +92,38 @@
         frame-rate 60
         _ (info "Setting renderer to" width "x" height "frame-rate" frame-rate)
         stage (new js/PIXI.Stage)
-        renderer (js/PIXI.CanvasRenderer. width height nil true)
+        renderer (new js/PIXI.CanvasRenderer width height nil true)
         init-timestamp (timestamp)
         init-duration 0
         step (/ 1 frame-rate)
         game-state {:renderer renderer
-                    :stage stage}]
-    
-    ;; Append the canvas to the dom
-    (dom/append! (sel1 :body) (.-view renderer))
-    
-    ;; Initialize state
-    (s/reset-state!)
-    (reset-systems!)
-    (reset-input!)
-    (reset! s/game game-state)
+                    :stage stage}
+        ;; PIXI requires a js array not a persistent vector
+        assets (array "/static/images/bunny.png"
+                      "/static/images/tile.png")
+        asset-loader (new js/PIXI.AssetLoader assets)]
+    (info "Loading assets")
+    ;; Async load all the assets and build start the game on complete
+    (aset asset-loader "onComplete"
+          #(do
+             (info "Assets loaded")
+             ;; Append the canvas to the dom
+             (dom/append! (sel1 :body) (.-view renderer))
+             
+             ;; Initialize state
+             (s/reset-state!)
+             (reset-systems!)
+             (reset-input!)
+             (reset! s/game game-state)
 
-    ;; Initial game tiles and player
-    (load-test-tile-map! stage)
-    (p/create-player! stage "static/images/bunny.png"
-                      (/ width 2) (/ height 2) 0 0)
-    
-    ;; Start the game loop
-    (game-loop init-timestamp init-duration step)))
+             ;; Initial game tiles and player
+             (load-test-tile-map! stage)
+             (p/create-player! stage "static/images/bunny.png"
+                               (/ width 2) (/ height 2) 0 0)
+             
+             ;; Start the game loop
+             (game-loop init-timestamp init-duration step)))
+    (.load asset-loader)))
 
 (defn stop-game!
   "Stop the game loop and remove the canvas"

@@ -14,6 +14,7 @@
                        (map #(when (satisfies? Renderable %)
                                (c/render % stage))
                             ents)))
+    ;; TODO do we need this still?
     ;; Render tile map changes
     ;; tile-map may be an empty hash
     (when (satisfies? Renderable @tile-map)
