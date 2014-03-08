@@ -6,7 +6,8 @@
   (:require [chocolatier.engine.components :refer [Entity
                                                    Renderable
                                                    UserInput
-                                                   Moveable]]
+                                                   Moveable
+                                                   Collidable]]
             [chocolatier.engine.state :as s]))
 
 
@@ -28,6 +29,7 @@
     (let [sprite (:sprite this)
           {:keys [screen-x screen-y]} this
           [sprite-x sprite-y] (map #(aget sprite "position" %) ["x" "y"])]
+      ;; TODO update the debug hit zone graphic
       ;; TODO only move the player if we are at the edge of a map
       ;; (if (or (not= sprite-x screen-x) (not= sprite-y screen-y))
       ;;   (do
@@ -41,12 +43,12 @@
   ;; Apply the offset to the screen x and y
   (move [this state]
     (let [{:keys [screen-x screen-y offset-x offset-y]} this]
-      (assoc this
-        :screen-x (+ screen-x offset-x)
-        :screen-y (+ screen-y offset-y)
-        ;; Reset offset to 0
-        :offset-x 0
-        :offset-y 0)))
+      (assoc this :offset-x 0
+                  :offset-y 0)))
+
+  Collidable
+  (check-collision [this state time]
+    this)
 
   UserInput
   ;; This should set the intended direction and movement NOT
@@ -76,9 +78,9 @@
 
 (defn create-player!
   "Create a new entity and add to the list of global entities"
-  [stage img pos-x pos-y map-x map-y]
-  (info "Creating player" stage img pos-x pos-y map-x map-y)
-  (let [texture (js/PIXI.Texture.fromImage img)
+  [stage pos-x pos-y map-x map-y]
+  (info "Creating player" stage "static/images/bunny.png" pos-x pos-y map-x map-y)
+  (let [texture (js/PIXI.Texture.fromImage "static/images/bunny.png")
         sprite (js/PIXI.Sprite. texture)
         player (new Player :player sprite pos-x pos-y 0 0 :s 0 0)]
     (set! (.-position.x sprite) pos-x)

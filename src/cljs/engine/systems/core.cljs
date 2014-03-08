@@ -8,7 +8,8 @@
         [chocolatier.engine.systems.input :only [input-system]]
         [chocolatier.engine.systems.tile :only [tile-system]]
         [chocolatier.engine.systems.movement :only [movement-system]]
-        [chocolatier.engine.systems.collision :only [collision-system]])
+        [chocolatier.engine.systems.collision :only [collision-system]]
+        [chocolatier.engine.systems.debug :only [show-hit-zone-system]])
   (:require [chocolatier.engine.state :as s])
   (:require-macros [chocolatier.macros :refer [defonce]]))
 
@@ -27,8 +28,8 @@
                  [:input input-system]
                  [:tile tile-system]
                  [:move movement-system]
-                 ;; TODO add movement system here
-                 [:collision collision-system]]]
+                 [:collision collision-system]
+                 [:debug-hit-zone show-hit-zone-system]]]
     (doseq [[name system] systems]
       (register-system! name system))))
 

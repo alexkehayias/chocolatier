@@ -5,6 +5,7 @@
             ;; TODO can I explicitely import just the entity? or must
             ;; I always mark it with :as?
             [chocolatier.entities.player :as p]
+            [chocolatier.entities.monster :as m]
             [chocolatier.engine.state :as s]
             [chocolatier.engine.systems.core :refer [reset-systems!]]
             [chocolatier.engine.input :refer [reset-input!]]
@@ -98,6 +99,7 @@
                     :stage stage}
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
+                      "/static/images/monster.png"
                       "/static/images/tile.png")
         asset-loader (new js/PIXI.AssetLoader assets)]
     (debug "Loading assets")
@@ -116,8 +118,7 @@
 
              ;; Initial game tiles and player
              (load-test-tile-map! stage)
-             (p/create-player! stage "static/images/bunny.png"
-                               (/ width 2) (/ height 2) 0 0)
+             (p/create-player! stage (/ width 2) (/ height 2) 0 0)
              
              ;; Start the game loop
              (game-loop init-timestamp init-duration step)))
