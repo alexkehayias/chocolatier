@@ -12,6 +12,9 @@
     :screen-x (+ (:screen-x m) x)
     :screen-y (+ (:screen-y m) y)))
 
+
+;; TODO this should set the tiles' screen x and y by translating the
+;; TileMap x y coords
 (defrecord TileMap [tiles x y]
   Renderable
   (render [this state]
