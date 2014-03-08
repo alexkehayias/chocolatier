@@ -1,5 +1,5 @@
 (ns chocolatier.engine.core
-  (:use [chocolatier.utils.logging :only [debug info warn error]])
+  (:use [chocolatier.utils.logging :only [debug error]])
   (:require [dommy.core :as dom]
             ;; Imports the entity records
             ;; TODO can I explicitely import just the entity? or must
@@ -12,8 +12,6 @@
             [chocolatier.engine.systems.render :refer [render-system]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
-
-;; TODO a function that takes a state hashmap and starts the game from it
 
 (defn iter-systems
   "Call each system registered in s/system in order with the 
@@ -90,7 +88,7 @@
         width (aget js/window "innerWidth")
         height (aget js/window "innerHeight")
         frame-rate 60
-        _ (info "Setting renderer to" width "x" height "frame-rate" frame-rate)
+        _ (debug "Setting renderer to" width "x" height "frame-rate" frame-rate)
         stage (new js/PIXI.Stage)
         renderer (new js/PIXI.CanvasRenderer width height nil true)
         init-timestamp (timestamp)
@@ -102,11 +100,11 @@
         assets (array "/static/images/bunny.png"
                       "/static/images/tile.png")
         asset-loader (new js/PIXI.AssetLoader assets)]
-    (info "Loading assets")
+    (debug "Loading assets")
     ;; Async load all the assets and build start the game on complete
     (aset asset-loader "onComplete"
           #(do
-             (info "Assets loaded")
+             (debug "Assets loaded")
              ;; Append the canvas to the dom
              (dom/append! (sel1 :body) (.-view renderer))
              
