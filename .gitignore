@@ -17,3 +17,6 @@ pom.xml.asc
 /out
 /resources/public/scripts/app.js
 /resources/public/scripts/app.js.map
+/resources/public/scripts/*
+!pixi.dev.js
+/resources/assets
