@@ -37,14 +37,14 @@
       ;;     (set! (.-position.y sprite) screen-y)
       ;;     (assoc this :sprite sprite))
       ;;   this)
-      this))
+      ;; Clear out remaining offset
+      (assoc this :offset-x 0 :offset-y 0)))
 
   Moveable
   ;; Apply the offset to the screen x and y
   (move [this state]
     (let [{:keys [screen-x screen-y offset-x offset-y]} this]
-      (assoc this :offset-x 0
-                  :offset-y 0)))
+      this))
 
   Collidable
   (check-collision [this state time]

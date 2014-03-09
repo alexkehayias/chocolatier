@@ -10,6 +10,7 @@
   [state time]
   (swap! (:entities state)
          (fn [ents]
-           (map #(when (satisfies? UserInput %)
-                   (c/react-to-user-input % state))
+           (map #(if (satisfies? UserInput %)
+                   (c/react-to-user-input % state)
+                   %)
                 ents))))

@@ -10,5 +10,6 @@
   "Calls all UserCollision entities to react to user collision"
   [state time]
   (doseq [entity @(:entities state)]
-    (when (satisfies? Collidable entity)
-      (c/check-collision entity state time))))
+    (if (satisfies? Collidable entity)
+      (c/check-collision entity state time)
+      entity)))

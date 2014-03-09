@@ -11,8 +11,9 @@
         {:keys [stage renderer]} (-> state :game deref)]
     ;; Render changes to entities
     (swap! entities (fn [ents]
-                       (map #(when (satisfies? Renderable %)
-                               (c/render % stage))
+                       (map #(if (satisfies? Renderable %)
+                               (c/render % stage)
+                               %)
                             ents)))
     ;; TODO do we need this still?
     ;; Render tile map changes

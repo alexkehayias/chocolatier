@@ -9,4 +9,7 @@
 (defn tick-system [state time]
   (swap! (:entities state)
          (fn [ents]
-           (map #(when (satisfies? Entity %) (c/tick %)) ents))))
+           (map #(if (satisfies? Entity %)
+                   (c/tick %)
+                   %)
+                ents))))
