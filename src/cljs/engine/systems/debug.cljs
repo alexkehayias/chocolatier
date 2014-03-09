@@ -32,7 +32,8 @@
 (defn show-hit-zone-system
   "Display a circle around all hit zones for each entity"
   [state time]
-  ;; Statefully clear existing visualization of hit zones
+
+  ;; If the hit-zones graphic does not exist, create it
   (if (nil? @hit-zones)
     (reset! hit-zones (init-graphic! (:stage @(:game state))))
     ;; Clear out the old graphic with a new one

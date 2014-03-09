@@ -2,12 +2,13 @@
   ;; NOTE to use protocols from another ns, import them explicitely by
   ;; name and not their methods
   ;; Use them in this ns by refering to the name
-  (:use [chocolatier.utils.logging :only [debug info warn error]])
-  (:require [chocolatier.engine.components :refer [Entity
+  (:require [chocolatier.utils.logging :refer [debug info warn error]]
+            [chocolatier.engine.components :refer [Entity
                                                    Renderable
                                                    UserInput
                                                    Moveable
                                                    Collidable]]
+            [chocolatier.engine.systems.collision :refer [collision?]]
             [chocolatier.engine.state :as s]))
 
 
@@ -43,15 +44,28 @@
       ;; Clear out remaining offset
       (assoc this :offset-x 0 :offset-y 0)))
 
-  Moveable
-  ;; Apply the offset to the screen x and y
-  (move [this state]
-    (let [{:keys [screen-x screen-y offset-x offset-y]} this]
-      this))
-
   Collidable
   (check-collision [this state time]
-    this)
+    ;; Compare the screen x and y + offset x y and determine if there
+    ;; is going to be a collision based on radius of each entity that
+    ;; is collidable in range
+    (let [entities @(:entities state)          
+          ;; Filter for entities that are not the player
+          other-entities (filter #(not= this %) entities)          
+          {:keys [screen-x screen-y offset-x offset-y hit-radius]} this
+          [x1 y1] (map + [screen-x screen-y] [offset-x offset-y])
+          r1 hit-radius
+          results (for [e other-entities]
+                    (let [{:keys [screen-x screen-y offset-x offset-y hit-radius]} e
+                          [x2 y2] (map + [screen-x screen-y] [offset-x offset-y])
+                          r2 hit-radius]
+                      (collision? x1 y1 r1 x2 y2 r2)))]
+
+      (if (some true? results)
+        ;; Stop the player's movement
+        (assoc this :offset-x 0 :offset-y 0)
+        ;; Do nothing
+        this)))
 
   UserInput
   ;; This should set the intended direction and movement NOT

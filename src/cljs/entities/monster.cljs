@@ -41,8 +41,7 @@
 )))
 
   Collidable
-  (check-collision [this state time]
-    this))
+  (check-collision [this state time] this))
 
 (defn create-monster!
   "Create a new entity and add to the list of global entities"

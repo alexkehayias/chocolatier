@@ -27,6 +27,7 @@
     "Attack this entity"))
 
 (defprotocol BackgroundLayer
+  "A layer drawn to the stage i.e tile map"
   (move-layer [this state]
     "Move layer based on some game state such as the player's position"))
 
@@ -35,4 +36,6 @@
     "Boolean of whether this tile is traversable or not"))
 
 (defprotocol Collidable
+  "Handles collision detection. Collidable Entity instances must
+   have a :hit-zone key"
   (check-collision [this state time]))
