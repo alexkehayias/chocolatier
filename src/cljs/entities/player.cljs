@@ -11,16 +11,20 @@
             [chocolatier.engine.state :as s]))
 
 
-(defrecord Player [id sprite
+(defrecord Player [id
+                   ;; A PIXI sprite object
+                   sprite
                    ;; Where they are on the screen
                    screen-x screen-y
                    ;; Where they are on the world map
                    map-x map-y
-                   ;; Which direction they are going :{n/s}{e/w}
+                   ;; Which direction they are facing :{n/s}{e/w}
                    direction
                    ;; How far x and y to move based on how fast they
-                   ;; are moving
-                   offset-x offset-y]
+                   ;; are moving and direction
+                   offset-x offset-y
+                   ;;
+                   hit-radius]
   Entity
   (tick [this] this)
   
@@ -77,11 +81,11 @@
 
 (defn create-player!
   "Create a new entity and add to the list of global entities"
-  [stage pos-x pos-y map-x map-y]
-  (info "Creating player" stage "static/images/bunny.png" pos-x pos-y map-x map-y)
+  [stage pos-x pos-y map-x map-y hit-radius]
+  (info "Creating player" pos-x pos-y map-x map-y hit-radius)
   (let [texture (js/PIXI.Texture.fromImage "static/images/bunny.png")
         sprite (js/PIXI.Sprite. texture)
-        player (new Player :player sprite pos-x pos-y 0 0 :s 0 0)]
+        player (new Player :player sprite pos-x pos-y 0 0 :s 0 0 hit-radius)]
     (set! (.-position.x sprite) pos-x)
     (set! (.-position.y sprite) pos-y)
     (.addChild stage (:sprite player))

@@ -8,16 +8,8 @@
             [chocolatier.engine.state :as s]))
 
 
-(defrecord Monster [id sprite
-                   ;; Where they are on the screen
-                   screen-x screen-y
-                   ;; Where they are on the world map
-                   map-x map-y
-                   ;; Which direction they are going :{n/s}{e/w}
-                   direction
-                   ;; How far x and y to move based on how fast they
-                   ;; are moving
-                   offset-x offset-y]
+(defrecord Monster [id sprite screen-x screen-y map-x map-y
+                    direction offset-x offset-y hit-radius]
 
   Entity
   (tick [this] this)
@@ -54,11 +46,11 @@
 
 (defn create-monster!
   "Create a new entity and add to the list of global entities"
-  [stage pos-x pos-y map-x map-y]
+  [stage pos-x pos-y map-x map-y hit-radius]
   (info "Creating monster" stage pos-x pos-y map-x map-y)
   (let [texture (js/PIXI.Texture.fromImage "static/images/monster.png")
         sprite (js/PIXI.Sprite. texture)
-        monster (new Monster :monster sprite pos-x pos-y 0 0 :s 0 0)]
+        monster (new Monster :monster sprite pos-x pos-y 0 0 :s 0 0 hit-radius)]
     (set! (.-position.x sprite) pos-x)
     (set! (.-position.y sprite) pos-y)
     (.addChild stage (:sprite monster))

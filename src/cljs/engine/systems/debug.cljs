@@ -10,7 +10,7 @@
 (defn init-graphic!
   "Initialize a new PIXI Graphics object into the stage"
   [stage]
-  (println "Initializing hitzone graphics")
+  (debug "Initializing hitzone graphics")
   (let [graphic (new js/PIXI.Graphics)]
     (.addChild stage graphic)
     graphic))
@@ -26,11 +26,8 @@
   "Draws the entities hitzone circle to a graphics object"
   [graphic entity]
   (base-style graphic)
-  (.drawCircle graphic
-               (:screen-x entity)
-               (:screen-y entity)
-               ;; TODO set the radius based on the size of the entity
-               30))
+  (let [{:keys [screen-x screen-y hit-radius]} entity]
+    (.drawCircle graphic screen-x screen-y hit-radius)))
 
 (defn show-hit-zone-system
   "Display a circle around all hit zones for each entity"
