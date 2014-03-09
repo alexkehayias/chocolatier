@@ -31,8 +31,10 @@
         (do
           (set! (.-position.x sprite) screen-x)
           (set! (.-position.y sprite) screen-y)
-          (assoc this :sprite sprite))
-        this)))
+          (assoc this :sprite sprite
+                      :offset-x 0
+                      :offset-y 0))
+        (assoc this :offset-x 0 :offset-y 0))))
 
   Moveable
   (move [this state]
@@ -44,8 +46,7 @@
       (assoc this
         :screen-x (+ screen-x offset-x)
         :screen-y (+ screen-y offset-y)
-        :offset-x 0
-        :offset-y 0)))
+)))
 
   Collidable
   (check-collision [this state time]

@@ -29,8 +29,7 @@
     (let [sprite (:sprite this)
           {:keys [screen-x screen-y]} this
           [sprite-x sprite-y] (map #(aget sprite "position" %) ["x" "y"])]
-      ;; TODO update the debug hit zone graphic
-      ;; TODO only move the player if we are at the edge of a map
+      ;; TODO only move the player on the screen if we are at the edge of a map
       ;; (if (or (not= sprite-x screen-x) (not= sprite-y screen-y))
       ;;   (do
       ;;     (set! (.-position.x sprite) screen-x)
