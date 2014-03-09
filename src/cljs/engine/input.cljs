@@ -29,7 +29,7 @@
   ;; TODO only show the values that have changed between the old and
   ;; the new
   (when (not= old-val new-val)
-    (debug "State changed" (map-difference new-val old-val))))
+    (debug "State changed" key (map-difference new-val old-val))))
 
 (defn keydown [e]
   (.preventDefault e)

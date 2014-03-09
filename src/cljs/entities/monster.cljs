@@ -37,8 +37,7 @@
       ;; Apply the offset and reset offset to 0
       (assoc this
         :screen-x (+ screen-x offset-x)
-        :screen-y (+ screen-y offset-y)
-)))
+        :screen-y (+ screen-y offset-y))))
 
   Collidable
   (check-collision [this state time] this))

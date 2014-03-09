@@ -12,11 +12,11 @@
   (reduce * (repeat n x)))
 
 (defn collision?
-  "Basic circle collision detection. Returns true if x and y are colliding.
+  "Basic circle collision detection. Returns true if x and y 
+   are colliding.
 
-   Two circles are colliding if the delta of x squared + the
-   difference of y squared is less than or equal to radius squared
-   between two circles"
+   Two circles are colliding if distance between the center 
+   points is less than the sum of the radii."
   [x1 y1 r1 x2 y2 r2]
   (<= (+ (exp (- x2 x1) 2) (exp (- y1 y2) 2))
       (exp (+ r1 r2) 2)))
@@ -32,4 +32,6 @@
 
 (defn collision-system
   [state time]
-  (swap! (:entities state) #(map (check-collisions state time) %)))
+  (swap! (:entities state)
+         ;; Need to force evaluation since this is lazy
+         #(doall (map (check-collisions state time) %))))

@@ -26,9 +26,9 @@
 (defn reset-systems! []
   (let [systems [[:tick tick-system]
                  [:input input-system]
+                 [:collision collision-system]
                  [:tile tile-system]
                  [:move movement-system]
-                 [:collision collision-system]
                  [:debug-hit-zone show-hit-zone-system]]]
     (doseq [[name system] systems]
       (register-system! name system))))

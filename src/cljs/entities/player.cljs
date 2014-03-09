@@ -59,11 +59,14 @@
                     (let [{:keys [screen-x screen-y offset-x offset-y hit-radius]} e
                           [x2 y2] (map + [screen-x screen-y] [offset-x offset-y])
                           r2 hit-radius]
-                      (collision? x1 y1 r1 x2 y2 r2)))]
+                      (when (satisfies? Collidable e)
+                        (collision? x1 y1 r1 x2 y2 r2))))]
 
       (if (some true? results)
         ;; Stop the player's movement
-        (assoc this :offset-x 0 :offset-y 0)
+        (do
+          (debug "Collision detected!")
+          (assoc this :offset-x 0 :offset-y 0)) 
         ;; Do nothing
         this)))
 
