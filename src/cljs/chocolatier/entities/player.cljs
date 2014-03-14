@@ -53,6 +53,7 @@
           ;; Filter for entities that are not the player
           other-entities (filter #(not= this %) entities)          
           {:keys [screen-x screen-y offset-x offset-y hit-radius]} this
+          ;; Apply the offsets as if they were happening
           [x1 y1] (map + [screen-x screen-y] [offset-x offset-y])
           r1 hit-radius
           results (for [e other-entities]
@@ -62,6 +63,8 @@
                       (when (satisfies? Collidable e)
                         (collision? x1 y1 r1 x2 y2 r2))))]
 
+      ;; FIX if they are colliding we must be able to move away from
+      ;; the collision
       (if (some true? results)
         ;; Stop the player's movement
         (do
