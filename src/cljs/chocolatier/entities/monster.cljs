@@ -4,7 +4,6 @@
                                                    Renderable
                                                    Moveable
                                                    Collidable]]
-            [chocolatier.engine.primitives :refer [circle]]
             [chocolatier.engine.state :as s]))
 
 

@@ -69,7 +69,20 @@
         ;; Stop the player's movement
         (do
           (debug "Collision detected!")
-          (assoc this :offset-x 0 :offset-y 0)) 
+          ;; Nullify the offset based on the direction of the
+          ;; collision and bounce off by applying an opposite force
+          (condp = [(zero? offset-x) (pos? offset-x)
+                    (zero? offset-y) (pos? offset-y)]
+            ;; FIX south and west work but not north and east
+            ;; Colliding left
+            [false true true false] (assoc this :offset-x -1)
+            ;; Colliding right
+            [false false true false] (assoc this :offset-x 1)
+            ;; Colliding south
+            [true false false false] (assoc this :offset-y 1)
+            ;; Colliding north
+            [true false false true] (assoc this :offset-y -1)
+            this)) 
         ;; Do nothing
         this)))
 
@@ -81,10 +94,10 @@
     (let [input @(:input state)
           move-rate 5.0
           move #(condp = %2
-                  :W (assoc %1 :offset-y (* 1 move-rate))
-                  :A (assoc %1 :offset-x (* 1 move-rate))
-                  :S (assoc %1 :offset-y (* -1 move-rate))
-                  :D (assoc %1 :offset-x (* -1 move-rate))
+                  :W (assoc %1 :offset-y (* 1 move-rate) :direction :n)
+                  :S (assoc %1 :offset-y (* -1 move-rate) :direction :s)
+                  :D (assoc %1 :offset-x (* -1 move-rate) :direction :e)
+                  :A (assoc %1 :offset-x (* 1 move-rate) :direction :w)
                   ;; Otherwise set the offset to 0 to denote the
                   ;; player is standing still
                   (assoc %1 :offset-x 0 :offset-y 0))]
@@ -105,7 +118,7 @@
   (info "Creating player" pos-x pos-y map-x map-y hit-radius)
   (let [texture (js/PIXI.Texture.fromImage "static/images/bunny.png")
         sprite (js/PIXI.Sprite. texture)
-        player (new Player :player sprite pos-x pos-y 0 0 :s 0 0 hit-radius)]
+        player (new Player :player sprite pos-x pos-y 0 0 :south 0 0 hit-radius)]
     (set! (.-position.x sprite) pos-x)
     (set! (.-position.y sprite) pos-y)
     (.addChild stage (:sprite player))
