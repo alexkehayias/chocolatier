@@ -4,6 +4,7 @@
                                                    Renderable
                                                    Moveable
                                                    Collidable]]
+            [chocolatier.engine.systems.collision :refer [entity-collision?]]
             [chocolatier.engine.state :as s]))
 
 
@@ -14,32 +15,40 @@
   (tick [this] this)
   
   Renderable
+  ;; Apply the offsets and update the sprite
   (render [this state]
-    (let [sprite (:sprite this)
-          {:keys [screen-x screen-y]} this
+    (let [{:keys [sprite screen-x screen-y offset-x offset-y]} this
           [sprite-x sprite-y] (map #(aget sprite "position" %) ["x" "y"])]
-      (if (or (not= sprite-x screen-x) (not= sprite-y screen-y))
+      ;; Only update the sprite if the new screen position does not
+      ;; match the sprite's position
+      (if (or (not= sprite-x (+ screen-x offset-x))
+              (not= sprite-y (+ screen-y offset-y)))
+        ;; Update the sprite position and the screen position
         (do
-          (set! (.-position.x sprite) screen-x)
-          (set! (.-position.y sprite) screen-y)
-          (assoc this :sprite sprite
-                      :offset-x 0
-                      :offset-y 0))
+          (set! (.-position.x sprite) (+ screen-x offset-x))
+          (set! (.-position.y sprite) (+ screen-y offset-y))
+          (assoc this
+            :sprite sprite
+            :screen-x (+ screen-x offset-x)
+            :screen-y (+ screen-y offset-y)
+            :offset-x 0 :offset-y 0))
         (assoc this :offset-x 0 :offset-y 0))))
 
   Moveable
+  ;; Mirror the players movements
   (move [this state]
-    (let [{:keys [screen-x screen-y]} this
-          player (first (filter #(= (:id %) :player)
-                                @(:entities state)))
+    (let [player (first (filter #(= (:id %) :player) @(:entities state)))
           {:keys [offset-x offset-y]} player]
-      ;; Apply the offset and reset offset to 0
-      (assoc this
-        :screen-x (+ screen-x offset-x)
-        :screen-y (+ screen-y offset-y))))
+      (assoc this :offset-x offset-x :offset-y offset-y)))
 
   Collidable
-  (check-collision [this state time] this))
+  (check-collision [this state time]
+    (let [entities @(:entities state)          
+          other-entities (filter #(not= this %) entities)
+          results (for [e other-entities] (entity-collision? this e))]
+      (if (some true? results)
+        (assoc this :offset-x 0 :offset-y 0)
+        this))))
 
 (defn create-monster!
   "Create a new entity and add to the list of global entities"

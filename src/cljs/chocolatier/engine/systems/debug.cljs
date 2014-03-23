@@ -4,9 +4,6 @@
             [chocolatier.engine.state :as s]))
 
 
-;; Graphics object is mutated and stored here
-(def hit-zones (atom nil))
-
 (defn init-graphic!
   "Initialize a new PIXI Graphics object into the stage"
   [stage]
@@ -33,15 +30,15 @@
   "Display a circle around all hit zones for each entity"
   [state time]
 
-  ;; If the hit-zones graphic does not exist, create it
-  (if (nil? @hit-zones)
-    (reset! hit-zones (init-graphic! (:stage @(:game state))))
+  ;; If the s/hit-zones graphic does not exist, create it
+  (if (nil? @s/hit-zones)
+    (reset! s/hit-zones (init-graphic! (:stage @(:game state))))
     ;; Clear out the old graphic with a new one
-    (.clear @hit-zones))
+    (.clear @s/hit-zones))
 
   ;; Draw circles to visualize the collision area
   (doseq [entity @(:entities state)]
     (when (satisfies? Collidable entity)
       ;; TODO this doesn't work for the player since their screen x
       ;; and screen y do not mean they are offset on the screen
-      (draw-hit-zone @hit-zones entity))))
+      (draw-hit-zone @s/hit-zones entity))))

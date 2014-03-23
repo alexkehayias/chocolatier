@@ -68,7 +68,7 @@
   ;; the movement system
   (react-to-user-input [this state]
     (let [input @(:input state)
-          move-rate 4.0
+          move-rate 5.0
           move #(condp = %2
                   :W (assoc %1 :offset-y (* 1 move-rate) :direction :n)
                   :S (assoc %1 :offset-y (* -1 move-rate) :direction :s)

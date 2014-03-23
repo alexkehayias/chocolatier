@@ -19,16 +19,22 @@
 
 (defonce tile-map (atom {}))
 
+;; Graphics object is mutated and stored here
+(def hit-zones (atom nil))
+
+
 (def state
   {:game game
    :systems systems
    :input input
    :entities entities
-   :tile-map tile-map})
+   :tile-map tile-map
+   :hit-zones hit-zones})
 
 (defn reset-state! []
   (reset! game nil)
   (reset! entities [])
   (reset! input {})
   (reset! systems {})
-  (reset! tile-map {}))
+  (reset! tile-map {})
+  (reset! hit-zones nil))

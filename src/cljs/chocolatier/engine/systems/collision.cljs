@@ -26,17 +26,26 @@
   "Compare two entities to see if they are colliding. Returns a boolean."
   [e1 e2]
   (if (and (satisfies? Collidable e1) (satisfies? Collidable e2)) 
-    (let [{:keys [screen-x screen-y offset-x offset-y hit-radius]} e1
+    (let [key-list [:screen-x :screen-y :offset-x :offset-y :hit-radius]
+          [x1 y1 off-x1 off-y1 r1] (map #(% e1) key-list)
           ;; Apply the offsets as if they were happening
-          [x1 y1] (map + [screen-x screen-y] [offset-x offset-y])
-          r1 hit-radius 
-          {:keys [screen-x screen-y offset-x offset-y hit-radius]} e2
-          [x2 y2] (map + [screen-x screen-y] [offset-x offset-y])
-          r2 hit-radius
-          colliding? (collision? x1 y1 r1 x2 y2 r2)]
-      (when colliding?
-        (debug "Collision detected"
-               (:id e1) (:id e2)))
+          [adj-x1 adj-y1] (map + [x1 y1] [off-x1 off-y1])
+
+          [x2 y2 off-x2 off-y2 r2] (map #(% e2) key-list)
+          ;; [x2 y2 _ _ r2] (map #(% e2) key-list)
+          [adj-x2 adj-y2] (map + [x2 y2] [off-x2 off-y2])
+
+          colliding? (collision? adj-x1 adj-y1 r1 adj-x2 adj-y2 r2)
+          ;; colliding? (collision? adj-x1 adj-y1 r1 x2 y2 r2)
+          ]
+      
+      ;; (debug "Before offset" x1 y1)
+      ;; (debug "After offset" adj-x1 adj-y1)      
+      ;; (debug "Before offset" x2 y2)
+      ;; (debug "After offset" adj-x2 adj-y2)                
+      (when colliding? (debug "Collision detected between"
+                              (:id e1) "and" (:id e2)))
+      ;; Return the results of the collision test
       colliding?)
     false))
 
