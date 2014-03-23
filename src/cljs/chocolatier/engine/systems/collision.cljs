@@ -19,7 +19,7 @@
    points is less than the sum of the radii."
   [x1 y1 r1 x2 y2 r2]
   ;; (debug "Comparing circle" x1 y1 r1 "to" x2 y2 r2)
-  (<= (+ (exp (- x2 x1) 2) (exp (- y1 y2) 2))
+  (<= (+ (exp (- x2 x1) 2) (exp (- y2 y1) 2))
       (exp (+ r1 r2) 2)))
 
 (defn entity-collision?
