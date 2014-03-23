@@ -44,7 +44,7 @@
 (defn create-monster!
   "Create a new entity and add to the list of global entities"
   [stage pos-x pos-y map-x map-y hit-radius]
-  (info "Creating monster" stage pos-x pos-y map-x map-y)
+  (info "Creating monster" pos-x pos-y map-x map-y)
   (let [texture (js/PIXI.Texture.fromImage "static/images/monster.png")
         sprite (js/PIXI.Sprite. texture)
         monster (new Monster :monster sprite pos-x pos-y 0 0 :s 0 0 hit-radius)]

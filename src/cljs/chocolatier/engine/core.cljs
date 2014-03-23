@@ -118,8 +118,8 @@
 
              ;; Initial game tiles and player
              (load-test-tile-map! stage)
-             (p/create-player! stage (/ width 2) (/ height 2) 0 0 25)
-             (m/create-monster! stage (/ width 3) (/ height 3) 0 0 30)
+             (p/create-player! stage (int (/ width 2))  (int (/ height 2)) 0 0 20)
+             (m/create-monster! stage (int (/ width 3))  (int (/ height 3)) 0 0 30)
              
              ;; Start the game loop
              (game-loop init-timestamp init-duration step)))

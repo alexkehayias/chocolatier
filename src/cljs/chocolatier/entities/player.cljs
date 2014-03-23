@@ -8,7 +8,7 @@
                                                    UserInput
                                                    Moveable
                                                    Collidable]]
-            [chocolatier.engine.systems.collision :refer [collision?]]
+            [chocolatier.engine.systems.collision :refer [entity-collision?]]
             [chocolatier.engine.state :as s]))
 
 
@@ -51,38 +51,14 @@
     ;; is collidable in range
     (let [entities @(:entities state)          
           ;; Filter for entities that are not the player
-          other-entities (filter #(not= this %) entities)          
-          {:keys [screen-x screen-y offset-x offset-y hit-radius]} this
-          ;; Apply the offsets as if they were happening
-          [x1 y1] (map + [screen-x screen-y] [offset-x offset-y])
-          r1 hit-radius
-          results (for [e other-entities]
-                    (let [{:keys [screen-x screen-y offset-x offset-y hit-radius]} e
-                          [x2 y2] (map + [screen-x screen-y] [offset-x offset-y])
-                          r2 hit-radius]
-                      (when (satisfies? Collidable e)
-                        (collision? x1 y1 r1 x2 y2 r2))))]
-
-      ;; FIX if they are colliding we must be able to move away from
-      ;; the collision
+          other-entities (filter #(not= this %) entities)
+          ;; Check collision between this and all entities
+          results (for [e other-entities] (entity-collision? this e))]
+      
+      ;; FIX If we are colliding we must still be able to move away
       (if (some true? results)
         ;; Stop the player's movement
-        (do
-          (debug "Collision detected!")
-          ;; Nullify the offset based on the direction of the
-          ;; collision and bounce off by applying an opposite force
-          (condp = [(zero? offset-x) (pos? offset-x)
-                    (zero? offset-y) (pos? offset-y)]
-            ;; FIX south and west work but not north and east
-            ;; Colliding left
-            [false true true false] (assoc this :offset-x -1)
-            ;; Colliding right
-            [false false true false] (assoc this :offset-x 1)
-            ;; Colliding south
-            [true false false false] (assoc this :offset-y 1)
-            ;; Colliding north
-            [true false false true] (assoc this :offset-y -1)
-            this)) 
+        (assoc this :offset-x 0 :offset-y 0)
         ;; Do nothing
         this)))
 
@@ -92,7 +68,7 @@
   ;; the movement system
   (react-to-user-input [this state]
     (let [input @(:input state)
-          move-rate 5.0
+          move-rate 4.0
           move #(condp = %2
                   :W (assoc %1 :offset-y (* 1 move-rate) :direction :n)
                   :S (assoc %1 :offset-y (* -1 move-rate) :direction :s)
