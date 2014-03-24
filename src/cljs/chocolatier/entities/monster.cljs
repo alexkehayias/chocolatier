@@ -42,15 +42,13 @@
       (assoc this :offset-x offset-x :offset-y offset-y)))
 
   Collidable
-  (check-collision [this state time] this)
-  ;; (check-collision [this state time]
-  ;;   (let [entities @(:entities state)          
-  ;;         other-entities (filter #(not= this %) entities)
-  ;;         results (for [e other-entities] (entity-collision? this e))]
-  ;;     (if (some true? results)
-  ;;       (assoc this :offset-x 0 :offset-y 0)
-  ;;       this)))
-  )
+  (check-collision [this state time]
+    (let [entities @(:entities state)          
+          other-entities (filter #(not= this %) entities)
+          results (for [e other-entities] (entity-collision? this e))]
+      (if (some true? results)
+        (assoc this :offset-x 0 :offset-y 0)
+        this))))
 
 (defn create-monster!
   "Create a new entity and add to the list of global entities"

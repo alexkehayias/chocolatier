@@ -34,13 +34,6 @@
     (let [sprite (:sprite this)
           {:keys [screen-x screen-y]} this
           [sprite-x sprite-y] (map #(aget sprite "position" %) ["x" "y"])]
-      ;; TODO only move the player on the screen if we are at the edge of a map
-      ;; (if (or (not= sprite-x screen-x) (not= sprite-y screen-y))
-      ;;   (do
-      ;;     (set! (.-position.x sprite) screen-x)
-      ;;     (set! (.-position.y sprite) screen-y)
-      ;;     (assoc this :sprite sprite))
-      ;;   this)
       ;; Clear out remaining offset
       (assoc this :offset-x 0 :offset-y 0)))
 
