@@ -52,11 +52,7 @@
       
       ;; FIX If we are colliding we must still be able to move away
       (if (some true? results)
-        (do (debug "Player collision detected, stopping movement" (vals (assoc this :offset-x 0 :offset-y 0)) )
-            ;; Stop the player's movement
-            
-            (assoc this :offset-x 0 :offset-y 0))
-
+        (assoc this :offset-x 0 :offset-y 0)
         ;; Do nothing
         this)))
 
@@ -72,6 +68,12 @@
                   :S (assoc %1 :offset-y (* -1 move-rate) :direction :s)
                   :D (assoc %1 :offset-x (* -1 move-rate) :direction :e)
                   :A (assoc %1 :offset-x (* 1 move-rate) :direction :w)
+                  
+                  :& (assoc %1 :offset-y (* 1 move-rate) :direction :n)
+                  ;; Use keyword here since paranths are reserved
+                  (keyword "(") (assoc %1 :offset-y (* -1 move-rate) :direction :s)
+                  :' (assoc %1 :offset-x (* -1 move-rate) :direction :e)
+                  :% (assoc %1 :offset-x (* 1 move-rate) :direction :w)                  
                   ;; Otherwise set the offset to 0 to denote the
                   ;; player is standing still
                   (assoc %1 :offset-x 0 :offset-y 0))]
