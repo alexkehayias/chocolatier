@@ -53,12 +53,17 @@
           ;; Filter for entities that are not the player
           other-entities (filter #(not= this %) entities)
           ;; Check collision between this and all entities
-          results (for [e other-entities] (entity-collision? this e))]
+          results (for [e other-entities]
+                    ;; Remove the offset from the player
+                    (entity-collision? (assoc this :offset-x 0 :offset-y 0) e))]
       
       ;; FIX If we are colliding we must still be able to move away
       (if (some true? results)
-        ;; Stop the player's movement
-        (assoc this :offset-x 0 :offset-y 0)
+        (do (debug "Player collision detected, stopping movement" (vals (assoc this :offset-x 0 :offset-y 0)) )
+            ;; Stop the player's movement
+            
+            (assoc this :offset-x 0 :offset-y 0))
+
         ;; Do nothing
         this)))
 

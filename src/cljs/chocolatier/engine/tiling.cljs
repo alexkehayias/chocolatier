@@ -12,9 +12,6 @@
     :screen-x (+ (:screen-x m) x)
     :screen-y (+ (:screen-y m) y)))
 
-
-;; TODO this should set the tiles' screen x and y by translating the
-;; TileMap x y coords
 (defrecord TileMap [tiles x y]
   Renderable
   (render [this state]
@@ -39,12 +36,12 @@
   
   Renderable
   (render [this state]
-    (let [sprite (:sprite this)]
-      (if (or (not= (.-position.x sprite) (:screen-x this))
-              (not= (.-position.y sprite) (:screen-y this)))
+    (let [{:keys [sprite screen-x screen-y]} this]
+      (if (or (not= (.-position.x sprite) screen-x)
+              (not= (.-position.y sprite) screen-y))
         (do
-          (set! (.-position.x sprite) (:screen-x this))
-          (set! (.-position.y sprite) (:screen-y this))
+          (set! (.-position.x sprite) screen-x)
+          (set! (.-position.y sprite) screen-y)
           (assoc this :sprite sprite))
         this))))
 
