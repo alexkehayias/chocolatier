@@ -43,8 +43,8 @@
       ;;   (debug (:id e2) "Before offset" x2 y2)
       ;;   (debug (:id e2) "After offset" adj-x2 adj-y2))
       
-      ;; (when colliding? (debug "Collision detected between"
-      ;;                         (:id e1) "and" (:id e2)))
+      (when colliding? (debug "Collision detected between"
+                              (:id e1) "and" (:id e2)))
       ;; Return the results of the collision test
       colliding?)
     false))

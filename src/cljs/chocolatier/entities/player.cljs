@@ -51,10 +51,11 @@
                     (entity-collision? (assoc this :offset-x 0 :offset-y 0) e))]
       
       ;; FIX If we are colliding we must still be able to move away
-      (if (some true? results)
-        (assoc this :offset-x 0 :offset-y 0)
-        ;; Do nothing
-        this)))
+      ;; (if (some true? results)
+      ;;   (assoc this :offset-x 0 :offset-y 0)        
+      ;;   ;; Do nothing
+      ;;   this)
+      this))
 
   UserInput
   ;; This should set the intended direction and movement NOT
