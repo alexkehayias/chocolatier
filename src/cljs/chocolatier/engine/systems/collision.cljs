@@ -33,12 +33,12 @@
           [adj-x1 adj-y1] (map + [x1 y1] [off-x1 off-y1])
           [adj-x2 adj-y2] (map + [x2 y2] [off-x2 off-y2])
           colliding? (collision? adj-x1 adj-y1 r1 adj-x2 adj-y2 r2)]
-      ;; (when colliding? (debug "Collision detected between"
-      ;;                         (:id e1) adj-x1 adj-y1 r1 "and"
-      ;;                         (:id e2) adj-x2 adj-y2 r2)
-      ;;       ;; Pause the game
-      ;;       ;; (swap! (:game s/state) assoc :paused true)
-      ;;       )
+      (when colliding? (debug "Collision detected between"
+                              (:id e1) adj-x1 adj-y1 r1 "and"
+                              (:id e2) adj-x2 adj-y2 r2)
+            ;; Pause the game
+            (swap! (:game s/state) assoc :paused true)
+            )
       ;; Return the results of the collision test
       colliding?)
     false))

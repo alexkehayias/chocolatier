@@ -1,5 +1,6 @@
 (ns chocolatier.engine.state
-  (:require [chocolatier.engine.watchers :refer [debug-watcher list-watcher]])
+  (:require [chocolatier.engine.watchers :refer [hashmap-watcher
+                                                 entity-watcher]])
   (:require-macros [chocolatier.macros :refer [defonce]]))
 
 
@@ -30,14 +31,23 @@
    :hit-zones hit-zones})
 
 ;; Watchers
-(add-watch global :global debug-watcher)
-(add-watch input :input debug-watcher)
+(defn add-watches! []
+  (add-watch global :global hashmap-watcher)
+  (add-watch input :input hashmap-watcher)
+  (add-watch entities :entities entity-watcher))
+
+(defn remove-watches! []
+  (remove-watch global :global)
+  (remove-watch input :input)
+  (remove-watch entities :entities))
 
 (defn reset-state! []
+  (remove-watches!)
   (reset! global {:offset-x 0 :offset-y 0})
   (reset! game nil)
   (reset! entities [])
   (reset! input {})
   (reset! systems {})
   (reset! tile-map {})
-  (reset! hit-zones nil)  )
+  (reset! hit-zones nil)
+  (add-watches!))
