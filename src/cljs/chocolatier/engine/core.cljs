@@ -60,7 +60,7 @@
       ;; last run through the game loop
       (do
         (iter-systems s/state step)
-        (request-animation #(game-loop now dt step)))
+        (request-animation #(game-loop now duration step)))
 
       ;; (loop [dt duration]
       ;;   (if (> (- dt step) step)

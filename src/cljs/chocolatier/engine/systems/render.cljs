@@ -14,10 +14,10 @@
     (when (satisfies? Renderable @tile-map)
       (swap! tile-map #(c/render % state)))    
     ;; Render changes to entities
-    (swap! entities (fn [ents]
-                       (map #(if (satisfies? Renderable %)
-                               (c/render % stage)
-                               %)
-                            ents)))
+    (swap! entities
+         #(into % (for [[id entity] (seq %)] 
+                    (if (satisfies? Renderable entity)
+                      [id (c/render entity stage)]
+                      [id entity]))))
     ;; Render to the stage
     (.render renderer stage)))

@@ -69,7 +69,7 @@
     ;; Compare the screen x and y + offset x y and determine if there
     ;; is going to be a collision based on radius of each entity that
     ;; is collidable in range
-    (let [entities @(:entities state)
+    (let [entities (for [[k v] (seq @(:entities state))] v)
           ;; Filter for entities that are not the player
           other-entities (filter #(not= this %) entities)
           ;; Check collision between this and all entities
@@ -107,7 +107,7 @@
     this))
 
 (defn create-player!
-  "Create a new entity and add to the list of global entities"
+  "Create a new entity and add to the global entities hashmap"
   [stage pos-x pos-y map-x map-y hit-radius]
   (info "Creating player" pos-x pos-y map-x map-y hit-radius)
   (let [texture (js/PIXI.Texture.fromImage "static/images/bunny.png")
@@ -116,4 +116,4 @@
     (set! (.-position.x sprite) pos-x)
     (set! (.-position.y sprite) pos-y)
     (.addChild stage (:sprite player))
-    (swap! s/entities conj player)))
+    (swap! s/entities assoc :player player)))

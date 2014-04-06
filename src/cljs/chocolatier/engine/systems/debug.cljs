@@ -37,7 +37,7 @@
     (.clear @s/hit-zones))
 
   ;; Draw circles to visualize the collision area
-  (doseq [entity @(:entities state)]
+  (doseq [[id entity] (seq @(:entities state))]
     (when (satisfies? Collidable entity)
       ;; TODO this doesn't work for the player since their screen x
       ;; and screen y do not mean they are offset on the screen

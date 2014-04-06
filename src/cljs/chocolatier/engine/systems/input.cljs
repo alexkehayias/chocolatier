@@ -9,8 +9,7 @@
   "Calls all UserInput entities to react to user input"
   [state time]
   (swap! (:entities state)
-         (fn [ents]
-           (map #(if (satisfies? UserInput %)
-                   (c/react-to-user-input % state)
-                   %)
-                ents))))
+         #(into % (for [[id entity] (seq %)] 
+                    (if (satisfies? UserInput entity)
+                      [id (c/react-to-user-input entity state)] 
+                      [id entity])))))

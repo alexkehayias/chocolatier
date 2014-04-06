@@ -7,8 +7,7 @@
 
 (defn movement-system [state time]
   (swap! (:entities state)
-         (fn [ents]
-           (map #(if (satisfies? Moveable %)
-                   (c/move % state)
-                   %)
-                ents))))
+         #(into % (for [[id entity] (seq %)] 
+                    (if (satisfies? Moveable entity)
+                      [id (c/move entity state)]
+                      [id entity])))))

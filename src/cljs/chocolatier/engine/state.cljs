@@ -14,7 +14,7 @@
 ;; TODO Should entities be a hashmap for easy removal from the game
 ;; state without having to iterate through the whole list? Or will we
 ;; need to be filtering the whole list any way
-(defonce entities (atom []))
+(defonce entities (atom {}))
 (defonce systems (atom {}))
 (defonce tile-map (atom {}))
 
@@ -45,7 +45,7 @@
   (remove-watches!)
   (reset! global {:offset-x 0 :offset-y 0})
   (reset! game nil)
-  (reset! entities [])
+  (reset! entities {})
   (reset! input {})
   (reset! systems {})
   (reset! tile-map {})

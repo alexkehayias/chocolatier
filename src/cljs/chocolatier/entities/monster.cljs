@@ -18,31 +18,36 @@
   ;; Apply the offsets and update the sprite
   (render [this state]
     (let [{:keys [sprite screen-x screen-y offset-x offset-y]} this
-          [sprite-x sprite-y] (map #(aget sprite "position" %) ["x" "y"])]
+          [sprite-x sprite-y] (map #(aget sprite "position" %) ["x" "y"])
+          new-screen-x (+ screen-x offset-x)
+          new-screen-y (+ screen-y offset-y)]
       ;; Only update the sprite if the new screen position does not
       ;; match the sprite's position
-      (if (or (not= sprite-x (+ screen-x offset-x))
-              (not= sprite-y (+ screen-y offset-y)))
+      (if (or (not= sprite-x new-screen-x)
+              (not= sprite-y new-screen-y))
         ;; Update the sprite position and the screen position
         (do
-          (set! (.-position.x sprite) (+ screen-x offset-x))
-          (set! (.-position.y sprite) (+ screen-y offset-y))
+          (set! (.-position.x sprite) new-screen-x)
+          (set! (.-position.y sprite) new-screen-y)
           (assoc this
             :sprite sprite
-            :screen-x (+ screen-x offset-x)
-            :screen-y (+ screen-y offset-y)
+            :screen-x new-screen-x
+            :screen-y new-screen-y
             :offset-x 0 :offset-y 0))
+        ;; Reset the offsets to 0
         (assoc this :offset-x 0 :offset-y 0))))
 
   Moveable
   ;; Mirror the players movements
   (move [this state]
     (let [{:keys [offset-x offset-y]} @(:global state)]
-      (assoc this :offset-x offset-x :offset-y offset-y)))
+      (assoc this
+        :offset-x offset-x
+        :offset-y offset-y)))
 
   Collidable
   (check-collision [this state time]
-    (let [entities @(:entities state)          
+    (let [entities (for [[k v] (seq @(:entities state))] v) 
           other-entities (filter #(not= this %) entities)
           results (for [e other-entities] (entity-collision? this e))]
       (if (some true? results)
@@ -50,7 +55,7 @@
         this))))
 
 (defn create-monster!
-  "Create a new entity and add to the list of global entities"
+  "Create a new entity and add to the global entities hashmap"
   [stage pos-x pos-y map-x map-y hit-radius]
   (info "Creating monster" pos-x pos-y map-x map-y)
   (let [texture (js/PIXI.Texture.fromImage "static/images/monster.png")
@@ -59,4 +64,4 @@
     (set! (.-position.x sprite) pos-x)
     (set! (.-position.y sprite) pos-y)
     (.addChild stage (:sprite monster))
-    (swap! s/entities conj monster)))
+    (swap! s/entities assoc :monster monster)))

@@ -50,15 +50,10 @@
   [key state old-val new-val]
   ;; Only continue when there is a difference between the old and new values
   (when (not= old-val new-val)
-    (let [combined (reduce conj old-val new-val)
-          grouped (group-by :id combined)]
-      ;; For each entity id log the difference between the new and the old
-      (doseq [[id coll] (seq grouped)]
-        (when id
-          ;; We need to convert records to hashmaps here so that
-          ;; set operation work in map-difference
-          (let [[v1 v2] (map record->hashmap coll)
-                diff (map-difference v2 v1)]
-            (when-not (empty? diff)
-              (debug "State changed" id (diff->str diff v1)))))))))
+    (doseq [id (keys new-val)]
+      (let [v1 (record->hashmap (id old-val))
+            v2 (record->hashmap (id new-val))
+            diff (map-difference v2 v1)]
+        (when-not (empty? diff)
+          (debug "State changed" id (diff->str diff v1)))))))
 

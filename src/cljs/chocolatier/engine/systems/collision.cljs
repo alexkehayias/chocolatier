@@ -40,17 +40,10 @@
       colliding?)
     false))
 
-(defn check-collisions
-  "Returns a function that takes an entity as an argument for checking 
-   collisions. Initialized with game state and time interval."
-  [state time]
-  (fn [entity]
-    (if (satisfies? Collidable entity)
-      (c/check-collision entity state time)
-      entity)))
-
 (defn collision-system
   [state time]
   (swap! (:entities state)
-         ;; Need to force evaluation since this is lazy
-         #(doall (map (check-collisions state time) %))))
+         #(into % (for [[id entity] (seq %)] 
+                    (if (satisfies? Collidable entity)
+                      [id (c/check-collision entity state time)]
+                      [id entity])))))
