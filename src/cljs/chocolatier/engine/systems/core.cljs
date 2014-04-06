@@ -24,11 +24,11 @@
 
 
 (defn reset-systems! []
-  (let [systems [[:tick tick-system]
-                 [:input input-system]
+  (let [systems [[:input input-system]
                  [:move movement-system]                 
                  [:collision collision-system]
                  [:tile tile-system]
+                 [:render render-system]
                  [:debug-hit-zone show-hit-zone-system]]]
     (doseq [[name system] systems]
       (register-system! name system))))

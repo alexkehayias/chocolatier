@@ -59,17 +59,17 @@
       ;; Calculate all changes for each step in the duration since the
       ;; last run through the game loop
       (loop [dt duration]
-        (if (< (- dt step) step)
-          ;; Break the loop, render, and request the next frame
-          (do
-            (render-system s/state)
-            (request-animation #(game-loop now dt step)))
-          ;; If the game is paused, keep the loop going but don't
-          ;; calculate any changes
+        (if (> (- dt step) step)
           (if (:paused @s/game)
+            ;; If the game is paused, keep the loop going but don't
+            ;; calculate any changes
             (recur (- dt step))
             (do (iter-systems s/state step)
-                (recur (- dt step)))))))))
+                (recur (- dt step))))
+          ;; Break the loop, render, and request the next frame
+          (do
+            ;; (render-system s/state)
+            (request-animation #(game-loop now dt step))))))))
 
 (defn set-interval
   "Creates an interval loop of n calls to function f per second.

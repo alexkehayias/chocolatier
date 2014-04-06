@@ -5,8 +5,8 @@
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
             [chocolatier.engine.components :refer [Entity
                                                    Renderable
-                                                   UserInput
                                                    Moveable
+                                                   UserInput
                                                    Collidable]]
             [chocolatier.engine.systems.collision :refer [entity-collision?]]
             [chocolatier.engine.state :as s]))
@@ -28,34 +28,29 @@
                    hit-radius]
   Entity
   (tick [this] this)
-  
+
   Renderable
   (render [this state]
-    (let [sprite (:sprite this)
-          {:keys [screen-x screen-y]} this
-          [sprite-x sprite-y] (map #(aget sprite "position" %) ["x" "y"])]
-      ;; Clear out remaining offset
-      (assoc this :offset-x 0 :offset-y 0)))
+    (assoc this :offset-x 0 :offset-y 0))
 
   Collidable
   (check-collision [this state time]
     ;; Compare the screen x and y + offset x y and determine if there
     ;; is going to be a collision based on radius of each entity that
     ;; is collidable in range
-    (let [entities @(:entities state)          
+    (let [entities @(:entities state)
           ;; Filter for entities that are not the player
           other-entities (filter #(not= this %) entities)
           ;; Check collision between this and all entities
           results (for [e other-entities]
-                    ;; Remove the offset from the player
-                    (entity-collision? (assoc this :offset-x 0 :offset-y 0) e))]
+                    (entity-collision? this e))]
       
       ;; FIX If we are colliding we must still be able to move away
-      ;; (if (some true? results)
-      ;;   (assoc this :offset-x 0 :offset-y 0)        
-      ;;   ;; Do nothing
-      ;;   this)
-      this))
+      (if (some true? results)
+        (do (swap! (:global state) assoc :offset-x 0 :offset-y 0)
+            this)
+        ;; Do nothing
+        this)))
 
   UserInput
   ;; This should set the intended direction and movement NOT
@@ -63,7 +58,7 @@
   ;; the movement system
   (react-to-user-input [this state]
     (let [input @(:input state)
-          move-rate 5.0
+          move-rate 5
           move #(condp = %2
                   :W (assoc %1 :offset-y (* 1 move-rate) :direction :n)
                   :S (assoc %1 :offset-y (* -1 move-rate) :direction :s)
@@ -86,7 +81,11 @@
               remaining (rest i)
               updated (if (= v "on") (move out k) out)]
           (if (empty? remaining)
-            updated
+            (do
+              (swap! (:global state) assoc
+                     :offset-x (:offset-x updated)
+                     :offset-y (:offset-y updated))
+              updated) 
             (recur updated remaining)))))))
 
 (defn create-player!

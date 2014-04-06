@@ -18,12 +18,10 @@
     (let [updated-tiles (map #(c/render % state) (:tiles this))]
       (assoc this :tiles (doall updated-tiles))))
 
-  ;; Apply an offset to the tile map based on player's position
+  ;; Apply an offset to the tile map based on global offset
   BackgroundLayer
   (move-layer [this state]
-    (let [player (first (filter #(= (:id %) :player)
-                                @(:entities state)))
-          {:keys [offset-x offset-y]} player
+    (let [{:keys [offset-x offset-y]} @(:global state)
           tiles (:tiles this)
           updated-tiles (map #(offset % offset-x offset-y) tiles)]
       (assoc this :tiles updated-tiles))))

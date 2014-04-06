@@ -18,7 +18,6 @@
    Two circles are colliding if distance between the center 
    points is less than the sum of the radii."
   [x1 y1 r1 x2 y2 r2]
-  ;; (debug "Comparing circle" x1 y1 r1 "to" x2 y2 r2)
   (<= (+ (exp (- x2 x1) 2) (exp (- y2 y1) 2))
       (exp (+ r1 r2) 2)))
 
@@ -29,22 +28,17 @@
   (if (and (satisfies? Collidable e1) (satisfies? Collidable e2)) 
     (let [key-list [:screen-x :screen-y :offset-x :offset-y :hit-radius]
           [x1 y1 off-x1 off-y1 r1] (map #(% e1) key-list)
+          [x2 y2 off-x2 off-y2 r2] (map #(% e2) key-list)          
+          ;; Apply offsets of where the two entities would be
           [adj-x1 adj-y1] (map + [x1 y1] [off-x1 off-y1])
-          [x2 y2 off-x2 off-y2 r2] (map #(% e2) key-list)
           [adj-x2 adj-y2] (map + [x2 y2] [off-x2 off-y2])
           colliding? (collision? adj-x1 adj-y1 r1 adj-x2 adj-y2 r2)]
-      ;; (when (or (not= x1 adj-x1)
-      ;;           (not= y1 adj-y1))
-      ;;   (debug (:id e1) "Before offset" x1 y1)
-      ;;   (debug (:id e1) "After offset" adj-x1 adj-y1))
-      
-      ;; (when (or (not= x2 adj-x2)
-      ;;           (not= y2 adj-y2))
-      ;;   (debug (:id e2) "Before offset" x2 y2)
-      ;;   (debug (:id e2) "After offset" adj-x2 adj-y2))
-      
-      (when colliding? (debug "Collision detected between"
-                              (:id e1) "and" (:id e2)))
+      ;; (when colliding? (debug "Collision detected between"
+      ;;                         (:id e1) adj-x1 adj-y1 r1 "and"
+      ;;                         (:id e2) adj-x2 adj-y2 r2)
+      ;;       ;; Pause the game
+      ;;       ;; (swap! (:game s/state) assoc :paused true)
+      ;;       )
       ;; Return the results of the collision test
       colliding?)
     false))

@@ -37,8 +37,7 @@
   Moveable
   ;; Mirror the players movements
   (move [this state]
-    (let [player (first (filter #(= (:id %) :player) @(:entities state)))
-          {:keys [offset-x offset-y]} player]
+    (let [{:keys [offset-x offset-y]} @(:global state)]
       (assoc this :offset-x offset-x :offset-y offset-y)))
 
   Collidable

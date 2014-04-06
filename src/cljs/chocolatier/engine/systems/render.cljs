@@ -9,16 +9,15 @@
   (let [entities (:entities state)
         tile-map (:tile-map state)
         {:keys [stage renderer]} (-> state :game deref)]
+    ;; Render tile map changes
+    ;; tile-map may be an empty hash
+    (when (satisfies? Renderable @tile-map)
+      (swap! tile-map #(c/render % state)))    
     ;; Render changes to entities
     (swap! entities (fn [ents]
                        (map #(if (satisfies? Renderable %)
                                (c/render % stage)
                                %)
                             ents)))
-    ;; TODO do we need this still?
-    ;; Render tile map changes
-    ;; tile-map may be an empty hash
-    (when (satisfies? Renderable @tile-map)
-      (swap! tile-map #(c/render % state)))
     ;; Render to the stage
     (.render renderer stage)))

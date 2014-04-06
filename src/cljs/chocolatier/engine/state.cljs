@@ -1,4 +1,5 @@
 (ns chocolatier.engine.state
+  (:require [chocolatier.engine.watchers :refer [debug-watcher list-watcher]])
   (:require-macros [chocolatier.macros :refer [defonce]]))
 
 
@@ -6,35 +7,37 @@
 ;; can be read in to a game to start it
 
 ;; Global game state
+(defonce global (atom {:offset-x 0 :offset-y 0}))
 (defonce game (atom nil))
-
 (defonce input (atom {}))
-
 ;; TODO Should entities be a hashmap for easy removal from the game
 ;; state without having to iterate through the whole list? Or will we
 ;; need to be filtering the whole list any way
 (defonce entities (atom []))
-
 (defonce systems (atom {}))
-
 (defonce tile-map (atom {}))
 
 ;; Graphics object is mutated and stored here
 (def hit-zones (atom nil))
 
-
 (def state
   {:game game
+   :global global
    :systems systems
    :input input
    :entities entities
    :tile-map tile-map
    :hit-zones hit-zones})
 
+;; Watchers
+(add-watch global :global debug-watcher)
+(add-watch input :input debug-watcher)
+
 (defn reset-state! []
+  (reset! global {:offset-x 0 :offset-y 0})
   (reset! game nil)
   (reset! entities [])
   (reset! input {})
   (reset! systems {})
   (reset! tile-map {})
-  (reset! hit-zones nil))
+  (reset! hit-zones nil)  )
