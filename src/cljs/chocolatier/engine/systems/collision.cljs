@@ -35,10 +35,7 @@
           colliding? (collision? adj-x1 adj-y1 r1 adj-x2 adj-y2 r2)]
       (when colliding? (debug "Collision detected between"
                               (:id e1) adj-x1 adj-y1 r1 "and"
-                              (:id e2) adj-x2 adj-y2 r2)
-            ;; Pause the game
-            (swap! (:game s/state) assoc :paused true)
-            )
+                              (:id e2) adj-x2 adj-y2 r2))
       ;; Return the results of the collision test
       colliding?)
     false))

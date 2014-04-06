@@ -47,6 +47,9 @@
       
       ;; FIX If we are colliding we must still be able to move away
       (if (some true? results)
+        ;; TODO we should apply the reverse force of the current move
+        ;; instead of doing a straight zero because what if the
+        ;; moves before in the iter-systems were valid?
         (do (swap! (:global state) assoc :offset-x 0 :offset-y 0)
             this)
         ;; Do nothing

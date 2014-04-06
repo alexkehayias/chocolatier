@@ -23,11 +23,27 @@
                         (remove (fn [k] (= (m1 k) (m2 k)))
                                 ks1*ks2)))))
 
+(defn diff->str
+  "Stringify a diff by showing the old vs new val.
+   Returns a string with a newline for each diff value.
+
+   Example:
+       :screen-x 240 -> 245
+       :offset-x 0 -> 5"
+  [diff original-vals]
+  (let [lines (for [[k new-val] diff]
+                ;; Format the string like :key 1 -> 2
+                (str "    " k " " (k original-vals) " -> " new-val))]
+                   ;; Add in a preceding newline with no space after
+    (str "\n" (reduce #(str %1 "\n" %2) lines))))
+
 (defn hashmap-watcher
   "Log any differences between two hashmaps"
   [key state old-val new-val]
   (when (not= old-val new-val)
-    (debug "State changed" key (map-difference new-val old-val))))
+    (let [diff (map-difference new-val old-val)]
+      (when-not (empty? diff)
+        (debug "State changed" key (diff->str diff old-val))))))
 
 (defn entity-watcher
   "Log any differences between two lists of entities by their :id"
@@ -44,5 +60,5 @@
           (let [[v1 v2] (map record->hashmap coll)
                 diff (map-difference v2 v1)]
             (when-not (empty? diff)
-              (debug "State changed" id diff))))))))
+              (debug "State changed" id (diff->str diff v1)))))))))
 
