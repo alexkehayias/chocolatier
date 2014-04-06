@@ -12,6 +12,32 @@
             [chocolatier.engine.state :as s]))
 
 
+(def move-rate 5)
+
+(def keycode->direction
+  {:W :n
+   :S :s
+   :D :e
+   :A :w
+   ;; Direction pad
+   :& :n
+   ;; Use keyword here since paranths are reserved
+   (keyword "(") :s
+   :' :e
+   :% :w})
+
+(def keycode->offset
+  {:W [:offset-y (* 1 move-rate)]
+   :S [:offset-y (* -1 move-rate)]
+   :D [:offset-x (* -1 move-rate)]
+   :A [:offset-x (* 1 move-rate)]
+   ;; Direction pad   
+   :& [:offset-y (* 1 move-rate)]
+   ;; Use keyword here since parahs are reserved
+   (keyword "(") [:offset-y (* -1 move-rate)]
+   :' [:offset-x (* -1 move-rate)]
+   :% [:offset-x (* 1 move-rate)]})
+
 (defrecord Player [id
                    ;; A PIXI sprite object
                    sprite
@@ -32,6 +58,11 @@
   Renderable
   (render [this state]
     (assoc this :offset-x 0 :offset-y 0))
+
+  Moveable
+  (move [this state]
+    (let [{:keys [offset-x offset-y]} @(:global state)]
+      (assoc this :offset-x offset-x :offset-y offset-y)))
 
   Collidable
   (check-collision [this state time]
@@ -56,40 +87,24 @@
         this)))
 
   UserInput
-  ;; This should set the intended direction and movement NOT
-  ;; commit it to the screen. Commits of movement need to happen in
-  ;; the movement system
   (react-to-user-input [this state]
-    (let [input @(:input state)
-          move-rate 5
-          move #(condp = %2
-                  :W (assoc %1 :offset-y (* 1 move-rate) :direction :n)
-                  :S (assoc %1 :offset-y (* -1 move-rate) :direction :s)
-                  :D (assoc %1 :offset-x (* -1 move-rate) :direction :e)
-                  :A (assoc %1 :offset-x (* 1 move-rate) :direction :w)
-                  
-                  :& (assoc %1 :offset-y (* 1 move-rate) :direction :n)
-                  ;; Use keyword here since paranths are reserved
-                  (keyword "(") (assoc %1 :offset-y (* -1 move-rate) :direction :s)
-                  :' (assoc %1 :offset-x (* -1 move-rate) :direction :e)
-                  :% (assoc %1 :offset-x (* 1 move-rate) :direction :w)                  
-                  ;; Otherwise set the offset to 0 to denote the
-                  ;; player is standing still
-                  (assoc %1 :offset-x 0 :offset-y 0))]
-      ;; Apply all the changes to the record in a recursive loop this
-      ;; allows for handling key combinations
-      (loop [out this
-             i (seq input)]
-        (let [[k v] (first i)
-              remaining (rest i)
-              updated (if (= v "on") (move out k) out)]
-          (if (empty? remaining)
-            (do
-              (swap! (:global state) assoc
-                     :offset-x (:offset-x updated)
-                     :offset-y (:offset-y updated))
-              updated) 
-            (recur updated remaining)))))))
+    ;; Recursively loop through all keycodes to get the global offset
+    ;; allows for handling key combinations
+    (loop [offsets {:offset-x 0 :offset-y 0}
+           i (seq @(:input state))]
+      (let [[k v] (first i)
+            remaining (rest i)
+            updated-offsets (if (= v "on")
+                              (apply assoc offsets (k keycode->offset))
+                              offsets)]
+        (if (empty? remaining)
+          ;; Update the global offsets
+          (swap! (:global state) assoc
+                 :offset-x (:offset-x updated-offsets) 
+                 :offset-y (:offset-y updated-offsets)) 
+          (recur updated-offsets remaining))))
+    ;; TODO set the players direction
+    this))
 
 (defn create-player!
   "Create a new entity and add to the list of global entities"
@@ -97,7 +112,7 @@
   (info "Creating player" pos-x pos-y map-x map-y hit-radius)
   (let [texture (js/PIXI.Texture.fromImage "static/images/bunny.png")
         sprite (js/PIXI.Sprite. texture)
-        player (new Player :player sprite pos-x pos-y 0 0 :south 0 0 hit-radius)]
+        player (new Player :player sprite pos-x pos-y 0 0 :s 0 0 hit-radius)]
     (set! (.-position.x sprite) pos-x)
     (set! (.-position.y sprite) pos-y)
     (.addChild stage (:sprite player))

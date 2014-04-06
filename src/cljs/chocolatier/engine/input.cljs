@@ -35,6 +35,6 @@
   (when-not (empty? @s/input)
     (debug "Removing input listeners")
     (doseq [k [:keydown :keyup]]
-    (let [f (k @s/input)]
-      (f))))  
+      (let [f (k @s/input)]
+        (f))))  
   (init-input!))
