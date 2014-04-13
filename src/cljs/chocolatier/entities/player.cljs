@@ -50,8 +50,9 @@
                    ;; How far x and y to move based on how fast they
                    ;; are moving and direction
                    offset-x offset-y
-                   ;;
-                   hit-radius]
+                   hit-radius
+                   ;; The height and width of the sprite
+                   height width]
   Entity
   (tick [this] this)
 
@@ -107,7 +108,9 @@
   (info "Creating player" pos-x pos-y map-x map-y hit-radius)
   (let [texture (js/PIXI.Texture.fromImage "static/images/bunny.png")
         sprite (js/PIXI.Sprite. texture)
-        player (new Player :player sprite pos-x pos-y 0 0 :s 0 0 hit-radius)]
+        ;; Coerce the height and width from the sprite
+        [h w] (map #(aget sprite %) ["height" "width"])
+        player (new Player :player sprite pos-x pos-y 0 0 :s 0 0 hit-radius h w)]
     (set! (.-position.x sprite) pos-x)
     (set! (.-position.y sprite) pos-y)
     (.addChild stage (:sprite player))

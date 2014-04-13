@@ -11,6 +11,11 @@
   [x n]
   (reduce * (repeat n x)))
 
+(defn halve
+  "Divide n by 2"
+  [n]
+  (/ n 2))
+
 (defn collision?
   "Basic circle collision detection. Returns true if x and y 
    are colliding.
@@ -26,16 +31,19 @@
    Returns a boolean of whether the two entities are colliding."
   [e1 e2]
   (if (and (satisfies? Collidable e1) (satisfies? Collidable e2)) 
-    (let [key-list [:screen-x :screen-y :offset-x :offset-y :hit-radius :sprite]
-          [x1 y1 off-x1 off-y1 r1 s1] (map #(% e1) key-list)
-          [x2 y2 off-x2 off-y2 r2 s2] (map #(% e2) key-list)
-          ;; Halve the height and width to get the center point of the entity
-          [h1 w1] (map #(/ (aget s1 %) 2) ["height" "width"])
-          [h2 w2] (map #(/ (aget s2 %) 2) ["height" "width"])
-          ;; Apply offsets of where the two entities will be
+    (let [key-list [:screen-x :screen-y
+                    :offset-x :offset-y
+                    :height :width
+                    :hit-radius]
+          [x1 y1 off-x1 off-y1 r1 h1 w1] (map #(% e1) key-list)
+          [x2 y2 off-x2 off-y2 r2 h2 w2] (map #(% e2) key-list)
           ;; The hit circles are drawn around the center of the entity
-          [adj-x1 adj-y1] (map + [x1 y1] [off-x1 off-y1] [h1 w1])
-          [adj-x2 adj-y2] (map + [x2 y2] [off-x2 off-y2] [h1 w1])
+          ;; by halving the height and width
+          [center-x1 center-y1] (map + [x1 y1] (map halve [w1 h1]))
+          [center-x2 center-y2] (map + [x2 y2] (map halve [w2 h2]))          
+          ;; Apply offsets of where the two entities will be
+          [adj-x1 adj-y1] (map + [center-x1 center-y1] [off-x1 off-y1])
+          [adj-x2 adj-y2] (map + [center-x2 center-y2] [off-x2 off-y2])
           colliding? (collision? adj-x1 adj-y1 r1 adj-x2 adj-y2 r2)]
       ;; (when colliding? (debug "Collision detected between"
       ;;                         (:id e1) adj-x1 adj-y1 r1 "and"

@@ -9,7 +9,8 @@
 
 
 (defrecord Monster [id sprite screen-x screen-y map-x map-y
-                    direction offset-x offset-y hit-radius]
+                    direction offset-x offset-y hit-radius
+                    height width]
 
   Entity
   (tick [this] this)
@@ -58,7 +59,9 @@
   (info "Creating monster" pos-x pos-y map-x map-y)
   (let [texture (js/PIXI.Texture.fromImage "static/images/monster.png")
         sprite (js/PIXI.Sprite. texture)
-        monster (new Monster :monster sprite pos-x pos-y 0 0 :s 0 0 hit-radius)]
+        ;; Coerce the height and width from the sprite
+        [h w] (map #(aget sprite %) ["height" "width"])        
+        monster (new Monster :monster sprite pos-x pos-y 0 0 :s 0 0 hit-radius h w)]
     (set! (.-position.x sprite) pos-x)
     (set! (.-position.y sprite) pos-y)
     (.addChild stage (:sprite monster))
