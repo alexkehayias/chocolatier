@@ -58,26 +58,20 @@
           (swap! (:game s/state) assoc :stopped true))
       ;; Calculate all changes for each step in the duration since the
       ;; last run through the game loop
-
-      ;; FIX collision offsets must undo the last offset not the whole
-      ;; offset otherwise the render step which is outside of the
-      ;; fixed time step will cause strange results in movements
-      (do
-        (iter-systems s/state step)
-        (request-animation #(game-loop now duration step)))
-
-      ;; (loop [dt duration]
-      ;;   (if (> (- dt step) step)
-      ;;     (if (:paused @s/game)
-      ;;       ;; If the game is paused, keep the loop going but don't
-      ;;       ;; calculate any changes
-      ;;       (recur (- dt step))
-      ;;       (do (iter-systems s/state step)
-      ;;           (recur (- dt step))))
-      ;;     ;; Break the loop, render, and request the next frame
-      ;;     (do
-      ;;       ;; (render-system s/state)
-      ;;       (request-animation #(game-loop now dt step)))))
+      (loop [dt duration]
+        (if (> (- dt step) step)
+          (if (:paused @s/game)
+            ;; If the game is paused, keep the loop going but don't
+            ;; calculate any changes
+            (recur (- dt step))
+            (do (iter-systems s/state step)
+                (recur (- dt step))))
+          ;; Break the loop, render, and request the next frame
+          (do
+            ;; TODO re-implement fixed timestep by moving the render
+            ;; system outside of the step loop
+            ;; (render-system s/state)
+            (request-animation #(game-loop now dt step)))))
       )))
 
 ;; TODO this should be used as a fallback if requestAnimationFrame is
