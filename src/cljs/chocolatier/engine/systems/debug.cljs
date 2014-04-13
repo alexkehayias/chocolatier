@@ -23,8 +23,13 @@
   "Draws the entities hitzone circle to a graphics object"
   [graphic entity]
   (base-style graphic)
-  (let [{:keys [screen-x screen-y hit-radius]} entity]
-    (.drawCircle graphic screen-x screen-y hit-radius)))
+  (let [{:keys [screen-x screen-y hit-radius sprite]} entity
+        ;; Offset so it's in the hitzone is centered on the entity
+        half-height (/ (aget sprite "height") 2) 
+        half-width (/ (aget sprite "width") 2)
+        x (+ screen-x half-width)
+        y (+ screen-y half-height)]
+    (.drawCircle graphic x y hit-radius)))
 
 (defn show-hit-zone-system
   "Display a circle around all hit zones for each entity"
