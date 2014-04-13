@@ -23,7 +23,7 @@
 
 (defn entity-collision?
   "Compare two entities future position to see if they are colliding. 
-   Returns a boolean."
+   Returns a boolean of whether the two entities are colliding."
   [e1 e2]
   (if (and (satisfies? Collidable e1) (satisfies? Collidable e2)) 
     (let [key-list [:screen-x :screen-y :offset-x :offset-y :hit-radius]
@@ -33,10 +33,9 @@
           [adj-x1 adj-y1] (map + [x1 y1] [off-x1 off-y1])
           [adj-x2 adj-y2] (map + [x2 y2] [off-x2 off-y2])
           colliding? (collision? adj-x1 adj-y1 r1 adj-x2 adj-y2 r2)]
-      (when colliding? (debug "Collision detected between"
-                              (:id e1) adj-x1 adj-y1 r1 "and"
-                              (:id e2) adj-x2 adj-y2 r2))
-      ;; Return the results of the collision test
+      ;; (when colliding? (debug "Collision detected between"
+      ;;                         (:id e1) adj-x1 adj-y1 r1 "and"
+      ;;                         (:id e2) adj-x2 adj-y2 r2))
       colliding?)
     false))
 

@@ -12,7 +12,7 @@
             [chocolatier.engine.state :as s]))
 
 
-(def move-rate 5)
+(def move-rate 4)
 
 (def keycode->direction
   {:W :n
@@ -56,13 +56,7 @@
   (tick [this] this)
 
   Renderable
-  (render [this state]
-    (assoc this :offset-x 0 :offset-y 0))
-
-  Moveable
-  (move [this state]
-    (let [{:keys [offset-x offset-y]} @(:global state)]
-      (assoc this :offset-x offset-x :offset-y offset-y)))
+  (render [this state] this)
 
   Collidable
   (check-collision [this state time]
@@ -73,8 +67,9 @@
           ;; Filter for entities that are not the player
           other-entities (filter #(not= this %) entities)
           ;; Check collision between this and all entities
+          adj-this (assoc this :offset-x 0 :offset-x 0)          
           results (for [e other-entities]
-                    (entity-collision? this e))]
+                    (entity-collision? adj-this e))]
       
       ;; FIX If we are colliding we must still be able to move away
       (if (some true? results)
@@ -82,7 +77,7 @@
         ;; instead of doing a straight zero because what if the
         ;; moves before in the iter-systems were valid?
         (do (swap! (:global state) assoc :offset-x 0 :offset-y 0)
-            this)
+            (assoc this :offset-x 0 :offset-y 0))
         ;; Do nothing
         this)))
 

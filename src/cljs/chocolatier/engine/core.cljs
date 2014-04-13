@@ -58,6 +58,10 @@
           (swap! (:game s/state) assoc :stopped true))
       ;; Calculate all changes for each step in the duration since the
       ;; last run through the game loop
+
+      ;; FIX collision offsets must undo the last offset not the whole
+      ;; offset otherwise the render step which is outside of the
+      ;; fixed time step will cause strange results in movements
       (do
         (iter-systems s/state step)
         (request-animation #(game-loop now duration step)))
@@ -76,6 +80,8 @@
       ;;       (request-animation #(game-loop now dt step)))))
       )))
 
+;; TODO this should be used as a fallback if requestAnimationFrame is
+;; not available in this browser
 (defn set-interval
   "Creates an interval loop of n calls to function f per second.
    Returns a function to cancel the interval."

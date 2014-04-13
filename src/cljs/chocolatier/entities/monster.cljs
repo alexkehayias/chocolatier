@@ -38,12 +38,10 @@
         (assoc this :offset-x 0 :offset-y 0))))
 
   Moveable
-  ;; Mirror the players movements
+  ;; Set the monster's offset based on the global offset
   (move [this state]
     (let [{:keys [offset-x offset-y]} @(:global state)]
-      (assoc this
-        :offset-x offset-x
-        :offset-y offset-y)))
+      (assoc this :offset-x offset-x :offset-y offset-y)))
 
   Collidable
   (check-collision [this state time]
