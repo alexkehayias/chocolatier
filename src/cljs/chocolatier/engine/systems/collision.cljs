@@ -35,8 +35,8 @@
                     :offset-x :offset-y
                     :height :width
                     :hit-radius]
-          [x1 y1 off-x1 off-y1 r1 h1 w1] (map #(% e1) key-list)
-          [x2 y2 off-x2 off-y2 r2 h2 w2] (map #(% e2) key-list)
+          [x1 y1 off-x1 off-y1 h1 w1 r1] (map #(% e1) key-list)
+          [x2 y2 off-x2 off-y2 h2 w2 r2] (map #(% e2) key-list)
           ;; The hit circles are drawn around the center of the entity
           ;; by halving the height and width
           [center-x1 center-y1] (map + [x1 y1] (map halve [w1 h1]))
