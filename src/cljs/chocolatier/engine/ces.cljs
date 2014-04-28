@@ -14,9 +14,10 @@
 ;;             {:testable
 ;;               {:player {:x 1 :y 2}
 ;;                :monster {:x 2 :y 3}}}
-
+;;
 ;; Using one state hashmap should be performant enough even though it
-;; create a new copy on every change to state in the game loop
+;; create a new copy on every change to state in the game loop due to
+;; structural sharing
 ;;
 ;; Questions:
 ;; Should systems only be allowed to change the state of other
@@ -32,15 +33,24 @@
 
 (defn game-loop
   "Test game loop 10 times and return the last state"
-  [state systems]
-  (loop [c 0
-         s state]
-    (if (> c 10)
-      s ;; break loop and return the result state
-      (recur (inc c) (iter-fns s systems)))))
+  [state systems count]
+  (if (> count 10)
+    state ;; break loop and return the result state
+    (recur (inc c) (iter-fns state systems)))  )
 
 (defprotocol Testable
   (test [this state]))
+
+(defrecord Entity [id]
+  Testable
+  (test [this state]
+    (let [id (:id this)
+          ;; If you don't get the id from this the treading macro
+          ;; returns `this` instead of the keyword function result
+          ;; Seems like a bug in cljs
+          comp (-> state :components id :testable)
+          updated-comp (assoc comp :x (inc (:x comp)))]
+      (assoc-in state [:components id :testable] updated-comp))))
 
 (defrecord Entity [id]
   Testable
@@ -64,13 +74,40 @@
 
 ;; Test
 ;; (game-loop {:entities [(new Entity :player)]
-;;             :components {:player {:testable {:x 1}}}} [test-system])
+;;             :components {:player {:testable {:x 1}}}} [test-system]
+;;   0)
 
 ;; Can also be called without an initial state
-;; (game-loop {} [test-system])
+;; (game-loop {} [test-system] 0)
 
 ;; Or without any component state
-;; (game-loop {:entities [(new Entity :player)]} [test-system])
+;; (game-loop {:entities [(new Entity :player)]} [test-system] 0)
 
 
+;; Macros
+;; defentity
+;; Creates a defrecord with a list of methods and adds all the
+;; required state as namespaced keywords on the record
+;; :comp-id/:var
+;; :moveable/:x 1 :moveable/:y 1
+;; That way all component state for an entity can be accessed in
+;; methods via `this`
+;; Global state can then be a list of entities and systems
 
+;; (defentity Player
+;;   Movable
+;;   (move [:x :y])
+;;   (other-method [this state] nil)
+
+;; (defcomponent Moveable [:x :y])
+;; (defprotocol Moveable [this state])
+
+
+;; (defcomponent Moveable
+;;   (move [this state component]))
+
+;; (defmacro defentity
+;;   [vname methods]
+;;   `(defrecord ~vname
+;;        `(for [m methods]
+;;           m)))
