@@ -15,16 +15,16 @@
   "Creates a component with name state and any number of methods
 
    Example:
-   (defcomponent Moveabe [:x :y]
+   (defcomponent Moveable [:x :y]
      (move [this] nil))"
   [vname state & methods]
   `(do
-     ;; Create the protocol with methods
+     ;; Create the protocol with methods in a hashmap along with
+     ;; fields since clojurescript does not do metadata on defs
      (defprotocol ~vname ~@methods)
-     ;; Metadata can't be attached to a protocol so rebind the newly
-     ;; created protocol to a var with metadata describing it's state
      (def ~vname
-       (with-meta ~vname {:fields ~state}))))
+       {:fields ~state
+        :component ~vname})))
 
 (defmacro defentity
   "A collection of components that represent all aspects of what 
@@ -41,17 +41,21 @@
      (render [this] nil))
   "
   [vname & body]
-  (let [;; Protocols are not seqs so we can filter by that
+  (let [;; Protocols are not seqs so we can filter out lists
         components (filter #(not (seq? %)) body)
         symbolize #(map symbol %)
         namify #(map name %)
-        extract #(-> % meta :fields)
-        parse-fn #(-> % eval extract namify symbolize)
-        fields (vec (reduce #(concat %1 (parse-fn %2)) [] components))]
+        parse-fn #(-> % eval :fields namify symbolize)
+        fields (vec (reduce #(concat %1 (parse-fn %2)) [] components))
+        ;; Protocols are in a hashmap key :components that we
+        ;; must coerce out. The :on key can be symbolized
+        parsed-body (for [f body]
+                      (if-not (seq? f)
+                        (-> f eval :component :on symbol)
+                        f))]
     ;; Validate that all fields are unique or throw an error
-    (if (= (count fields)  (count (set fields)))
+    (if (= (count fields) (count (set fields)))
       ;; Create the defrecord with component protocols
-      `(defrecord ~vname [~@fields]
-         ~@body)
+      `(defrecord ~vname [~@fields] ~@parsed-body)
       (throw (Exception. (str "Duplicate fields found across components. "
                               "Fields must all be unique."))))))

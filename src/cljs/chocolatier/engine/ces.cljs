@@ -1,4 +1,5 @@
-(ns chocolatier.engine.ces)
+(ns chocolatier.engine.ces
+  (:require-macros [chocolatier.macros :refer [defentity defcomponent]]))
 
 ;; Gameloop:   recursive function that calls all systems in a scene
 ;; Scenes:     collection of systems used by the game loop
@@ -36,12 +37,15 @@
   [state systems count]
   (if (> count 10)
     state ;; break loop and return the result state
-    (recur (inc c) (iter-fns state systems)))  )
+    (recur (iter-fns state systems) systems (inc count))))
 
-(defprotocol Testable
-  (test [this state]))
+(defcomponent Entity [:id])
 
-(defrecord Entity [id]
+(defcomponent Testable []
+  (test [this state] nil))
+
+(defentity Player
+  Entity
   Testable
   (test [this state]
     (let [id (:id this)
@@ -50,18 +54,8 @@
           ;; Seems like a bug in cljs
           comp (-> state :components id :testable)
           updated-comp (assoc comp :x (inc (:x comp)))]
-      (assoc-in state [:components id :testable] updated-comp))))
-
-(defrecord Entity [id]
-  Testable
-  (test [this state]
-    (let [id (:id this)
-          ;; If you don't get the id from this the treading macro
-          ;; returns `this` instead of the keyword function result
-          ;; Seems like a bug in cljs
-          comp (-> state :components id :testable)
-          updated-comp (assoc comp :x (inc (:x comp)))]
-      (assoc-in state [:components id :testable] updated-comp))))
+      (assoc-in state [:entities id]
+                (assoc this :x (inc (:x this)))))))
 
 (defn test-system
   "Call the test method for all Testable entities"
@@ -73,7 +67,7 @@
     (iter-fns state (for [e entities] (partial test e)))))
 
 ;; Test
-;; (game-loop {:entities [(new Entity :player)]
+;; (game-loop {:entities [(new Player :alex)]
 ;;             :components {:player {:testable {:x 1}}}} [test-system]
 ;;   0)
 
