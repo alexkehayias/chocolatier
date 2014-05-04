@@ -11,10 +11,6 @@
     `(when-not (.hasOwnProperty ~(symbol "js" ns) ~mname)
        (def ~vname ~expr))))
 
-
-;; protocols can have more than one method
-
-;; state is a list of keywords
 (defmacro defcomponent
   "Creates a component with name state and any number of methods
 
@@ -29,9 +25,6 @@
      ;; created protocol to a var with metadata describing it's state
      (def ~vname
        (with-meta ~vname {:fields ~state}))))
-
-(defn is-protocol? [sym]
-  (boolean (:method-map sym)))
 
 (defmacro defentity
   "A collection of components that represent all aspects of what 
@@ -62,27 +55,3 @@
          ~@body)
       (throw (Exception. (str "Duplicate fields found across components. "
                               "Fields must all be unique."))))))
-
-
-;; Creates a defrecord with a list of methods and adds all the
-;; required state as namespaced keywords on the record
-;; :comp-id/:var
-;; :moveable/:x 1 :moveable/:y 1
-;; That way all component state for an entity can be accessed in
-;; methods via `this`
-;; Global state can be just a list of entities and systems
-
-;; (defentity Player
-;;   Movable
-;;   (move [this state component]))
-
-;; Maybe need to add meta data to the component so that the defentity
-;; knows what fields it needs to add
-;; (defcomponent Moveable
-;;   (move [this state component]))
-
-;; (defmacro defentity
-;;   [vname methods]
-;;   `(defrecord ~vname
-;;        `(for [m methods]
-;;           m)))
