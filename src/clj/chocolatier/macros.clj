@@ -16,7 +16,11 @@
 
 ;; state is a list of keywords
 (defmacro defcomponent
-  "Creates a component with name state and methods"
+  "Creates a component with name state and any number of methods
+
+   Example:
+   (defcomponent Moveabe [:x :y]
+     (move [this] nil))"
   [vname state & methods]
   `(do
      ;; Create the protocol with methods
@@ -31,7 +35,8 @@
 
 (defmacro defentity
   "A collection of components that represent all aspects of what 
-   the entity can do
+   the entity can do. Component fields must be unique across all
+   components included in the entity.
 
    Example:
    (defentitiy Player
