@@ -17,33 +17,46 @@
 ;; state is a list of keywords
 (defmacro defcomponent
   "Creates a component with name state and methods"
-  [vname state methods]
+  [vname state & methods]
   `(do
      ;; Create the protocol with methods
-     (defprotocol ~vname ~methods)
+     (defprotocol ~vname ~@methods)
      ;; Metadata can't be attached to a protocol so rebind the newly
      ;; created protocol to a var with metadata describing it's state
      (def ~vname
        (with-meta ~vname {:fields ~state}))))
 
+(defn is-protocol? [sym]
+  (boolean (:method-map sym)))
+
 (defmacro defentity
   "A collection of components that represent all aspects of what 
-   the entity can do"
+   the entity can do
+
+   Example:
+   (defentitiy Player
+     Moveable
+     (move [this] nil)
+     (stop [this] nil)
+
+     Renderable
+     (render [this] nil))
+  "
   [vname & body]
-  (let [;; Every odd form in body is a Protocol
-        ;; TODO what if there is more than one method on a protocol?
-        components (map #(-> % first eval) (partition-all 2 body))
-        _ (println "Components:" components)
+  (let [;; Protocols are not seqs so we can filter by that
+        components (filter #(not (seq? %)) body)
         symbolize #(map symbol %)
         namify #(map name %)
         extract #(-> % meta :fields)
-        parse-fn #(-> % extract namify symbolize)
-        fields (vec (reduce #(concat %1 (parse-fn %2)) [] components)) 
-        _ (println "Fields:" fields)
-        ]
-    ;; Create the defrecord with component protocols
-    `(defrecord ~vname [~@fields]
-       ~@body)))
+        parse-fn #(-> % eval extract namify symbolize)
+        fields (vec (reduce #(concat %1 (parse-fn %2)) [] components))]
+    ;; Validate that all fields are unique or throw an error
+    (if (= (count fields)  (count (set fields)))
+      ;; Create the defrecord with component protocols
+      `(defrecord ~vname [~@fields]
+         ~@body)
+      (throw (Exception. (str "Duplicate fields found across components. "
+                              "Fields must all be unique."))))))
 
 
 ;; Creates a defrecord with a list of methods and adds all the
