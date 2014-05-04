@@ -26,18 +26,24 @@
      (def ~vname
        (with-meta ~vname {:fields ~state}))))
 
-;; (defmacro defentity
-;;   "A collection of components that represent all aspects of what 
-;;    the entity can do"
-;;   [vname & body]
-;;   (let [;; Every odd form in body is a Protocol
-;;         components (map first (partition-all 2 body))
-;;         _ (println "Components" components)
-;;         ;; This gives us a list of symbols, not protocols!
-;;         ;; We need to evaluate each protocol
-;;         fields (map #(symbol (-> % meta :fields)) components)]
-;;     ;; Create the defrecord with component protocols
-;;     `(defrecord ~vname ~fields)))
+(defmacro defentity
+  "A collection of components that represent all aspects of what 
+   the entity can do"
+  [vname & body]
+  (let [;; Every odd form in body is a Protocol
+        ;; TODO what if there is more than one method on a protocol?
+        components (map #(-> % first eval) (partition-all 2 body))
+        _ (println "Components:" components)
+        symbolize #(map symbol %)
+        namify #(map name %)
+        extract #(-> % meta :fields)
+        parse-fn #(-> % extract namify symbolize)
+        fields (vec (reduce #(concat %1 (parse-fn %2)) [] components)) 
+        _ (println "Fields:" fields)
+        ]
+    ;; Create the defrecord with component protocols
+    `(defrecord ~vname [~@fields]
+       ~@body)))
 
 
 ;; Creates a defrecord with a list of methods and adds all the
