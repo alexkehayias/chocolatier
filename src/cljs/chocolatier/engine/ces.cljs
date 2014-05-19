@@ -72,12 +72,18 @@
                        :meta {:human? true}}}
    ;; Components for each entity that implements a component
    :components {:player {:testable {}}}
-   :systems {:player {:testable {:test #(do (println "hello from test") %)}}}}
+   :systems {:player {:testable {:test #(do (println "hello from test") %)
+                                 :identity #(identity %)}}}}
   )
 
+;; FIX this will through a null pointer if there is no
+;; matching system for the entity
+
+;; This only operates on entities, can a system work on something
+;; other than entities? What about game meta data?
 (defn exec-system
   "Execute the component by calling each component function in order."
-  [state component-id & fn-keys]
+  [state component-id fn-keys]
   (let [;; Get all entities that implement this component
         entities (filter #(some #{component-id} (:components (second %)))
                          (seq (:entities state)))
@@ -88,23 +94,28 @@
         ;; Make a sequence of all the functions to call in order as
         ;; they were passed to this function
         fns (reduce into [] (for [fk fn-keys] (map fk fn-maps)))]
-    ;; TODO need to pass in the component state to the system functions
     (iter-fns state fns)))
 
-(defn game-loop-v2
+(defn test-game-loop
   "Test game loop 10 times and return the last state"
   [state system-spec count]
+  ;; TODO based on the system spec, call each system in order
   (if (> count 10)
     state ;; break loop and return the result state
-    (recur (exec-system state :testable :test)
-           system-spec
-           (inc count))))
+    (let [fns (for [[component-id & fn-keys] system-spec]
+                #(exec-system % component-id fn-keys))]
+      (recur (iter-fns state fns) system-spec (inc count)))))
 
 
+(defn mk-system-spec
+  "Convenience wrapper so you don't have to specify vectors of vectors"
+  [& specs] specs)
 
+(def test-system-spec
+  (mk-system-spec [:testable :test :identity]))
 
 ;; Test
-(game-loop-v2 test-state [[:testable :test :identity]] 0)
+(test-game-loop test-state test-system-spec 0)
 
 
 ;; Can also be called without an initial state
