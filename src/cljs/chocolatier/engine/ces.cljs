@@ -1,5 +1,7 @@
 (ns chocolatier.engine.ces
-  (:require-macros [chocolatier.macros :refer [defentity defcomponent]]))
+  ;;(:require-macros [chocolatier.macros :refer [defentity
+  ;defcomponent]])
+  )
 
 ;; Gameloop:   recursive function that calls all systems in a scene
 ;; Scenes:     collection of systems used by the game loop
@@ -32,44 +34,78 @@
   [init coll]
   (reduce #(%2 %1) init coll))
 
-(defn game-loop
-  "Test game loop 10 times and return the last state"
-  [state systems count]
-  (if (> count 10)
-    state ;; break loop and return the result state
-    (recur (iter-fns state systems) systems (inc count))))
+(defn mk-component
+  [name fields fns]
+  {:fields fields
+   :fns fns})
 
-(defcomponent Entity [:id])
+(defn mk-entity
+  "
+  Example
+  (mk-entity \"Player\" {:moveable {:move #(identity %)}} )
+   "
+  [uuid components]
+  ;; TODO validate that each component has all required component fns
+  ;; implemented. Can we do this at compile time?
+  {:uuid uuid
+   :components components})
 
-(defcomponent Testable []
-  (test [this state] nil))
-
-(defentity Player
-  Entity
-  Testable
-  (test [this state]
-    (let [id (:id this)
-          ;; If you don't get the id from this the treading macro
-          ;; returns `this` instead of the keyword function result
-          ;; Seems like a bug in cljs
-          comp (-> state :components id :testable)
-          updated-comp (assoc comp :x (inc (:x comp)))]
-      (assoc-in state [:entities id]
-                (assoc this :x (inc (:x this)))))))
+(defn implements?
+  "Returns a boolean of whether the entity implements component"
+  [state entity component]
+  (boolean (some #{component} (-> state :entitities entity))))
 
 (defn test-system
   "Call the test method for all Testable entities"
   [state]
   (let [ents (:entities state)
-        entities (filter #(satisfies? Testable %) ents)]
+        entities (filter #(implements? :testable (second %)) ents)
+        ids (map first entities)]
     ;; Since each protocol returns a new state, we can iterate through
     ;; all by using iter-fns an the test method
-    (iter-fns state (for [e entities] (partial test e)))))
+    (iter-fns state (for [i ids] (partial test i)))))
+
+;; Example game state
+(def test-state
+  {;; Unique IDs of entities with components it implements
+   :entities {:player {:components [:testable]
+                       :meta {:human? true}}}
+   ;; Components for each entity that implements a component
+   :components {:player {:testable {}}}
+   :systems {:player {:testable {:test #(do (println "hello from test") %)}}}}
+  )
+
+(defn exec-system
+  "Execute the component by calling each component function in order."
+  [state component-id & fn-keys]
+  (let [;; Get all entities that implement this component
+        entities (filter #(some #{component-id} (:components (second %)))
+                         (seq (:entities state)))
+        ;; Grab the ids
+        ids (map first entities)
+        ;; Get the component implementation function map for the system
+        fn-maps (map #(get-in (:systems state) [% component-id]) ids)
+        ;; Make a sequence of all the functions to call in order as
+        ;; they were passed to this function
+        fns (reduce into [] (for [fk fn-keys] (map fk fn-maps)))]
+    ;; TODO need to pass in the component state to the system functions
+    (iter-fns state fns)))
+
+(defn game-loop-v2
+  "Test game loop 10 times and return the last state"
+  [state system-spec count]
+  (if (> count 10)
+    state ;; break loop and return the result state
+    (recur (exec-system state :testable :test)
+           system-spec
+           (inc count))))
+
+
+
 
 ;; Test
-;; (game-loop {:entities [(new Player :alex)]
-;;             :components {:player {:testable {:x 1}}}} [test-system]
-;;   0)
+(game-loop-v2 test-state [[:testable :test :identity]] 0)
+
 
 ;; Can also be called without an initial state
 ;; (game-loop {} [test-system] 0)
