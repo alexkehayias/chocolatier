@@ -32,7 +32,7 @@
    result of the function called is passed as an arg to the next
    function."
   [init coll]
-  (reduce #(%2 %1) init coll))
+  ((apply comp coll) init))
 
 (defn mk-component
   [name fields fns]
@@ -55,17 +55,10 @@
   [state entity component]
   (boolean (some #{component} (-> state :entitities entity))))
 
-(defn test-system
-  "Call the test method for all Testable entities"
-  [state]
-  (let [ents (:entities state)
-        entities (filter #(implements? :testable (second %)) ents)
-        ids (map first entities)]
-    ;; Since each protocol returns a new state, we can iterate through
-    ;; all by using iter-fns an the test method
-    (iter-fns state (for [i ids] (partial identity i)))))
 
-
+(defn filter-components [component-id]
+  
+  )
 
 ;; FIX this will throw a null pointer if there is no
 ;; matching system for the entity
@@ -78,6 +71,7 @@
   (let [;; Get all entities that implement this component
         entities (filter #(some #{component-id} (:components (second %)))
                          (seq (:entities state)))
+        _ (println "entities found:" entities)
         ;; Grab the ids
         ids (map first entities)
         ;; Get the component implementation function map for the system
@@ -90,16 +84,6 @@
 (defn mk-system-spec
   "Convenience wrapper so you don't have to specify vectors of vectors"
   [& specs] specs)
-
-
-
-
-
-;; Can also be called without an initial state
-;; (game-loop {} [test-system] 0)
-
-;; Or without any component state
-;; (game-loop {:entities [(new Entity :player)]} [test-system] 0)
 
 
 ;; Macros
