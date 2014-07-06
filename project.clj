@@ -12,7 +12,7 @@
                  ;; cljs
                  [prismatic/dommy "0.1.1"]
                  [com.cemerick/clojurescript.test "0.3.1"]]
-  :profiles {:dev {:plugins [[com.cemerick/austin "0.1.3"]
+  :profiles {:dev {:plugins [[com.cemerick/austin "0.1.4"]
                              [lein-cljsbuild "1.0.1"]]
                    :cljsbuild {:builds [{:source-paths ["src/cljs"]
                                          :compiler {:output-dir "resources/public/scripts"

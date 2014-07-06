@@ -17,14 +17,14 @@
 
 
 (deftest test-game-loop-frame
-  (let [test-state {;; Unique IDs of entities with components it implements
+  (let [test-fn #(do (println "hello from test") %)
+        test-state { ;; Unique IDs of entities with components it implements
                     :entities {:player {:components [:testable]
                                         :meta {:human? true}}}
                     ;; Components for each entity that implements a component
                     :components {:player {:testable {}}}
                     :systems {:player {:testable
-                                       {:test #(do (println "hello from test") %)
-                                        :identity #(identity %)}}}}
+                                       {:test test-fn :identity #(identity %)}}}}
         spec (ces/mk-system-spec [:testable :test :identity])]
     (fixed-frame-game-loop test-state test-system-spec 0)))
 
