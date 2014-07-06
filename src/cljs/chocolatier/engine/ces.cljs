@@ -1,43 +1,36 @@
-(ns chocolatier.engine.ces
-  ;;(:require-macros [chocolatier.macros :refer [defentity
-  ;defcomponent]])
-  )
+(ns chocolatier.engine.ces)
 
 ;; Gameloop:   recursive function that calls all systems in a scene
+;;
 ;; Scenes:     collection of systems used by the game loop
+;;
 ;; Systems:    functions that operate on components and return
-;;             components
-;;             takes a state object if it has any game impact
-;; Entities:   unique IDs that have component implementations
-;; Components: must return a new version of the state
-;;             hold state relating to a certain aspect
-;;             queryable based on a entity uuid
+;;             the game state
+;;
+;; Entities:   unique IDs that have component implementation data
+;;
+;; Components: hold state relating to a certain aspect.
+;;             Queryable based on a entity uuid
 ;;
 ;; State:      a nested hashmap
-;;             {:testable
-;;               {:player {:x 1 :y 2}
-;;                :monster {:x 2 :y 3}}}
+;;             {:player
+;;               {:testable {:x 1 :y 2}}
+;;              :monster {:testable {:x 2 :y 3}}}
 ;;
 ;; Using one state hashmap should be performant enough even though it
 ;; create a new copy on every change to state in the game loop due to
 ;; structural sharing
-;;
-;; Questions:
-;; Should systems only be allowed to change the state of other
-;; components? How much sharing of state is needed to accomplish a the
-;; purpose of a system
 
 (defn iter-fns
   "Pass an initial value through a collection of functions with the 
    result of the function called is passed as an arg to the next
    function."
-  [init coll]
-  ((apply comp coll) init))
+  [init fn-coll]
+  ((apply comp fn-coll) init))
 
 (defn mk-component
   [name fields fns]
-  {:fields fields
-   :fns fns})
+  {:fields fields :fns fns})
 
 (defn mk-entity
   "
@@ -50,66 +43,41 @@
   {:uuid uuid
    :components components})
 
-(defn implements?
-  "Returns a boolean of whether the entity implements component"
-  [state entity component]
-  (boolean (some #{component} (-> state :entitities entity))))
+(defn implements-component? [entity component]
+  (boolean (some #{component} (:components entity))))
 
+(defn filter-by-component
+  "Takes a vector of id, hashmap pairs where the hashmap has a key
+   for :components that the entitity implements.
 
-(defn filter-components [component-id]
-  
-  )
+   Returns a vector of ids that implement component."
+  [entities component]
+  (map first
+       (filter #(implements-component? (second %) component) entities)))
 
-;; FIX this will throw a null pointer if there is no
-;; matching system for the entity
+(defn get-system-fns
+  "Returns a vector of functions for the component."
+  [systems ids component]
+  (map #(get-in systems [% component]) ids))
 
 ;; This only operates on entities, can a system work on something
 ;; other than entities? What about game meta data?
 (defn exec-system
   "Execute the component by calling each component function in order."
-  [state component-id fn-keys]
+  [state component fn-keys]
   (let [;; Get all entities that implement this component
-        entities (filter #(some #{component-id} (:components (second %)))
-                         (seq (:entities state)))
-        _ (println "entities found:" entities)
-        ;; Grab the ids
-        ids (map first entities)
-        ;; Get the component implementation function map for the system
-        fn-maps (map #(get-in (:systems state) [% component-id]) ids)
+        ids (filter-by-component (seq (:entities state)) component)
+        ;; Get the system for the matching component
+        component-fns (get-system-fns (:systems state) ids component)
         ;; Make a sequence of all the functions to call in order as
-        ;; they were passed to this function
-        fns (reduce into [] (for [fk fn-keys] (map fk fn-maps)))]
+        ;; specified by fn-keys
+        fns (reduce into [] (for [k fn-keys] (map k component-fns)))] 
     (iter-fns state fns)))
 
 (defn mk-system-spec
-  "Convenience wrapper so you don't have to specify vectors of vectors"
+  "Convenience wrapper so you don't have to specify vectors of vectors.
+
+   Example:
+   (mk-system-spec [:my-sys [:f1 :f2]]
+                   [:my-other-sys [:f3 :f4]])"
   [& specs] specs)
-
-
-;; Macros
-;; defentity
-;; Creates a defrecord with a list of methods and adds all the
-;; required state as namespaced keywords on the record
-;; :comp-id/:var
-;; :moveable/:x 1 :moveable/:y 1
-;; That way all component state for an entity can be accessed in
-;; methods via `this`
-;; Global state can then be a list of entities and systems
-
-;; (defentity Player
-;;   Movable
-;;   (move [:x :y])
-;;   (other-method [this state] nil)
-
-;; (defcomponent Moveable [:x :y])
-;; (defprotocol Moveable [this state])
-
-
-;; (defcomponent Moveable
-;;   (move [this state component]))
-
-;; (defmacro defentity
-;;   [vname methods]
-;;   `(defrecord ~vname
-;;        `(for [m methods]
-;;           m)))
