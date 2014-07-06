@@ -5,9 +5,11 @@
 ;; Scenes:     collection of systems used by the game loop
 ;;
 ;; Systems:    functions that operate on components and return
-;;             the game state
+;;             the game state. They are represented as a nested
+;;             hashmap i.e {:testable {:test fn1 :identity identity}}
 ;;
 ;; Entities:   unique IDs that have component implementation data
+;;             Represented as a hashmap i.e {:player {:components []}}
 ;;
 ;; Components: hold state relating to a certain aspect.
 ;;             Queryable based on a entity uuid
@@ -28,20 +30,58 @@
   [init fn-coll]
   ((apply comp fn-coll) init))
 
+(defn deep-merge
+  "Recursively merges maps. If vals are not maps, the last value wins.
+   via https://groups.google.com/forum/#!topic/clojure/UdFLYjLvNRs"
+  [& vals]
+  (if (every? map? vals)
+    (apply merge-with deep-merge vals)
+    (last vals)))
+
 (defn mk-component
-  [name fields fns]
-  {:fields fields :fns fns})
+  [component-id fields & [init-state]]
+  (let [default-state (reduce into {} (for [f fields] {f nil}))
+        init-state (or init-state default-state)]
+    {component-id {:fields fields
+                   :init-state init-state}}))
+
+(defn add-component
+  "Adds a component for the given entity-id and component"
+  [state component]
+  (assoc-in state [:components :_meta] component))
 
 (defn mk-entity
-  "
-  Example
-  (mk-entity \"Player\" {:moveable {:move #(identity %)}} )
-   "
-  [uuid components]
+  "Returns a hashmap representing the entities identity, components and systems.
+   Validates 
+
+   Example:
+   (mk-entity :player {:moveable {:move f}})"
+  [uuid components systems]
   ;; TODO validate that each component has all required component fns
   ;; implemented. Can we do this at compile time?
-  {:uuid uuid
-   :components components})
+
+  [entity components systems])
+
+(defn add-entity
+  "Adds an entity to the game state hashmap or overwrites it if it
+   already exists.
+
+   Example:
+   (let [[e c s] (mk-entity :p1 [] []
+     (add-entity game-state e c s)"
+  [state entity components systems]
+  (deep-merge state {:entities entity
+                     :components components
+                     :systems systems}))
+
+(defn add-system
+  "Adds or overwrites a system for the given entity-id and component"
+  [state entity-id component system f]
+  (assoc-in state [:systems entity-id component system] f))
+
+(defn remove-entity
+  "Remove an entity and all of it's constituant components and systems"
+  [])
 
 (defn implements-component? [entity component]
   (boolean (some #{component} (:components entity))))

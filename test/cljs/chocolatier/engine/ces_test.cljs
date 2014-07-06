@@ -6,18 +6,7 @@
 
 
 (deftest test-iter-fns
-  "Test iter-fns does what we expect"
   (is (= (ces/iter-fns 0 [inc inc inc]) 3)))
-
-(defn test-system
-  "Call the test method for all Testable entities"
-  [state]
-  (let [ents (:entities state)
-        entities (filter #(implements? :testable (second %)) ents)
-        ids (map first entities)]
-    ;; Since each protocol returns a new state, we can iterate through
-    ;; all by using iter-fns an the test method
-    (iter-fns state (for [i ids] (partial identity i)))))
 
 (defn fixed-frame-game-loop
   "Simple game loop that is called n times and returns the last game state."
