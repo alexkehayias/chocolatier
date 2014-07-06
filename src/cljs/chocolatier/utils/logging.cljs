@@ -1,5 +1,6 @@
 (ns chocolatier.utils.logging)
 
+(enable-console-print!)
 (def log-level (atom :info))
 
 ;; TODO make sure that the client supports console.log

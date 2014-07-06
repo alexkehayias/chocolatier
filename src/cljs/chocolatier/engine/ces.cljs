@@ -63,7 +63,7 @@
         ids (map first entities)]
     ;; Since each protocol returns a new state, we can iterate through
     ;; all by using iter-fns an the test method
-    (iter-fns state (for [i ids] (partial test i)))))
+    (iter-fns state (for [i ids] (partial identity i)))))
 
 ;; Example game state
 (def test-state
@@ -73,10 +73,9 @@
    ;; Components for each entity that implements a component
    :components {:player {:testable {}}}
    :systems {:player {:testable {:test #(do (println "hello from test") %)
-                                 :identity #(identity %)}}}}
-  )
+                                 :identity #(identity %)}}}})
 
-;; FIX this will through a null pointer if there is no
+;; FIX this will throw a null pointer if there is no
 ;; matching system for the entity
 
 ;; This only operates on entities, can a system work on something

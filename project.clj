@@ -3,10 +3,15 @@
   :source-paths ["src/clj" "src/cljs"]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-2138"]
+                 
+                 ;; Web server
                  [ring "1.2.0"]
                  [compojure "1.1.5"]
                  [enlive "1.1.1"]
-                 [prismatic/dommy "0.1.1"]]
+
+                 ;; cljs
+                 [prismatic/dommy "0.1.1"]
+                 [com.cemerick/clojurescript.test "0.3.1"]]
   :profiles {:dev {:plugins [[com.cemerick/austin "0.1.3"]
                              [lein-cljsbuild "1.0.1"]]
                    :cljsbuild {:builds [{:source-paths ["src/cljs"]

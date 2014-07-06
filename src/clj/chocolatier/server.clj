@@ -39,7 +39,11 @@
   ;;(GET "/*" req (homepage))
   )
 
-(defonce server
-  (let [server (ring.adapter.jetty/run-jetty #'site {:port 9000 :join? false})]
+(defn mk-server [& [options]]
+  (let [options (merge {:port 9000 :join? false} options) 
+        server (ring.adapter.jetty/run-jetty #'site options)]
     (connect-to-brepl (reset-brepl-env!))
     #(.stop server)))
+
+(defonce server
+  (mk-server))
