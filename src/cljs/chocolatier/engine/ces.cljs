@@ -2,26 +2,31 @@
 
 ;; Gameloop:   recursive function that calls all systems in a scene
 ;;
-;; Scenes:     collection of systems used by the game loop
+;; Scenes:     collection of system functions called by the game loop
 ;;
 ;; Systems:    functions that operate on components and return
-;;             the game state. They are represented as a nested
-;;             hashmap i.e {:testable {:test fn1 :identity identity}}
+;;             updated game state.
 ;;
-;; Entities:   unique IDs that have component implementation data
-;;             Represented as a hashmap i.e {:player {:components []}}
+;; Entities:   unique IDs that have a list of components to
+;;             participate in
 ;;
-;; Components: hold state relating to a certain aspect.
-;;             Queryable based on a entity uuid
+;; Components: hold state and lists of functions relating to a certain aspect.
 ;;
-;; State:      a nested hashmap
-;;             {:player
-;;               {:testable {:x 1 :y 2}}
-;;              :monster {:testable {:x 2 :y 3}}}
+;; State:      stores state for components, entities, and systems
 ;;
 ;; Using one state hashmap should be performant enough even though it
-;; create a new copy on every change to state in the game loop due to
+;; creates a new copy on every change to state in the game loop due to
 ;; structural sharing
+
+(def SCENES {})
+(def STATE {})
+
+(defn add-scene
+  "Add or update existing scene in the scenes hashmap"
+  [scenes-hm uid fns]
+  (assoc scenes-hm uid fns))
+
+(println "test add-scene" (add-scene SCENES :yo [identity]))
 
 (defn iter-fns
   "Pass an initial value through a collection of functions with the 
@@ -29,6 +34,18 @@
    function."
   [init fn-coll]
   ((apply comp fn-coll) init))
+
+(println "test iter-fns" (iter-fns {} [#(assoc % :yo :dawg)]))
+
+(defn game-loop
+  [scenes scene-id state frame-count]
+  (if (< frame-count 10)
+    (recur scenes scene-id
+           (iter-fns state (scene-id scenes))
+           (inc frame-count))
+    state))
+
+(println "test game-loop" (game-loop {:yo [#(assoc % :yo :dawg)]} :yo {} 0))
 
 (defn deep-merge
   "Recursively merges maps. If vals are not maps, the last value wins.
@@ -38,86 +55,82 @@
     (apply merge-with deep-merge vals)
     (last vals)))
 
-(defn mk-component
-  [component-id fields & [init-state]]
-  (let [default-state (reduce into {} (for [f fields] {f nil}))
-        init-state (or init-state default-state)]
-    {component-id {:fields fields
-                   :init-state init-state}}))
+(println "test deep-merge" (deep-merge {:a 1} {:b {:c 2}}))
 
-(defn add-component
-  "Adds a component for the given entity-id and component"
-  [state component]
-  (assoc-in state [:components :_meta] component))
+(defn entities-with-component
+  "Takes a hashmap and returns all keys whose values contain component-id"
+  [entities component-id]
+  (map first
+       (filter #(boolean (some #{component-id} (second %))) entities)))
+
+(println "test entities-with-component" (entities-with-component {:a [:b]} :b))
+
+(defn mk-system-fn
+  "Returns a function representing a system.
+
+   Has two arrities:
+   - [f] function f is called with state and wrapped to merge the return
+     value of the function with state
+   - [component-id f] function f is called with state and a collection of
+     entity ids that match the given component id. Results are merged with
+     state"
+  ([f]
+   (fn [state]
+     (deep-merge state (f state (:entities state)))))  
+  ([f component-id]
+   (fn [state]
+     (let [entities (entities-with-component component-id (:entities state))]
+       (deep-merge state (f state entities))))))
+
+(println "test mk-system-fn"
+         ((mk-system-fn (fn [s ents] s) :b) {:entities {:a [:b]}}) )
 
 (defn mk-entity
-  "Returns a hashmap representing the entities identity, components and systems.
-   Validates 
+  "Adds entity with uid that has component-ids into state"
+  [state uid component-ids]
+  (assoc-in state [:entities uid] component-ids))
 
-   Example:
-   (mk-entity :player {:moveable {:move f}})"
-  [uuid components systems]
-  ;; TODO validate that each component has all required component fns
-  ;; implemented. Can we do this at compile time?
+(println "test mk-entity"
+         (mk-entity {} :player1 [:a :b]))
 
-  [entity components systems])
+(defn get-component-state
+  [state component-id entity-id]
+  (get-in state [:components component-id :state entity-id]))
 
-(defn add-entity
-  "Adds an entity to the game state hashmap or overwrites it if it
-   already exists.
+(defn mk-component-state
+  "Returns a hashmap that can be merged into the state hashmap
+   to store the state for the given component/entity id"
+  [component-id entity-id val]
+  {:components {component-id {:state {entity-id val}}}})
 
-   Example:
-   (let [[e c s] (mk-entity :p1 [] []
-     (add-entity game-state e c s)"
-  [state entity components systems]
-  (deep-merge state {:entities entity
-                     :components components
-                     :systems systems}))
+(println "test mk-component-state"
+         (mk-component-state :foo :bar {}))
 
-(defn add-system
-  "Adds or overwrites a system for the given entity-id and component"
-  [state entity-id component system f]
-  (assoc-in state [:systems entity-id component system] f))
+(defn mk-component-fn
+  "Wraps function f with parameters for the component state for the
+   corresponding entity. Return results of f are formatted so it can be
+   merged into the game state."
+  [component-id f]
+  (fn [state entity-id]
+    (mk-component-state
+     component-id
+     entity-id
+     (f entity-id
+        (get-component-state state component-id entity-id)))))
 
-(defn remove-entity
-  "Remove an entity and all of it's constituant components and systems"
-  [])
+(println "test mk-component-fn"
+         ((mk-component-fn :test (fn [& args] (identity {:foo "bar"})))
+          {} :yo))
 
-(defn implements-component? [entity component]
-  (boolean (some #{component} (:components entity))))
+(defn mk-component
+  "Returns an updated state hashmap with the given component
+   Wraps each function in fns with mk-component-fn.
 
-(defn filter-by-component
-  "Takes a vector of id, hashmap pairs where the hashmap has a key
-   for :components that the entitity implements.
+   The return value of any component function should be the updated
+   component state which will be merged into the overall state"
+  [state uid fns]
+  (let [wrapped-fns (for [f fns] (mk-component-fn uid f))]
+    (assoc state :components {uid {:fns fns :state {}}})))
 
-   Returns a vector of ids that implement component."
-  [entities component]
-  (map first
-       (filter #(implements-component? (second %) component) entities)))
-
-(defn get-system-fns
-  "Returns a vector of functions for the component."
-  [systems ids component]
-  (map #(get-in systems [% component]) ids))
-
-;; This only operates on entities, can a system work on something
-;; other than entities? What about game meta data?
-(defn exec-system
-  "Execute the component by calling each component function in order."
-  [state component fn-keys]
-  (let [;; Get all entities that implement this component
-        ids (filter-by-component (seq (:entities state)) component)
-        ;; Get the system for the matching component
-        component-fns (get-system-fns (:systems state) ids component)
-        ;; Make a sequence of all the functions to call in order as
-        ;; specified by fn-keys
-        fns (reduce into [] (for [k fn-keys] (map k component-fns)))] 
-    (iter-fns state fns)))
-
-(defn mk-system-spec
-  "Convenience wrapper so you don't have to specify vectors of vectors.
-
-   Example:
-   (mk-system-spec [:my-sys [:f1 :f2]]
-                   [:my-other-sys [:f3 :f4]])"
-  [& specs] specs)
+(println "test mk-component"
+         (mk-component {} :my-component [identity]))
