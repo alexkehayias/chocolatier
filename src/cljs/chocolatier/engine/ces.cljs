@@ -20,9 +20,12 @@
 
 
 (defn mk-scene
-  "Add or update existing scene in the scenes hashmap"
-  [state uid fns]
-  (assoc-in state [:scenes uid] fns))
+  "Add or update existing scene in the game state.
+
+   system-ids are a collection of keywords referencing a system by
+   their unique ID."
+  [state uid system-ids]
+  (assoc-in state [:scenes uid] system-ids))
 
 (println "test add-scene" (mk-scene {} :yo [identity]))
 
@@ -35,10 +38,17 @@
 
 (println "test iter-fns" (iter-fns {} [#(assoc % :yo :dawg)]))
 
+(defn get-system-fns
+  "Return system functions with an id that matches system-ids in order."
+  [state system-ids]
+  (map #(% (:systems state)) system-ids))
+
 (defn game-loop
   [state scene-id frame-count]
+  (println (get-system-fns state (-> state :scenes scene-id)))
+  (println state)
   (if (< frame-count 10)
-    (recur (iter-fns state (-> state :scenes scene-id))
+    (recur (iter-fns state (get-system-fns state (-> state :scenes scene-id)))
            scene-id
            (inc frame-count))
     state))
@@ -109,7 +119,7 @@
           {} :yo))
 
 (defn mk-component
-  "Returns an updated state hashmap with the given component
+  "Returns an updated state hashmap with the given component.
    Wraps each function in fns with mk-component-fn.
 
    The return value of any component function should be the updated
@@ -142,12 +152,21 @@
 (println "test mk-system-fn"
          ((mk-system-fn (fn [s fns ents] s) :b) {:entities {:a [:b]}}))
 
+(defn mk-system
+  "Add the system function to the state. Wraps the system function using
+   mk-system-fn. Returns an update hashmap."
+  [state uid f & [component-id]]
+  (let [system-fn (if component-id
+                    (mk-system-fn f component-id)
+                    (mk-system-fn f))]
+    (assoc-in state [:systems uid] system-fn)))
+
 (defn integration-test
   "Test the entire CES implementation with a system that changes component state"
   []
-  (let [sys-fn (fn [state fns entity-ids]
-                 (apply deep-merge (for [f fns, e entity-ids] (f state e))))
-        test-system (mk-system-fn sys-fn :testable)
+  (let [test-system-fn (fn [state fns entity-ids]
+                         (apply deep-merge (for [f fns, e entity-ids]
+                                             (f state e))))
         test-fn (fn [component-state entity-id]
                   (println "testing" entity-id
                            component-state "->"
@@ -155,7 +174,8 @@
                                   (inc (or (:x component-state) 0))))
                   (assoc component-state :x (inc (or (:x component-state) 0))))
         state (-> {}
-                  (mk-scene :test-scene [test-system])
+                  (mk-scene :test-scene [:test-system])
+                  (mk-system :test-system test-system-fn :testable)
                   (mk-entity :player1 [:testable])
                   (mk-entity :player2 [:testable])
                   (mk-component :testable [test-fn]))]
