@@ -18,15 +18,13 @@
 ;; creates a new copy on every change to state in the game loop due to
 ;; structural sharing
 
-(def SCENES {})
-(def STATE {})
 
-(defn add-scene
+(defn mk-scene
   "Add or update existing scene in the scenes hashmap"
   [scenes-hm uid fns]
   (assoc scenes-hm uid fns))
 
-(println "test add-scene" (add-scene SCENES :yo [identity]))
+(println "test add-scene" (mk-scene {} :yo [identity]))
 
 (defn iter-fns
   "Pass an initial value through a collection of functions with the 
@@ -55,7 +53,7 @@
     (apply merge-with deep-merge vals)
     (last vals)))
 
-(println "test deep-merge" (deep-merge {:a 1} {:b {:c 2}}))
+(println "test deep-merge" (deep-merge {:a {:b 1}} {:a {:d 2}}))
 
 (defn entities-with-component
   "Takes a hashmap and returns all keys whose values contain component-id"
@@ -63,27 +61,8 @@
   (map first
        (filter #(boolean (some #{component-id} (second %))) entities)))
 
-(println "test entities-with-component" (entities-with-component {:a [:b]} :b))
-
-(defn mk-system-fn
-  "Returns a function representing a system.
-
-   Has two arrities:
-   - [f] function f is called with state and wrapped to merge the return
-     value of the function with state
-   - [component-id f] function f is called with state and a collection of
-     entity ids that match the given component id. Results are merged with
-     state"
-  ([f]
-   (fn [state]
-     (deep-merge state (f state (:entities state)))))  
-  ([f component-id]
-   (fn [state]
-     (let [entities (entities-with-component component-id (:entities state))]
-       (deep-merge state (f state entities))))))
-
-(println "test mk-system-fn"
-         ((mk-system-fn (fn [s ents] s) :b) {:entities {:a [:b]}}) )
+(println "test entities-with-component"
+         (entities-with-component {:a [:b] :b [:b]} :b))
 
 (defn mk-entity
   "Adds entity with uid that has component-ids into state"
@@ -93,9 +72,14 @@
 (println "test mk-entity"
          (mk-entity {} :player1 [:a :b]))
 
+(defn get-component-fns
+  [state component-id]
+  (get-in state [:components component-id :fns]))
+
 (defn get-component-state
   [state component-id entity-id]
-  (get-in state [:components component-id :state entity-id]))
+  (or (get-in state [:components component-id :state entity-id])
+      {}))
 
 (defn mk-component-state
   "Returns a hashmap that can be merged into the state hashmap
@@ -112,11 +96,13 @@
    merged into the game state."
   [component-id f]
   (fn [state entity-id]
-    (mk-component-state
-     component-id
-     entity-id
-     (f entity-id
-        (get-component-state state component-id entity-id)))))
+    (let [r (mk-component-state
+             component-id
+             entity-id
+             (f (get-component-state state component-id entity-id)
+                entity-id))]
+      (println "component-fn result" r)
+      r)))
 
 (println "test mk-component-fn"
          ((mk-component-fn :test (fn [& args] (identity {:foo "bar"})))
@@ -130,7 +116,50 @@
    component state which will be merged into the overall state"
   [state uid fns]
   (let [wrapped-fns (for [f fns] (mk-component-fn uid f))]
-    (assoc state :components {uid {:fns fns :state {}}})))
+    (assoc state :components {uid {:fns wrapped-fns :state {}}})))
 
 (println "test mk-component"
          (mk-component {} :my-component [identity]))
+
+(defn mk-system-fn
+  "Returns a function representing a system.
+
+   Has two arrities:
+   - [f] function f is called with state and wrapped to merge the return
+     value of the function with state
+   - [f component-id] function f is called with state, a collection of
+     component functions, and a collection of entity ids that match the
+     given component id. Results are merged with game state."
+  ([f]
+   (fn [state]
+     (deep-merge state (f state (:entities state)))))  
+  ([f component-id]
+   (fn [state]
+     (let [entities (entities-with-component (:entities state) component-id)
+           component-fns (get-component-fns state component-id)]
+       (deep-merge state (f state component-fns entities))))))
+
+(println "test mk-system-fn"
+         ((mk-system-fn (fn [s fns ents] s) :b) {:entities {:a [:b]}}))
+
+(defn integration-test
+  "Test the entire CES implementation with a system that changes component state"
+  []
+  (let [sys-fn (fn [state fns entity-ids]
+                 (apply deep-merge (for [f fns, e entity-ids] (f state e))))
+        test-system (mk-system-fn sys-fn :testable)
+        scenes (-> {}
+                   (mk-scene :test-scene [test-system]))
+        test-fn (fn [component-state entity-id]
+                  (println "testing" entity-id
+                           component-state "->"
+                           (assoc component-state :x
+                                  (inc (or (:x component-state) 0))))
+                  (assoc component-state :x (inc (or (:x component-state) 0))))
+        state (-> {}
+                  (mk-entity :player1 [:testable])
+                  (mk-entity :player2 [:testable])
+                  (mk-component :testable [test-fn]))]
+    (game-loop scenes :test-scene state 0)))
+
+(println "Running integration-test" (integration-test))
