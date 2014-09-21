@@ -21,8 +21,8 @@
 
 (defn mk-scene
   "Add or update existing scene in the scenes hashmap"
-  [scenes-hm uid fns]
-  (assoc scenes-hm uid fns))
+  [state uid fns]
+  (assoc-in state [:scenes uid] fns))
 
 (println "test add-scene" (mk-scene {} :yo [identity]))
 
@@ -36,14 +36,14 @@
 (println "test iter-fns" (iter-fns {} [#(assoc % :yo :dawg)]))
 
 (defn game-loop
-  [scenes scene-id state frame-count]
+  [state scene-id frame-count]
   (if (< frame-count 10)
-    (recur scenes scene-id
-           (iter-fns state (scene-id scenes))
+    (recur (iter-fns state (-> state :scenes scene-id))
+           scene-id
            (inc frame-count))
     state))
 
-(println "test game-loop" (game-loop {:yo [#(assoc % :yo :dawg)]} :yo {} 0))
+(println "test game-loop" (game-loop {:yo [#(assoc % :yo :dawg)]} :yo 0))
 
 (defn deep-merge
   "Recursively merges maps. If vals are not maps, the last value wins.
@@ -148,8 +148,6 @@
   (let [sys-fn (fn [state fns entity-ids]
                  (apply deep-merge (for [f fns, e entity-ids] (f state e))))
         test-system (mk-system-fn sys-fn :testable)
-        scenes (-> {}
-                   (mk-scene :test-scene [test-system]))
         test-fn (fn [component-state entity-id]
                   (println "testing" entity-id
                            component-state "->"
@@ -157,9 +155,10 @@
                                   (inc (or (:x component-state) 0))))
                   (assoc component-state :x (inc (or (:x component-state) 0))))
         state (-> {}
+                  (mk-scene :test-scene [test-system])
                   (mk-entity :player1 [:testable])
                   (mk-entity :player2 [:testable])
                   (mk-component :testable [test-fn]))]
-    (game-loop scenes :test-scene state 0)))
+    (game-loop state :test-scene 0)))
 
 (println "Running integration-test" (integration-test))
