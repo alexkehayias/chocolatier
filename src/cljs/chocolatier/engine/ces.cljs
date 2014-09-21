@@ -142,7 +142,7 @@
      given component id. Results are merged with game state."
   ([f]
    (fn [state]
-     (deep-merge state (f state (:entities state)))))  
+     (deep-merge state (f state))))  
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component (:entities state) component-id)
@@ -173,12 +173,12 @@
                            (assoc component-state :x
                                   (inc (or (:x component-state) 0))))
                   (assoc component-state :x (inc (or (:x component-state) 0))))
-        state (-> {}
-                  (mk-scene :test-scene [:test-system])
-                  (mk-system :test-system test-system-fn :testable)
-                  (mk-entity :player1 [:testable])
-                  (mk-entity :player2 [:testable])
-                  (mk-component :testable [test-fn]))]
-    (game-loop state :test-scene 0)))
+        init-state (-> {}
+                       (mk-scene :test-scene [:test-system])
+                       (mk-system :test-system test-system-fn :testable)
+                       (mk-entity :player1 [:testable])
+                       (mk-entity :player2 [:testable])
+                       (mk-component :testable [test-fn]))]
+    (game-loop init-state :test-scene 0)))
 
 (println "Running integration-test" (integration-test))
