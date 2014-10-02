@@ -4,7 +4,8 @@
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.input :refer [input-system]]
             [chocolatier.engine.systems.render :refer [render-system]]
-            [chocolatier.engine.components.renderable :refer [update-sprite]])
+            [chocolatier.engine.components.renderable :refer [update-sprite]]
+            [chocolatier.entities.player :refer [create-player]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
 
@@ -57,6 +58,7 @@
         init-duration 0
         step (/ 1 frame-rate)
         rendering-engine {:renderer renderer :stage stage}
+        mk-player (create-player :player1 20 20 0 0 40)
         init-state (->  {:game {:rendering-engine rendering-engine}}
                         (ces/mk-scene :default [:input
                                                 :render])
@@ -65,7 +67,8 @@
                         ;; TODO system for reacting to user input
                         ;; Render system for drawing sprites
                         (ces/mk-system :render render-system :renderable)
-                        (ces/mk-component :renderable [update-sprite]))
+                        (ces/mk-component :renderable [update-sprite])
+                        mk-player)
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"

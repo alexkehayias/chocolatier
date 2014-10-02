@@ -7,6 +7,6 @@
   [component-state entity-id]
   (let [sprite (:sprite component-state)]
     ;; Mutate the x and y position
-    (set! (.-position.x sprite) 25)
-    (set! (.-position.y sprite) 25)
+    (set! (.-position.x sprite) (:pos-x component-state))
+    (set! (.-position.y sprite) (:pos-x component-state))
     component-state))
