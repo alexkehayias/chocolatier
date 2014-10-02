@@ -1,5 +1,7 @@
 (ns chocolatier.server
-  (:use [chocolatier.dev :only [reset-brepl-env! connect-to-brepl]])
+  (:use [chocolatier.dev :only [reset-brepl-env!
+                                connect-to-brepl
+                                get-repl-client-js]])
   (:require [cemerick.austin.repls :refer (browser-connected-repl-js)]
             [net.cgrand.enlive-html :as enlive]
             [compojure.route :refer (resources)]
@@ -16,15 +18,12 @@
   [:head] (enlive/append
            (enlive/html [:link {:rel "stylesheet"
                                 :type "text/css"
-                                :href "/static/styles/master.css"}])) )
+                                :href "/static/styles/master.css"}])))
 
 (enlive/deftemplate app "app.html"
   []
-  [:head] (enlive/append
-           (enlive/html [:link {:rel "stylesheet"
-                                :type "text/css"
-                                :href "/static/styles/master.css"}]))
   [:body] (enlive/append
+           (enlive/html [:script (get-repl-client-js)])
            (enlive/html [:script (browser-connected-repl-js)])))
 
 (defn source-files []
@@ -45,5 +44,5 @@
     (connect-to-brepl (reset-brepl-env!))
     #(.stop server)))
 
-(defonce server
+(def server
   (mk-server))
