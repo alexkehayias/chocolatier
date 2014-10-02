@@ -11,8 +11,14 @@
 (defn connect-to-brepl [repl-env]
   (brepl/cljs-repl repl-env))
 
+;; HACK This circumvents the need to have clojure.browser.repl
+;; required by a compiled js file. Otherwise it causes race conditions
+;; and may not load the brepl at all after the page is loaded.
 
-;; HACK to get access to repl client js
+;; After reading through the austin source code we see that the server
+;; <session-id>repl/start url always works and it always has a script
+;; tag before the browser repl js that looks like all the goog code
+;; for dependencies. Having goog present fixes it all up.
 (defn repl-client-js [session-id]
   (if-let [session (get (deref @#'aus/sessions) session-id)]
     (slurp @(:client-js session))
