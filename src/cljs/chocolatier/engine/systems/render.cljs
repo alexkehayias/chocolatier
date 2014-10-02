@@ -1,23 +1,14 @@
 (ns chocolatier.engine.systems.render
   "System for rendering entities"
   (:use [chocolatier.utils.logging :only [debug info warn error]])
-  (:require [chocolatier.engine.components :refer [Renderable]]
-            [chocolatier.engine.components :as c]))
+  (:require [chocolatier.engine.ces :as ces]))
 
 
-(defn render-system [state]
-  (let [entities (:entities state)
-        tile-map (:tile-map state)
-        {:keys [stage renderer]} (-> state :game deref)]
-    ;; Render tile map changes
-    ;; tile-map may be an empty hash
-    (when (satisfies? Renderable @tile-map)
-      (swap! tile-map #(c/render % state)))    
-    ;; Render changes to entities
-    (swap! entities
-         #(into % (for [[id entity] (seq %)] 
-                    (if (satisfies? Renderable entity)
-                      [id (c/render entity stage)]
-                      [id entity]))))
-    ;; Render to the stage
-    (.render renderer stage)))
+(defn render-system
+  "Mutates all sprites then renders the stage in one shot. Returns update state."
+  [state fns entity-ids]
+  (let [render-state (for [f fns, e entity-ids]
+                       (f state e))
+        updated-state (apply ces/deep-merge render-state)]
+    ;; (.render renderer stage)
+    updated-state))

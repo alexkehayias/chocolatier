@@ -2,7 +2,9 @@
   (:use [chocolatier.utils.logging :only [debug error]])
   (:require [dommy.core :as dom]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.input :refer [input-system]])
+            [chocolatier.engine.systems.input :refer [input-system]]
+            [chocolatier.engine.systems.render :refer [render-system]]
+            [chocolatier.engine.components.renderable :refer [update-sprite]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
 
@@ -18,7 +20,6 @@
     (js/window.performance.now)
     ((aget (new js/Date) "getTime"))))
 
-
 (defn game-loop
   "Fixed timestep gameloop that calculates changes based on the 
    time duration since last run.
@@ -30,9 +31,7 @@
   [state scene-id]
   (let [systems (ces/get-system-fns state (-> state :scenes scene-id))
         updated-state (ces/iter-fns state systems)]
-    (request-animation #(game-loop now dt step))
-    (throw (js/Error. "Stop game"))
-    (recur updated-state scene-id)))
+    (request-animation #(game-loop updated-state scene-id))))
 
 ;; TODO this should be used as a fallback if requestAnimationFrame is
 ;; not available in this browser
@@ -59,9 +58,14 @@
         step (/ 1 frame-rate)
         rendering-engine {:renderer renderer :stage stage}
         init-state (->  {:game {:rendering-engine rendering-engine}}
-                        (ces/mk-scene :default [:input])
+                        (ces/mk-scene :default [:input
+                                                :render])
                         ;; Updates the user input from keyboard
-                        (ces/mk-system :input input-system))
+                        (ces/mk-system :input input-system)
+                        ;; TODO system for reacting to user input
+                        ;; Render system for drawing sprites
+                        (ces/mk-system :render render-system :renderable)
+                        (ces/mk-component :renderable [update-sprite]))
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"

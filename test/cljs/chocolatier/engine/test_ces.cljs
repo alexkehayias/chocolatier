@@ -1,7 +1,7 @@
 (ns chocolatier.engine.test-ces
   (:require-macros [cemerick.cljs.test
                     :refer [is deftest]])
-  (:require [cemerick.cljs.test :as t]
+  (:require [cemerick.cljs.test :refer [test-ns]]
             [chocolatier.engine.ces :as ces]))
 
 
