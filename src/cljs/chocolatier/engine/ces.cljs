@@ -38,7 +38,9 @@
 (defn get-system-fns
   "Return system functions with an id that matches system-ids in order."
   [state system-ids]
-  (map #(% (:systems state)) system-ids))
+  (map #(or (% (:systems state))
+            (throw (js/Error. (str "System " % " not found") % )))
+       system-ids))
 
 (defn deep-merge
   "Recursively merges maps. If vals are not maps, the last value wins.
