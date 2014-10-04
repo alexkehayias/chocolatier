@@ -21,10 +21,11 @@
 
 (defmethod update-sprite :player1
   [component-state entity-id]
-  (let [sprite (:sprite component-state)]
+  (let [sprite (:sprite component-state)
+        {:keys [pos-x pos-y offset-x offset-y]} component-state
+        updated-state (assoc component-state :pos-x (- pos-x offset-x )
+                                             :pos-y (- pos-y offset-y))]
     ;; Mutate the x and y position
-    (set! (.-position.x sprite) (:pos-x component-state))
-    (set! (.-position.y sprite) (:pos-x component-state))
-    (if (< (:pos-x component-state) 10)
-      (assoc component-state :pos-x (+ 1 (:pos-x component-state)))
-      (assoc component-state :pos-x (- (:pos-x component-state) 10)))))
+    (set! (.-position.x sprite) (:pos-x updated-state))
+    (set! (.-position.y sprite) (:pos-y updated-state))
+    updated-state))
