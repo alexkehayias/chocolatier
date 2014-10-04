@@ -13,6 +13,7 @@ A work-in-progress web game engine for repl driven game development written in C
 The game engine implemented using a modified entity component system which organizes aspects of a game modularly. Think about it less as a bunch of objects with their own state and methods and more like a database where you query for functionality, state, based on a certain aspect or entity.
 
 Organization:
+
 1. Scene - collection of system functions called by the game loop (main menu, random encounter, world map, etc)
 2. System - functions that operates on a component and returns updated game state. Examples: input, rendering, collision detection
 3. Components - hold state and component functions relating to a certain aspect. Polymorphism can be used to dispatch on entity IDs (or however else you want) for finer control. Examples: moveable, user controllable, collidable, destructable
