@@ -21,6 +21,8 @@
     (js/window.performance.now)
     ((aget (new js/Date) "getTime"))))
 
+(def running (atom true))
+
 (defn game-loop
   "Fixed timestep gameloop that calculates changes based on the 
    time duration since last run.
@@ -32,7 +34,9 @@
   [state scene-id]
   (let [systems (ces/get-system-fns state (-> state :scenes scene-id))
         updated-state (ces/iter-fns state systems)]
-    (request-animation #(game-loop updated-state scene-id))))
+    (if @running
+      (request-animation #(game-loop updated-state scene-id))
+      (debug state))))
 
 ;; TODO this should be used as a fallback if requestAnimationFrame is
 ;; not available in this browser
@@ -43,10 +47,11 @@
   (.setInterval js/window f (/ 1000 n))
   #(.clearInterval f (/ 1000 n)))
 
-(defn start-game
+(defn start-game!
   "Renders the game every n seconds.
    Hashmap of game properties."
   []
+  (reset! running true)
   (let [;; TODO reset the game height on screen resize
         width (aget js/window "innerWidth")
         height (aget js/window "innerHeight")
@@ -85,3 +90,14 @@
              ;; Start the game loop
              (game-loop init-state :default)))
     (.load asset-loader)))
+
+(defn cleanup! []
+  (try (dom/remove! (sel1 :canvas))
+       (catch js/Object e (error (str e)))))
+
+(defn stop-game! []
+  (reset! running false))
+
+(defn reset-game! []
+  (cleanup!)
+  (start-game!))

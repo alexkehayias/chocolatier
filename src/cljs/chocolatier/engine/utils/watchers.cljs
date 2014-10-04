@@ -1,4 +1,4 @@
-(ns chocolatier.engine.watchers
+(ns chocolatier.engine.utils.watchers
   (:use [chocolatier.utils.logging :only [debug info warn error]])
   (:require [clojure.set :as set]))
 

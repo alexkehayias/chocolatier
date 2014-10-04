@@ -1,6 +1,6 @@
 (ns chocolatier.engine.systems.input
   (:require [chocolatier.utils.logging :refer [debug]]
-            [chocolatier.engine.watchers :refer [hashmap-watcher]]))
+            [chocolatier.engine.utils.watchers :refer [hashmap-watcher]]))
 
 
 (def KEYBOARD-INPUT (atom nil))
