@@ -6,6 +6,8 @@
             [chocolatier.engine.systems.user-input :refer [user-input-system]]
             [chocolatier.engine.systems.render :refer [render-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
+            [chocolatier.engine.components.controllable :refer [react-to-input
+                                                                include-input-state]]
             [chocolatier.entities.player :refer [create-player]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
@@ -67,12 +69,17 @@
         mk-player (create-player :player1 20 20 0 0 40)
         init-state (->  {:game {:rendering-engine rendering-engine}}
                         (ces/mk-scene :default [:input
+                                                :user-input
                                                 :render])
                         ;; Updates the user input from keyboard
                         (ces/mk-system :input input-system)
                         ;; React to user input
-                        (ces/mk-system :input user-input-system :controllable)
-                        (ces/mk-component :controllable [react-to-user-input])
+                        (ces/mk-system :user-input user-input-system :controllable)
+                        (ces/mk-component :controllable
+                                          ;; Calls react-to-user-input
+                                          ;; with custom arguments
+                                          ;; from get-input state
+                                          [[react-to-input include-input-state]])
                         ;; Render system for drawing sprites
                         (ces/mk-system :render render-system :renderable)
                         (ces/mk-component :renderable [update-sprite])

@@ -1,4 +1,5 @@
-(ns chocolatier.engine.ces)
+(ns chocolatier.engine.ces
+  (:require [chocolatier.utils.logging :as log]))
 
 ;; Gameloop:   recursive function that calls all systems in a scene
 ;;
@@ -60,12 +61,13 @@
 
 (defn get-component-fns
   [state component-id]
-  (get-in state [:components component-id :fns]))
+  (or (get-in state [:components component-id :fns])
+      (throw (js/Error. (str "No component functions found for " component-id)))))
 
 (defn get-component-state
   [state component-id entity-id]
   (or (get-in state [:components component-id :state entity-id])
-      {}))
+      (throw (js/Error. (str "No component functions found for " component-id)))))
 
 (defn mk-component-state
   "Returns a hashmap that can be merged into the state hashmap
@@ -87,6 +89,7 @@
      allows custom arguments to get access to any state in the game.
      NOTE: must return a sequence of arguments to be applied to f"
   [component-id f & [args-fn]]
+  (log/debug "mk-component-fn" component-id "args-fn?" (boolean args-fn))
   (fn [state entity-id]
     (if args-fn
       (apply f (args-fn state component-id entity-id))
@@ -105,12 +108,14 @@
    - fns: a vector of functions. Optionally these can be a pair of
      component fn and an args fn"
   [state uid fns]
+  (log/debug "mk-component:" uid "# of fns:" (count fns))
   (let [wrapped-fns (for [f fns]
                       (if (satisfies? ISeqable f)
-                        (apply (partial mk-component-fn uid) f)
-                        (mk-component-fn uid f)))]
+                        (do (log/debug "mk-component: found custom args fn")
+                            (apply (partial mk-component-fn uid) f))
+                        (mk-component-fn uid f) ))]
     ;; Add the component to state map and initialize component state
-    (assoc state :components {uid {:fns wrapped-fns :state {}}})))
+    (assoc-in state [:components uid] {:fns wrapped-fns :state {}})))
 
 (defn mk-system-fn
   "Returns a function representing a system.
@@ -134,6 +139,7 @@
   "Add the system function to the state. Wraps the system function using
    mk-system-fn. Returns an update hashmap."
   [state uid f & [component-id]]
+  (log/debug "mk-system:" uid "component-id:" (or component-id "nil"))
   (let [system-fn (if component-id
                     (mk-system-fn f component-id)
                     (mk-system-fn f))]
