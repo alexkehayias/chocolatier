@@ -5,7 +5,7 @@
 ;;
 ;; Scenes:     collection of system functions called by the game loop
 ;;
-;; Systems:    functions that operate on components and return
+;; Systems:    functions that operates on a components and returns
 ;;             updated game state.
 ;;
 ;; Entities:   unique IDs that have a list of components to
@@ -21,10 +21,9 @@
 
 
 (defn mk-scene
-  "Add or update existing scene in the game state.
-
-   system-ids are a collection of keywords referencing a system by
-   their unique ID."
+  "Add or update existing scene in the game state. A scene is a
+   collection of systems. system-ids are a collection of keywords referencing
+   a system by their unique ID."
   [state uid system-ids]
   (assoc-in state [:scenes uid] system-ids))
 

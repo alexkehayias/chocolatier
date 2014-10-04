@@ -2,9 +2,10 @@
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]))
 
+
 (defn include-input-state
-  "State parsing function. Returns a vector of input-state-component-state
-   and entity-id"
+  "State parsing function. Returns a vector of input-state, component-state
+   component-id and entity-id"
   [state component-id entity-id]
   (let [input-state (-> state :game :input)
         component-state (ces/get-component-state state :renderable entity-id)]
