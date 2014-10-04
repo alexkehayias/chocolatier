@@ -64,12 +64,15 @@
 (defn get-component-fns
   [state component-id]
   (or (get-in state [:components component-id :fns])
-      (throw (js/Error. (str "No component functions found for " component-id)))))
+      (throw (js/Error. (str "No component functions found for " component-id
+                             " in" (-> state :components))))))
 
 (defn get-component-state
+  "Returns a hashmap of state associated with the component for the given entity.
+   NOTE: As a convenience, if state is not found it returns an empty hashmap."
   [state component-id entity-id]
   (or (get-in state [:components component-id :state entity-id])
-      (throw (js/Error. (str "No component functions found for " component-id)))))
+      {}))
 
 (defn mk-component-state
   "Returns a hashmap that can be merged into the state hashmap
