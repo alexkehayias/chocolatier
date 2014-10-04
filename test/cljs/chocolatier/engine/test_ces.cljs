@@ -33,6 +33,17 @@
     (is (= result
            {:components {:test {:state {:yo {:foo "bar"}}}}}))))
 
+(deftest test-mk-component-fn-with-args-fn
+  "Call mk-component-fn with the optional args-fn to ensure it calls the
+   component fn correctly."
+  (let [;; The component fn takes a single argument, the state hashmap
+        args-fn (fn [state component-id entity-id] [state])
+        f (ces/mk-component-fn :test identity args-fn)
+        state {:this-is-state nil}
+        actual (f state entity-id)
+        expected state]
+    (is (= actual expected))))
+
 (deftest test-mk-system
   (let [f (ces/mk-system-fn (fn [s fns ents] "hi") :b)
         result (f {:entities {:a [:b]}})]
@@ -52,7 +63,7 @@
   []
   (let [test-system-fn (fn [state fns entity-ids]
                          (apply ces/deep-merge (for [f fns, e entity-ids]
-                                             (f state e))))
+                                                 (f state e))))
         test-fn (fn [component-state entity-id]
                   (println "testing" entity-id
                            component-state "->"

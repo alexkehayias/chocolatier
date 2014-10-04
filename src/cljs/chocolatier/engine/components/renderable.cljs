@@ -25,6 +25,6 @@
     ;; Mutate the x and y position
     (set! (.-position.x sprite) (:pos-x component-state))
     (set! (.-position.y sprite) (:pos-x component-state))
-    (if (< (:pos-x component-state) 50)
+    (if (< (:pos-x component-state) 10)
       (assoc component-state :pos-x (+ 1 (:pos-x component-state)))
-      (assoc component-state :pos-x (- (:pos-x component-state) 50)))))
+      (assoc component-state :pos-x (- (:pos-x component-state) 10)))))

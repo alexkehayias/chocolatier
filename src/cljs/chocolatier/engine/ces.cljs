@@ -74,25 +74,42 @@
   {:components {component-id {:state {entity-id val}}}})
 
 (defn mk-component-fn
-  "Wraps function f with parameters for the component state for the
-   corresponding entity. Return results of f are formatted so it can be
-   merged into the game state."
-  [component-id f]
+  "Wraps component functions so they are called with the entity's 
+   component state and the entity uid. Return value is wrapped in
+   the component-state schema so it can be merged into global state.
+
+   NOTE: The result of calling the component function must be mergeable 
+   with the global state hashmap.
+
+   Optional args:
+   - args-fn: will be called with global state, component-id, entity-id 
+     and the results will be applied to the component function f. This
+     allows custom arguments to get access to any state in the game.
+     NOTE: must return a sequence of arguments to be applied to f"
+  [component-id f & [args-fn]]
   (fn [state entity-id]
-    (mk-component-state
-     component-id
-     entity-id
-     (f (get-component-state state component-id entity-id)
-        entity-id))))
+    (if args-fn
+      (apply f (args-fn state component-id entity-id))
+      (mk-component-state
+       component-id
+       entity-id
+       (f (get-component-state state component-id entity-id)
+          entity-id)))))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.
    Wraps each function in fns with mk-component-fn.
 
-   The return value of any component function should be the updated
-   component state which will be merged into the overall state"
+   - state: global state hashmap
+   - uid: unique identifier for this component
+   - fns: a vector of functions. Optionally these can be a pair of
+     component fn and an args fn"
   [state uid fns]
-  (let [wrapped-fns (for [f fns] (mk-component-fn uid f))]
+  (let [wrapped-fns (for [f fns]
+                      (if (satisfies? ISeqable f)
+                        (apply (partial mk-component-fn uid) f)
+                        (mk-component-fn uid f)))]
+    ;; Add the component to state map and initialize component state
     (assoc state :components {uid {:fns wrapped-fns :state {}}})))
 
 (defn mk-system-fn

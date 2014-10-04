@@ -3,6 +3,7 @@
   (:require [dommy.core :as dom]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.input :refer [input-system]]
+            [chocolatier.engine.systems.user-input :refer [user-input-system]]
             [chocolatier.engine.systems.render :refer [render-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.entities.player :refer [create-player]])
@@ -69,7 +70,9 @@
                                                 :render])
                         ;; Updates the user input from keyboard
                         (ces/mk-system :input input-system)
-                        ;; TODO system for reacting to user input
+                        ;; React to user input
+                        (ces/mk-system :input user-input-system :controllable)
+                        (ces/mk-component :controllable [react-to-user-input])
                         ;; Render system for drawing sprites
                         (ces/mk-system :render render-system :renderable)
                         (ces/mk-component :renderable [update-sprite])
