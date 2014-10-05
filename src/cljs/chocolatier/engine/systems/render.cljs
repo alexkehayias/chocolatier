@@ -1,11 +1,12 @@
 (ns chocolatier.engine.systems.render
   "System for rendering entities"
-  (:use [chocolatier.utils.logging :only [debug info warn error]])
-  (:require [chocolatier.engine.ces :as ces]))
+  (:require [chocolatier.utils.logging :as log]
+            [chocolatier.engine.ces :as ces]))
 
 
 (defn render-system
-  "Mutates all sprites then renders the stage in one shot. Returns update state."
+  "Mutates all sprites then renders the stage in one shot. 
+   Returns updated state."
   [state fns entity-ids]
   (let [{:keys [renderer stage]} (-> state :game :rendering-engine)
         render-state (for [f fns, e entity-ids]

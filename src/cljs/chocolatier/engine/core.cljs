@@ -5,9 +5,12 @@
             [chocolatier.engine.systems.input :refer [input-system]]
             [chocolatier.engine.systems.user-input :refer [user-input-system]]
             [chocolatier.engine.systems.render :refer [render-system]]
+            [chocolatier.engine.systems.collision :refer [collision-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
+            [chocolatier.engine.components.collidable :refer [check-collisions
+                                                              include-collidable-entities]]
             [chocolatier.engine.systems.tiles :refer [tile-system create-tiles!]]
             [chocolatier.entities.player :refer [create-player!]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
@@ -52,8 +55,7 @@
   #(.clearInterval f (/ 1000 n)))
 
 (defn start-game!
-  "Renders the game every n seconds.
-   Hashmap of game properties."
+  "Renders the game every n seconds."
   []
   (reset! running true)
   (let [;; TODO reset the game height on screen resize
@@ -72,6 +74,7 @@
         init-state (->  {:game {:rendering-engine rendering-engine}}
                         (ces/mk-scene :default [:input
                                                 :user-input
+                                                :collision
                                                 :tiles
                                                 :render])
                         ;; Updates the user input from keyboard
@@ -90,6 +93,10 @@
                         ;; Render system for drawing sprites
                         (ces/mk-system :render render-system :renderable)
                         (ces/mk-component :renderable [update-sprite])
+                        ;; Collision detection system
+                        (ces/mk-system :collision collision-system :collidable)
+                        (ces/mk-component :collidable [[check-collisions
+                                                        include-collidable-entities]])
                         ;; Add entities
                         (mk-player))
         ;; PIXI requires a js array not a persistent vector
