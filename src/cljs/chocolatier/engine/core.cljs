@@ -8,7 +8,8 @@
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
-            [chocolatier.entities.player :refer [create-player]])
+            [chocolatier.engine.systems.tiles :refer [tile-system create-tiles!]]
+            [chocolatier.entities.player :refer [create-player!]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
 
@@ -66,10 +67,12 @@
         init-duration 0
         step (/ 1 frame-rate)
         rendering-engine {:renderer renderer :stage stage}
-        mk-player (create-player :player1 20 20 0 0 40)
+        mk-player (create-player! stage :player1 20 20 0 0 40)
+        mk-tiles (create-tiles! stage)
         init-state (->  {:game {:rendering-engine rendering-engine}}
                         (ces/mk-scene :default [:input
                                                 :user-input
+                                                :tiles
                                                 :render])
                         ;; Updates the user input from keyboard
                         (ces/mk-system :input input-system)
@@ -80,10 +83,15 @@
                                           ;; with custom arguments
                                           ;; from get-input state
                                           [[react-to-input include-input-state]])
+                        ;; Draw tile map in background
+                        (ces/mk-system :tiles tile-system)
+                        ;; Initial tile map
+                        (mk-tiles)
                         ;; Render system for drawing sprites
                         (ces/mk-system :render render-system :renderable)
                         (ces/mk-component :renderable [update-sprite])
-                        mk-player)
+                        ;; Add entities
+                        (mk-player))
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"

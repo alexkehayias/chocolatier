@@ -104,13 +104,12 @@
 ;;     ;; TODO set the players direction
 ;;     this))
 
-(defn create-player
+(defn create-player!
   "Create a player by initializing some component state and adding the 
    entity to state. Returns a function that takes a state hashmap."
-  [uid pos-x pos-y map-x map-y hit-radius]
+  [stage uid pos-x pos-y map-x map-y hit-radius]
   (fn [state]
-    (let [stage (-> state :game :rendering-engine :stage)
-          texture (js/PIXI.Texture.fromImage "static/images/bunny.png")
+    (let [texture (js/PIXI.Texture.fromImage "static/images/bunny.png")
           sprite (js/PIXI.Sprite. texture)
           [h w] (map #(aget sprite %) ["height" "width"])
           init-render-state {:sprite sprite
