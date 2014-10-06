@@ -54,8 +54,14 @@
         offsets 
         (recur updated-offsets remaining)))))
 
+(defmethod react-to-input :default
+  [input-state component-state component-id entity-id]
+  {})
+
 (defmethod react-to-input :player1
   [input-state component-state component-id entity-id]
   (let [new-comp-state (merge component-state (get-offsets input-state))
         {:keys [offset-x offset-y]} new-comp-state]
     (ces/mk-component-state :renderable entity-id new-comp-state)))
+
+

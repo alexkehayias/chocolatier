@@ -69,7 +69,8 @@
         init-duration 0
         step (/ 1 frame-rate)
         rendering-engine {:renderer renderer :stage stage}
-        mk-player (create-player! stage :player1 20 20 0 0 40)
+        mk-player-1 (create-player! stage :player1 20 20 0 0 40)
+        mk-player-2 (create-player! stage :player2 80 80 0 0 40)
         mk-tiles (create-tiles! stage)
         init-state (->  {:game {:rendering-engine rendering-engine}}
                         (ces/mk-scene :default [:input
@@ -98,22 +99,22 @@
                         (ces/mk-component :collidable [[check-collisions
                                                         include-collidable-entities]])
                         ;; Add entities
-                        (mk-player))
+                        (mk-player-1)
+                        (mk-player-2))
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"
                       "/static/images/tile.png")
         asset-loader (new js/PIXI.AssetLoader assets)]
     (debug "Initial game state:" init-state)
-    (debug "Loading assets")
     ;; Async load all the assets and build start the game on complete
     (aset asset-loader "onComplete"
-          #(do
-             (debug "Assets loaded")
-             ;; Append the canvas to the dom
-             (dom/append! (sel1 :body) (.-view renderer))
-             ;; Start the game loop
-             (game-loop init-state :default)))
+          #(do (debug "Assets loaded")
+               ;; Append the canvas to the dom    
+               (dom/append! (sel1 :body) (.-view renderer))             
+               ;; Start the game loop
+               (game-loop init-state :default)))
+    ;; Call the asset-loader
     (.load asset-loader)))
 
 (defn cleanup! []

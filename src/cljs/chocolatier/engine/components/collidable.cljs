@@ -46,10 +46,14 @@
 
 (defn include-collidable-entities
   "State parsing function. Returns a vector of component-state
-   positions of all collidable entities, component-id and entity-id"
+   positions of all collidable entities and their id, component-id and this entity-id"
   [state component-id entity-id]
-  (let [;; TODO get a list of all entities renderable component state
-        entities []
+  (let [entity-ids (ces/entities-with-component (:entities state) component-id)
+        ;; Only want the renderable component state as that has the
+        ;; actual sprites with real positions
+        ;; Add on the id of the entity
+        entities (map #(assoc (ces/get-component-state state :renderable %) :id %)
+                      entity-ids)
         component-state (ces/get-component-state state component-id entity-id)]
     [entities component-state component-id entity-id]))
 
@@ -62,10 +66,10 @@
 
 (defmethod check-collisions :player1
   [entities component-state component-id entity-id]
-  ;; TODO get the player's render state
-  ;; TODO exclude the player from collection of collidable entities
-  (let [player {}
-        collisions (doall (for [e entities] (collision? player e)))
+  (let [player (ces/get-component-state state :renderable entity-id)
+        ;; Exclude the player from collection of collidable entities
+        filtered-entities (filter #(= (:id %) entity-id) entities)
+        collisions (doall (for [e filtered-entities] (collision? player e)))
         ;; In order to have a collision the collisions seq must not be
         ;; empty and must have a falsey value
         colliding? (and (every? boolean collisions) (seq collisions))]
