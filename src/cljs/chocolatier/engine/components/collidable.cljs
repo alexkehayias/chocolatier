@@ -27,7 +27,7 @@
    Returns a boolean of whether the two entities are colliding."
   [e1 e2]
   (if (and (seq e1) (seq e2))
-    (let [key-list [:screen-x :screen-y
+    (let [key-list [:pos-x :pos-y
                     :offset-x :offset-y
                     :height :width
                     :hit-radius]
@@ -66,12 +66,12 @@
 
 (defmethod check-collisions :player1
   [entities component-state component-id entity-id]
-  (let [player (ces/get-component-state state :renderable entity-id)
+  (let [player (first (filter #(= (:id %) entity-id) entities)) 
         ;; Exclude the player from collection of collidable entities
-        filtered-entities (filter #(= (:id %) entity-id) entities)
+        filtered-entities (filter #(not= (:id %) entity-id) entities)
         collisions (doall (for [e filtered-entities] (collision? player e)))
         ;; In order to have a collision the collisions seq must not be
         ;; empty and must have a falsey value
         colliding? (and (every? boolean collisions) (seq collisions))]
-    (when colliding? (log/debug collisions "Colliding!!!"))
+    (when colliding? (log/debug "Colliding!!!"))
     (ces/mk-component-state component-id entity-id component-state)))
