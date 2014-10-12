@@ -45,15 +45,10 @@
       (when-not (empty? diff)
         (debug "State changed" key (diff->str diff old-val))))))
 
-(defn entity-watcher
-  "Log any differences between two lists of entities by their :id"
+(defn seq-watcher
+  "Log any differences between two seqs if new items were added to the seq"
   [key state old-val new-val]
-  ;; Only continue when there is a difference between the old and new values
-  (when (not= old-val new-val)
-    (doseq [id (keys new-val)]
-      (let [v1 (record->hashmap (id old-val))
-            v2 (record->hashmap (id new-val))
-            diff (map-difference v2 v1)]
-        (when-not (empty? diff)
-          (debug "State changed" id (diff->str diff v1)))))))
-
+  (when (and (not= old-val new-val) (> (count new-val) (count old-val)))
+    (debug "State changed" key "\nItems added:"
+             ;; Slice the difference in length of the events
+             (subvec new-val (count old-val)))))
