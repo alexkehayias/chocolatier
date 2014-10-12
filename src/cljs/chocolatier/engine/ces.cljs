@@ -85,9 +85,12 @@
   {:state {component-id {entity-id val}}})
 
 (defn mk-component-fn
-  "Wraps component functions so they are called with the entity's 
-   component state and the entity uid. Return value is wrapped in
-   the component-state schema so it can be merged into global state.
+  "Wraps a component function so it is called with the entity id, 
+   component state, event inbox, and event function. Return value of f
+   is wrapped in the component-state schema so it can be merged into global 
+   state easily.
+
+   Returns a function that is called with game state and the entity id.
 
    NOTE: The result of calling the component function must be mergeable 
    with the global state hashmap.
@@ -101,11 +104,15 @@
   (log/debug "mk-component-fn" component-id "args-fn?" (boolean args-fn))
   (fn [state entity-id]
     (if args-fn
+      ;; TODO this means the user must return a complete mergeable state!!
       (apply f (args-fn state component-id entity-id))
+      ;; Default to calling the function with component state and inbox
       (mk-component-state
        component-id
        entity-id
-       (f (get-component-state state component-id entity-id)
+       (f entity-id
+          (get-component-state state component-id entity-id)
+          (get-inbox state component-id entity-id)
           entity-id)))))
 
 (defn mk-component
@@ -122,7 +129,7 @@
                       (if (satisfies? ISeqable f)
                         (do (log/debug "mk-component: found custom args fn")
                             (apply (partial mk-component-fn uid) f))
-                        (mk-component-fn uid f) ))]
+                        (mk-component-fn uid f)))]
     ;; Add the component to state map and initialize component state
     (assoc-in state [:components uid] {:fns wrapped-fns})))
 

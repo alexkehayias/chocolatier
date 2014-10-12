@@ -71,7 +71,7 @@
   (let [test-system-fn (fn [state fns entity-ids]
                          (apply ces/deep-merge (for [f fns, e entity-ids]
                                                  (f state e))))
-        test-fn (fn [component-state entity-id]
+        test-fn (fn [entity-id component-state inbox]
                   (println "testing" entity-id
                            component-state "->"
                            (assoc component-state :x

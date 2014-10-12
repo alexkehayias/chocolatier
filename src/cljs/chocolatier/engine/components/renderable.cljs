@@ -3,10 +3,10 @@
 
 
 (defmulti update-sprite
-  (fn [component-state entity-id] entity-id))
+  (fn [entity-id component-state inbox] entity-id))
 
 (defmethod update-sprite :default
-  [component-state entity-id]
+  [entity-id component-state inbox]
   (let [sprite (:sprite component-state)]
     ;; Mutate the x and y position
     (set! (.-position.x sprite) (:pos-x component-state))
@@ -14,7 +14,7 @@
     component-state))
 
 (defmethod update-sprite :player1
-  [component-state entity-id]
+  [entity-id component-state inbox]
   (let [sprite (:sprite component-state)
         {:keys [pos-x pos-y offset-x offset-y]} component-state
         updated-state (assoc component-state :pos-x (- pos-x offset-x )

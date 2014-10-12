@@ -74,19 +74,23 @@
         mk-tiles (create-tiles! stage)
         init-state (->  {:game {:rendering-engine rendering-engine}
                          :state {:events {:queue []}}}
+                        ;; A collection of keys representing systems
+                        ;; that will be called in sequential order
                         (ces/mk-scene :default [:input
                                                 :user-input
                                                 :collision
                                                 :tiles
                                                 :render])
-                        ;; Updates the user input from keyboard
+                        ;; Updates the user input from keyboard,
+                        ;; standalone system with no components
                         (ces/mk-system :input input-system)
                         ;; React to user input
                         (ces/mk-system :user-input user-input-system :controllable)
                         (ces/mk-component :controllable
-                                          ;; Calls react-to-user-input
-                                          ;; with custom arguments
-                                          ;; from get-input state
+                                          ;; Calls react-to-input
+                                          ;; with additional argument
+                                          ;; for the current input
+                                          ;; state 
                                           [[react-to-input include-input-state]])
                         ;; Draw tile map in background
                         (ces/mk-system :tiles tile-system)
