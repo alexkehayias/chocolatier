@@ -125,5 +125,5 @@
       (set! (.-position.y sprite) pos-y)
       (.addChild stage sprite)
       (-> state
-          (assoc-in [:components :renderable :state uid] init-render-state)
+          (assoc-in [:state :renderable uid] init-render-state)
           (ces/mk-entity uid [:renderable :controllable :collidable])))))

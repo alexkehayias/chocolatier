@@ -72,7 +72,8 @@
         mk-player-1 (create-player! stage :player1 20 20 0 0 20)
         mk-player-2 (create-player! stage :player2 80 80 0 0 20)
         mk-tiles (create-tiles! stage)
-        init-state (->  {:game {:rendering-engine rendering-engine}}
+        init-state (->  {:game {:rendering-engine rendering-engine}
+                         :state {:events {:queue []}}}
                         (ces/mk-scene :default [:input
                                                 :user-input
                                                 :collision

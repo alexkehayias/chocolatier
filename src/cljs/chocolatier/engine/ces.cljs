@@ -70,14 +70,13 @@
   "Returns a hashmap of state associated with the component for the given entity.
    NOTE: As a convenience, if state is not found it returns an empty hashmap."
   [state component-id entity-id]
-  (or (get-in state [:components component-id :state entity-id])
-      {}))
+  (or (get-in state [:state component-id entity-id]) {}))
 
 (defn mk-component-state
   "Returns a hashmap that can be merged into the state hashmap
    to store the state for the given component/entity id"
   [component-id entity-id val]
-  {:components {component-id {:state {entity-id val}}}})
+  {:state {component-id {entity-id val}}})
 
 (defn mk-component-fn
   "Wraps component functions so they are called with the entity's 
@@ -119,7 +118,7 @@
                             (apply (partial mk-component-fn uid) f))
                         (mk-component-fn uid f) ))]
     ;; Add the component to state map and initialize component state
-    (assoc-in state [:components uid] {:fns wrapped-fns :state {}})))
+    (assoc-in state [:components uid] {:fns wrapped-fns})))
 
 (defn mk-system-fn
   "Returns a function representing a system.
