@@ -23,10 +23,10 @@
   (is (= (ces/mk-entity {} :player1 [:a :b])
          {:entities {:player1 [:a :b]}})))
 
-(deftest test-get-inbox
-  (is (= (ces/get-inbox {:state {:inbox {:comp {:me [{:foo :bar}]}}}}
-                        :comp
-                        :me)
+(deftest test-get-event-inbox
+  (is (= (ces/get-event-inbox {:state {:inbox {:comp {:me [{:foo :bar}]}}}}
+                              :comp
+                              :me)
          [{:foo :bar}])))
 
 (deftest test-mk-component-state
@@ -39,16 +39,15 @@
     (is (= result
            {:state {:test {:yo {:foo "bar"}}}}))))
 
-(deftest test-mk-component-fn-with-args-fn
-  "Call mk-component-fn with the optional args-fn to ensure it calls the
-   component fn correctly."
+(deftest test-mk-component-fn-with-options
+  "Call mk-component-fn with the optional args-fn and format-fn to ensure
+   it calls the component fn correctly."
   (let [;; The component fn takes a single argument, the state hashmap
         args-fn (fn [state component-id entity-id] [state])
-        f (ces/mk-component-fn :test identity args-fn)
-        state {:this-is-state nil}
-        actual (f state entity-id)
-        expected state]
-    (is (= actual expected))))
+        f (ces/mk-component-fn :test identity {:args-fn args-fn :format-fn identity})
+        state {:foo :bar}
+        actual (f state :test-entity-id)]
+    (is (= actual state))))
 
 (deftest test-mk-system
   (let [f (fn [s fns ents] "hi")
@@ -60,9 +59,10 @@
   "Simple game loop that runs 10 times and returns the state."
   [state scene-id frame-count]
   (if (< frame-count 10)
-    (recur (ces/iter-fns state (ces/get-system-fns state (-> state :scenes scene-id)))
-           scene-id
-           (inc frame-count))
+    (let [system-ids (-> state :scenes scene-id)
+          fns (ces/get-system-fns state system-ids)
+          updated-state (ces/iter-fns state fns)]
+      (recur updated-state scene-id (inc frame-count)))
     state))
 
 (deftest test-integration

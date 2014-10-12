@@ -60,7 +60,7 @@
   [state uid component-ids]
   (assoc-in state [:entities uid] component-ids))
 
-(defn get-inbox
+(defn get-event-inbox
   "Returns a collections of event hashmaps representing the inbox of the given
    component-id/entity-id. Returns an empty vector there are no events."
   [state component-id entity-id]
@@ -96,24 +96,27 @@
    with the global state hashmap.
 
    Optional args:
-   - args-fn: will be called with global state, component-id, entity-id 
-     and the results will be applied to the component function f. This
-     allows custom arguments to get access to any state in the game.
-     NOTE: must return a sequence of arguments to be applied to f"
-  [component-id f & [args-fn]]
-  (log/debug "mk-component-fn" component-id "args-fn?" (boolean args-fn))
+   - options: Hashmap of options for a component function including:
+     - args-fn: will be called with global state, component-id, entity-id 
+       and the results will be applied to the component function f. This
+       allows custom arguments to get access to any state in the game.
+       NOTE: must return a collection of arguments to be applied to f
+     - format-fn: called with component-id, entity-id and the result of f,
+       must return a mergeable hashmap"
+  [component-id f & [{:keys [args-fn format-fn]} options]]
   (fn [state entity-id]
-    (if args-fn
-      ;; TODO this means the user must return a complete mergeable state!!
-      (apply f (args-fn state component-id entity-id))
-      ;; Default to calling the function with component state and inbox
-      (mk-component-state
-       component-id
-       entity-id
-       (f entity-id
-          (get-component-state state component-id entity-id)
-          (get-inbox state component-id entity-id)
-          entity-id)))))
+    (let [args (if args-fn
+                 (args-fn state component-id entity-id)
+                 ;; Default args to the component function
+                 [entity-id
+                  (get-component-state state component-id entity-id)
+                  (get-event-inbox state component-id entity-id)])
+          result (apply f args)
+          output-fn (or format-fn mk-component-state)]
+      ;; Assert the results are in the proper format
+      ;; (assert (vector? result)
+      ;;         (str "Component fn did not return a vector: " result))
+      (output-fn component-id entity-id result))))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.
@@ -123,13 +126,13 @@
    - uid: unique identifier for this component
    - fns: a vector of functions. Optionally these can be a pair of
      component fn and an args fn"
-  [state uid fns]
-  (log/debug "mk-component:" uid "# of fns:" (count fns))
-  (let [wrapped-fns (for [f fns]
-                      (if (satisfies? ISeqable f)
-                        (do (log/debug "mk-component: found custom args fn")
-                            (apply (partial mk-component-fn uid) f))
-                        (mk-component-fn uid f)))]
+  [state uid fn-specs]
+  (log/debug "mk-component:" uid "# of fns:" (count fn-specs))
+  (let [wrapped-fns (for [spec fn-specs]
+                      (if (satisfies? ISeqable spec)
+                        (do (log/debug "mk-component: found options" spec)
+                            (apply (partial mk-component-fn uid) spec))
+                        (mk-component-fn uid spec)))]
     ;; Add the component to state map and initialize component state
     (assoc-in state [:components uid] {:fns wrapped-fns})))
 

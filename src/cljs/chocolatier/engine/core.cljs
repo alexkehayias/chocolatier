@@ -8,7 +8,8 @@
             [chocolatier.engine.systems.collision :refer [collision-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.engine.components.controllable :refer [react-to-input
-                                                                include-input-state]]
+                                                                include-input-state
+                                                                output-to-renderable]]
             [chocolatier.engine.components.collidable :refer [check-collisions
                                                               include-collidable-entities]]
             [chocolatier.engine.systems.tiles :refer [tile-system create-tiles!]]
@@ -72,40 +73,41 @@
         mk-player-1 (create-player! stage :player1 20 20 0 0 20)
         mk-player-2 (create-player! stage :player2 80 80 0 0 20)
         mk-tiles (create-tiles! stage)
-        init-state (->  {:game {:rendering-engine rendering-engine}
-                         :state {:events {:queue []}}}
-                        ;; A collection of keys representing systems
-                        ;; that will be called in sequential order
-                        (ces/mk-scene :default [:input
-                                                :user-input
-                                                :collision
-                                                :tiles
-                                                :render])
-                        ;; Updates the user input from keyboard,
-                        ;; standalone system with no components
-                        (ces/mk-system :input input-system)
-                        ;; React to user input
-                        (ces/mk-system :user-input user-input-system :controllable)
-                        (ces/mk-component :controllable
-                                          ;; Calls react-to-input
-                                          ;; with additional argument
-                                          ;; for the current input
-                                          ;; state 
-                                          [[react-to-input include-input-state]])
-                        ;; Draw tile map in background
-                        (ces/mk-system :tiles tile-system)
-                        ;; Initial tile map
-                        (mk-tiles)
-                        ;; Render system for drawing sprites
-                        (ces/mk-system :render render-system :renderable)
-                        (ces/mk-component :renderable [update-sprite])
-                        ;; Collision detection system
-                        (ces/mk-system :collision collision-system :collidable)
-                        (ces/mk-component :collidable [[check-collisions
-                                                        include-collidable-entities]])
-                        ;; Add entities
-                        (mk-player-1)
-                        (mk-player-2))
+        init-state (-> {:game {:rendering-engine rendering-engine}
+                        :state {:events {:queue []}}}
+                       ;; A collection of keys representing systems
+                       ;; that will be called in sequential order
+                       (ces/mk-scene :default [:input
+                                               :user-input
+                                               :collision
+                                               :tiles
+                                               :render])
+                       ;; Updates the user input from keyboard,
+                       ;; standalone system with no components
+                       (ces/mk-system :input input-system)
+                       ;; React to user input
+                       (ces/mk-system :user-input user-input-system :controllable)
+                       (ces/mk-component :controllable
+                                         ;; Calls react-to-input
+                                         ;; with additional argument
+                                         ;; for the current input
+                                         ;; state 
+                                         [[react-to-input {:args-fn include-input-state
+                                                           :format-fn output-to-renderable}]])
+                       ;; Draw tile map in background
+                       (ces/mk-system :tiles tile-system)
+                       ;; Initial tile map
+                       (mk-tiles)
+                       ;; Render system for drawing sprites
+                       (ces/mk-system :render render-system :renderable)
+                       (ces/mk-component :renderable [update-sprite])
+                       ;; Collision detection system
+                       (ces/mk-system :collision collision-system :collidable)
+                       (ces/mk-component :collidable [[check-collisions
+                                                       {:args-fn include-collidable-entities}]])
+                       ;; Add entities
+                       (mk-player-1)
+                       (mk-player-2))
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"

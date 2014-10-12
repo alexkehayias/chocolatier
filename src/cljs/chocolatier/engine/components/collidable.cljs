@@ -74,4 +74,4 @@
         ;; empty and must have a falsey value
         colliding? (and (every? boolean collisions) (seq collisions))]
     (when colliding? (log/debug "Colliding!!!"))
-    (ces/mk-component-state component-id entity-id component-state)))
+    component-state))
