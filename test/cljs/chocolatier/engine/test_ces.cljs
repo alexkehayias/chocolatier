@@ -23,15 +23,21 @@
   (is (= (ces/mk-entity {} :player1 [:a :b])
          {:entities {:player1 [:a :b]}})))
 
+(deftest test-get-inbox
+  (is (= (ces/get-inbox {:state {:inbox {:comp {:me [{:foo :bar}]}}}}
+                        :comp
+                        :me)
+         [{:foo :bar}])))
+
 (deftest test-mk-component-state
   (is (= (ces/mk-component-state :foo :bar {})
-         {:components {:foo {:state {:bar {}}}}})))
+         {:state {:foo {:bar {}}}})))
 
 (deftest test-mk-component-fn
   (let [f (ces/mk-component-fn :test (fn [& args] (identity {:foo "bar"})))
         result (f {} :yo)]
     (is (= result
-           {:components {:test {:state {:yo {:foo "bar"}}}}}))))
+           {:state {:test {:yo {:foo "bar"}}}}))))
 
 (deftest test-mk-component-fn-with-args-fn
   "Call mk-component-fn with the optional args-fn to ensure it calls the
@@ -45,8 +51,9 @@
     (is (= actual expected))))
 
 (deftest test-mk-system
-  (let [f (ces/mk-system-fn (fn [s fns ents] "hi") :b)
-        result (f {:entities {:a [:b]}})]
+  (let [f (fn [s fns ents] "hi")
+        sys-f (ces/mk-system-fn f :b)
+        result (sys-f {:entities {:a [:b]} :components {:b {:fns [f]}}})]
     (is (= result "hi"))))
 
 (defn game-loop
@@ -77,5 +84,5 @@
                        (ces/mk-entity :player2 [:testable])
                        (ces/mk-component :testable [test-fn]))
         result (game-loop init-state :test-scene 0)]
-    (is (= (-> result :components :testable :state)
+    (is (= (-> result :state :testable)
            {:player1 {:x 10} :player2 {:x 10}}))))
