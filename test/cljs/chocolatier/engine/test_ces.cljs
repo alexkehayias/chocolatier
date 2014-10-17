@@ -30,11 +30,11 @@
          [{:foo :bar}])))
 
 (deftest test-mk-component-state
-  (is (= (ces/mk-component-state :foo :bar {})
+  (is (= (ces/mk-component-state {} :foo :bar {})
          {:state {:foo {:bar {}}}})))
 
 (deftest test-mk-component-fn
-  (let [f (ces/mk-component-fn :test (fn [& args] (identity {:foo "bar"})))
+  (let [f (ces/mk-component-fn :test (fn [& args] {:foo "bar"}))
         result (f {} :yo)]
     (is (= result
            {:state {:test {:yo {:foo "bar"}}}}))))
@@ -68,9 +68,10 @@
 (deftest test-integration
   "Test the entire CES implementation with a system that changes component state"
   []
-  (let [test-system-fn (fn [state fns entity-ids]
-                         (apply ces/deep-merge (for [f fns, e entity-ids]
-                                                 (f state e))))
+  (let [;; Dummy test system iterates through component fns with state
+        ;; and entity id
+        test-system-fn (fn [state fns entity-ids]
+                         (ces/iter-fns state (for [f fns, e entity-ids] #(f % e))))
         test-fn (fn [entity-id component-state inbox]
                   (println "testing" entity-id
                            component-state "->"

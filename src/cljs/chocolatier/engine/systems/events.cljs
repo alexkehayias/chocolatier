@@ -48,10 +48,32 @@
     (update-in state [:state :inbox entity-id component-id]
                conj {:event-id event-id :from from :msg msg})))
 
+(defn valid-event?
+  "Asserts the validity of an event. A properly formed event has the
+   following items in the event tuple:
+   - event-id is a keyword
+   - from is the sender of the message as a keyword
+   - msg is a hashmap"
+  [event]
+  (let [[event-id from msg] event]
+    (assert (keyword? event-id) "event-id is a keyword")
+    (assert (keyword? from) "from is a keyword")
+    (assert (map? from) "msg is a hash-map")))
+
 (defn emit-event
   "Enqueues an event onto the queue"
   [state event-id from msg]
+  (assert valid-event? [event-id from msg])
   (update-in state [:state :events :queue] conj [event-id from msg]))
+
+(defn emit-events
+  "Emits a collection of events at the same time. If events is nil then
+   return the state unchanged."
+  [state events]
+  (if events
+    (doseq [e events] (valid-event? e))
+    (update-in state [:state :events :queue] concat events)
+    state))
 
 (defn event-system
   "Send a message to all mailboxes that are subscribed to any events"

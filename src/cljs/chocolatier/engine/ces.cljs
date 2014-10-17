@@ -1,5 +1,6 @@
 (ns chocolatier.engine.ces
-  (:require [chocolatier.utils.logging :as log]))
+  (:require [chocolatier.utils.logging :as log]
+            [chocolatier.engine.systems.events :as ev]))
 
 ;; Gameloop:   recursive function that calls all systems in a scene
 ;;
@@ -73,24 +74,37 @@
                              " in" (-> state :components))))))
 
 (defn get-component-state
-  "Returns a hashmap of state associated with the component for the given entity.
-   NOTE: As a convenience, if state is not found it returns an empty hashmap."
+  "Returns a hashmap of state associated with the component for the given
+   entity. NOTE: As a convenience, if state is not found it returns an empty
+   hashmap."
   [state component-id entity-id]
   (or (get-in state [:state component-id entity-id]) {}))
 
 (defn mk-component-state
-  "Returns a hashmap that can be merged into the state hashmap
-   to store the state for the given component/entity id"
-  [component-id entity-id val]
-  {:state {component-id {entity-id val}}})
+  "Returns an updated hashmap with component state for the given entity"
+  [state component-id entity-id val]
+  (assoc-in state [:state component-id entity-id] val))
+
+(defn update-component-state-and-events
+  "Update a components state. If there are events then also add those to
+   game state."
+  [state component-id entity-id val & [events]]
+  (-> state
+      (mk-component-state component-id entity-id val)
+      (ev/emit-events events)))
 
 (defn mk-component-fn
-  "Wraps a component function so it is called with the entity id, 
-   component state, event inbox, and event function. Return value of f
-   is wrapped in the component-state schema so it can be merged into global 
-   state easily.
+  "Returns a function that is called with game state and the entity id.
 
-   Returns a function that is called with game state and the entity id.
+   Wraps a component function so it is called with the entity id, 
+   component state, and event inbox. Return value of f is wrapped in the
+   format-fn or update-component-state-and-events which returns an updated 
+   game state.
+
+   The component function can return 1 result or 2. If 1 result then the
+   output is treated as the component state. If it is 2 then the second
+   argument is events that should be emitted. If format-fn is specified
+   then you can implement whatever handling of results you want.
 
    NOTE: The result of calling the component function must be mergeable 
    with the global state hashmap.
@@ -112,11 +126,13 @@
                   (get-component-state state component-id entity-id)
                   (get-event-inbox state component-id entity-id)])
           result (apply f args)
-          output-fn (or format-fn mk-component-state)]
-      ;; Assert the results are in the proper format
-      ;; (assert (vector? result)
-      ;;         (str "Component fn did not return a vector: " result))
-      (output-fn component-id entity-id result))))
+          output-fn (partial (or format-fn update-component-state-and-events)
+                             state component-id entity-id)]
+      ;; TODO Assert the results are in the proper format
+      ;; Handle if the result is going to include events or not
+      (if (vector? result)
+        (apply output-fn result)
+        (output-fn result)))))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.
@@ -127,13 +143,13 @@
    - fns: a vector of functions. Optionally these can be a pair of
      component fn and an args fn"
   [state uid fn-specs]
-  (log/debug "mk-component:" uid "# of fns:" (count fn-specs))
   (let [wrapped-fns (for [spec fn-specs]
                       (if (satisfies? ISeqable spec)
                         (do (log/debug "mk-component: found options" spec)
                             (apply (partial mk-component-fn uid) spec))
                         (mk-component-fn uid spec)))]
-    ;; Add the component to state map and initialize component state
+    ;; Add the component to state map
+    ;; TODO do we need a :fns keyword? there's no other data stored here
     (assoc-in state [:components uid] {:fns wrapped-fns})))
 
 (defn mk-system-fn
@@ -146,13 +162,12 @@
      component functions, and a collection of entity ids that match the
      given component id. Results are merged with game state."
   ([f]
-   (fn [state]
-     (deep-merge state (f state))))  
+   (fn [state] (f state)))  
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component (:entities state) component-id)
            component-fns (get-component-fns state component-id)]
-       (deep-merge state (f state component-fns entities))))))
+       (f state component-fns entities)))))
 
 (defn mk-system
   "Add the system function to the state. Wraps the system function using
