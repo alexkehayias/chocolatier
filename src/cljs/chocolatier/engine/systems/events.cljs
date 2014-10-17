@@ -58,7 +58,7 @@
   (let [[event-id from msg] event]
     (assert (keyword? event-id) "event-id is a keyword")
     (assert (keyword? from) "from is a keyword")
-    (assert (map? from) "msg is a hash-map")))
+    (assert (map? msg) "msg is a hash-map")))
 
 (defn emit-event
   "Enqueues an event onto the queue"
@@ -71,8 +71,8 @@
    return the state unchanged."
   [state events]
   (if events
-    (doseq [e events] (valid-event? e))
-    (update-in state [:state :events :queue] concat events)
+    (do (doseq [e events] (valid-event? e))
+        (update-in state [:state :events :queue] concat events)) 
     state))
 
 (defn event-system

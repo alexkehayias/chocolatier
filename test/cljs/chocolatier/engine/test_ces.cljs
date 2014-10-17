@@ -36,8 +36,16 @@
 (deftest test-mk-component-fn
   (let [f (ces/mk-component-fn :test (fn [& args] {:foo "bar"}))
         result (f {} :yo)]
-    (is (= result
-           {:state {:test {:yo {:foo "bar"}}}}))))
+    (is (= result {:state {:test {:yo {:foo "bar"}}
+                           :events {:queue '()}}}))))
+
+(deftest test-component-emits-events
+  (let [event [:test :me {:yo :dawg}]
+        component-fn (fn [& args] [{:foo "bar"} [event]])
+        f (ces/mk-component-fn :test component-fn)
+        result (f {} :yo)]
+    (is (= result {:state {:test {:yo {:foo "bar"}}
+                           :events {:queue [event]}}}))))
 
 (deftest test-mk-component-fn-with-options
   "Call mk-component-fn with the optional args-fn and format-fn to ensure
