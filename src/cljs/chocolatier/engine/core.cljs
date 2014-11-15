@@ -18,6 +18,10 @@
             [chocolatier.entities.player :refer [create-player!]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
+;; Controls game loop and allows dynamic changes to state even after
+;; it is in the game loop
+(def *running (atom true))
+(def *state (atom nil))
 
 (defn request-animation [f]
   (js/requestAnimationFrame f))
@@ -31,17 +35,21 @@
     (js/window.performance.now)
     ((aget (new js/Date) "getTime"))))
 
-(def running (atom true))
-
 (defn game-loop
   "Simple game loop using requestAnimation to optimize frame rate.
-   If the atom running is false, returns the game state."
+   If the atom running is false, returns the game state.
+
+   Args:
+   - state: an atom which is dereferenced at the start of the frame so
+     if any changes are mode they can never happen in the middle of a frame
+     being recalculated
+   - scene-id: ignored"
   [state scene-id]
-  (let [systems (ces/get-system-fns state (-> state :scenes scene-id))
-        updated-state (ces/iter-fns state systems)]
-    (if @running
-      (request-animation #(game-loop updated-state scene-id))
-      (debug state))))
+  (let [systems (ces/get-system-fns @state (-> @state :scenes scene-id))]
+    (swap! state #(ces/iter-fns % systems))
+    (if @*running
+      (request-animation #(game-loop state scene-id))
+      (debug @state))))
 
 ;; TODO this should be used as a fallback if requestAnimationFrame is
 ;; not available in this browser
@@ -55,7 +63,7 @@
 (defn start-game!
   "Renders the game every n seconds."
   []
-  (reset! running true)
+  (reset! *running true)
   (let [;; TODO reset the game height on screen resize
         width (aget js/window "innerWidth")
         height (aget js/window "innerHeight")
@@ -116,14 +124,15 @@
                       "/static/images/monster.png"
                       "/static/images/tile.png")
         asset-loader (new js/PIXI.AssetLoader assets)]
-    (debug "Initial game state:" init-state)
+    (debug "Loading game state into atom")
+    (reset! *state init-state)    
     ;; Async load all the assets and start the game on complete
     (aset asset-loader "onComplete"
           #(do (debug "Assets loaded")
                ;; Append the canvas to the dom    
                (dom/append! (sel1 :body) (.-view renderer))             
                ;; Start the game loop
-               (game-loop init-state :default)))
+               (game-loop *state :default)))
     ;; Call the asset-loader
     (.load asset-loader)))
 
@@ -132,7 +141,7 @@
        (catch js/Object e (error (str e)))))
 
 (defn stop-game! []
-  (reset! running false))
+  (reset! *running false))
 
 (defn reset-game! []
   (cleanup!)

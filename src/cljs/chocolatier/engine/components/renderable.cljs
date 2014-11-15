@@ -19,8 +19,9 @@
         {:keys [pos-x pos-y]} component-state
         ;; Offsets come from messages in the inbox and are aggregated
         {:keys [offset-x offset-y]} (apply merge-with + (map :msg inbox))
-        updated-state (assoc component-state :pos-x (- pos-x offset-x )
-                             :pos-y (- pos-y offset-y))]
+        updated-state (assoc component-state
+                        :pos-x (- pos-x offset-x)
+                        :pos-y (- pos-y offset-y))]
     ;; Mutate the x and y position
     (set! (.-position.x sprite) (:pos-x updated-state))
     (set! (.-position.y sprite) (:pos-y updated-state))
