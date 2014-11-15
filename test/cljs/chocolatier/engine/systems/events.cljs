@@ -4,17 +4,17 @@
             [chocolatier.engine.systems.events :as ev]))
 
 (deftest test-subscribe
-  (is (= (ev/subscribe {} :my-event :me :my-component identity)
+  (is (= (ev/subscribe {} :my-event :my-component :me identity)
          {:state
           {:events
            {:subscriptions
             {:my-event
-             {:me
-              {:my-component identity}}}}}})))
+             {:my-component
+              {:me identity}}}}}})))
 
 (deftest test-msg->subscribers
   (let [queue [[:my-event :someone {:foo :bar}]]
-        subscriptions {:my-event {:me {:my-component identity}}} 
+        subscriptions {:my-event {:my-component {:me identity}}} 
         actual (ev/msg->subscribers queue subscriptions)]
     (is (= actual [[:my-event :someone {:foo :bar} :my-component :me]]))))
 
@@ -34,7 +34,7 @@
   "Test the event system sends all events to the inbox of subscribers"
   [state]
   (let [queue [[:my-event :someone {:foo :bar}]]
-        subscriptions {:my-event {:me {:my-component identity}}}
+        subscriptions {:my-event {:my-component {:me identity}}}
         state {:state {:events {:queue queue :subscriptions subscriptions}}}
         inbox (-> (ev/event-system state) :state :inbox :my-component :me)]
     (is (= inbox

@@ -27,10 +27,12 @@
 
 (defn subscribe
   "Subscribe to the given event. Optionally pass in a function that takes
-   an event and returns true or false to keep or discard it"
-  [state event-id entity-id component-id & [f]]
+   an event and returns true or false to keep or discard it. Multiple subscribe
+   calls with the same event-id component-id entity-id will not duplicate
+   subscriptions."
+  [state event-id component-id entity-id & [f]]
   ;; If no function is supplied, the events parsing function is an identity
-  (assoc-in state [:state :events :subscriptions event-id entity-id component-id]
+  (assoc-in state [:state :events :subscriptions event-id component-id entity-id]
             (or f (fn [& args] true))))
 
 (defn msg->subscribers
@@ -38,8 +40,8 @@
    Returns a lazy seq of events with subscriber information."
   [queue subscriptions]
   (for [[event-id from msg] queue
-        [entity-id components] (-> subscriptions event-id)
-        [component-id add-to-inbox?] components]
+        [component-id entity-subs] (-> subscriptions event-id)
+        [entity-id add-to-inbox?] entity-subs]
     (if (add-to-inbox? event-id from msg)
       [event-id from msg component-id entity-id])))
 
