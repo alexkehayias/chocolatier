@@ -7,5 +7,4 @@
 (defn user-input-system
   "Call all the functions for reacting to user input"
   [state fns entity-ids]
-  (let [updated-states (for [f fns, e entity-ids] (f state e))]
-    (apply ces/deep-merge updated-states)))
+  (ces/iter-fns state (for [f fns, e entity-ids] #(f % e))))

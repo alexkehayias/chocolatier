@@ -6,4 +6,4 @@
 
 (defn collision-system
   [state fns entity-ids]
-  (apply ces/deep-merge (for [f fns, e entity-ids] (f state e))))
+  (ces/iter-fns state (for [f fns, e entity-ids] #(f % e))))

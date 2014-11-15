@@ -14,10 +14,10 @@
 ;; TODO remove!!! This alters another component's state!
 ;; Replace with an event emitter
 (defn output-to-renderable
-  "Format function that outputs result of a component function into the
-   state of the :renderable component"
-  [component-id entity-id result]
-  (ces/mk-component-state {} :renderable entity-id result))
+  "Format function that outputs result of a component function into component
+   state of :renderable and returns updated game state"
+  [state component-id entity-id result]
+  (ces/mk-component-state state :renderable entity-id result))
 
 (defmulti react-to-input
   (fn [input-state component-state component-id entity-id] entity-id))
@@ -64,7 +64,7 @@
 
 (defmethod react-to-input :default
   [input-state component-state component-id entity-id]
-  {})
+  component-state)
 
 (defmethod react-to-input :player1
   [input-state component-state component-id entity-id]

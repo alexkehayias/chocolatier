@@ -9,8 +9,8 @@
    Returns updated state."
   [state fns entity-ids]
   (let [{:keys [renderer stage]} (-> state :game :rendering-engine)
-        render-state (for [f fns, e entity-ids]
-                       (f state e))
-        updated-state (apply ces/deep-merge render-state)]
+        ;; WARNING this is stateful since sprites are objects and are
+        ;; being altered by component functions
+        updated-state (ces/iter-fns state (for [f fns, e entity-ids] #(f % e)))]
     (.render renderer stage)
     updated-state))

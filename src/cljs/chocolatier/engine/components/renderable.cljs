@@ -18,7 +18,7 @@
   (let [sprite (:sprite component-state)
         {:keys [pos-x pos-y offset-x offset-y]} component-state
         updated-state (assoc component-state :pos-x (- pos-x offset-x )
-                                             :pos-y (- pos-y offset-y))]
+                             :pos-y (- pos-y offset-y))]
     ;; Mutate the x and y position
     (set! (.-position.x sprite) (:pos-x updated-state))
     (set! (.-position.y sprite) (:pos-y updated-state))
