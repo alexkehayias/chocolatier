@@ -93,6 +93,11 @@
       (mk-component-state component-id entity-id val)
       (ev/emit-events events)))
 
+(defn all-not-nil?
+  "Returns true if any of the items in coll are nil"
+  [coll]
+  (empty? (filter nil? coll)))
+
 (defn mk-component-fn
   "Returns a function that is called with game state and the entity id.
 
@@ -106,8 +111,8 @@
    argument is events that should be emitted. If format-fn is specified
    then you can implement whatever handling of results you want.
 
-   NOTE: The result of calling the component function must be mergeable 
-   with the global state hashmap.
+   NOTE: The result of calling the component function must be an updated 
+   game state hashmap.
 
    Optional args:
    - options: Hashmap of options for a component function including:
@@ -128,11 +133,19 @@
           result (apply f args)
           output-fn (partial (or format-fn update-component-state-and-events)
                              state component-id entity-id)]
-      ;; TODO Assert the results are in the proper format
       ;; Handle if the result is going to include events or not
       (if (vector? result)
-        (apply output-fn result)
-        (output-fn result)))))
+        (do
+          ;; Make sure the results are not more than 2 items and not
+          ;; an empty vector
+          (assert (and (<= (count result) 2) (not (empty? result))))
+          ;; Make sure that the items in the list are not nil
+          (assert (all-not-nil? result))
+          (apply output-fn result))
+        (do
+          ;; Make sure the result is a hashmap (updated state)
+          (assert (map? result))
+          (output-fn result))))))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.

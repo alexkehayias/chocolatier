@@ -6,7 +6,9 @@
             [net.cgrand.enlive-html :as enlive]
             [compojure.route :refer (resources)]
             [compojure.core :refer (GET defroutes)]
-            ring.adapter.jetty)) 
+            ring.adapter.jetty))
+
+(def server (atom nil))
 
 (def project-root
   (str (System/getProperty "user.dir") "/resources/public"))
@@ -38,11 +40,18 @@
   ;;(GET "/*" req (homepage))
   )
 
-(defn mk-server [& [options]]
+(defn start-server!
+  "Returns a server obj"
+  [& [options]]
   (let [options (merge {:port 9000 :join? false} options) 
         server (ring.adapter.jetty/run-jetty #'site options)]
     (connect-to-brepl (reset-brepl-env!))
     #(.stop server)))
 
-(def server
-  (mk-server))
+(defn stop-server! []
+  (when @server (@server)))
+
+(defn restart-server!
+  []
+  (when @server (stop-server!))
+  (reset! server (start-server!)))

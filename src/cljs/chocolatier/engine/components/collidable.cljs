@@ -62,7 +62,7 @@
 
 (defmethod check-collisions :default
   [entities component-state component-id entity-id]
-  (ces/mk-component-state component-id entity-id component-state))
+  component-state)
 
 (defmethod check-collisions :player1
   [entities component-state component-id entity-id]

@@ -17,7 +17,7 @@
   "Format function that outputs result of a component function into the
    state of the :renderable component"
   [component-id entity-id result]
-  (ces/mk-component-state :renderable entity-id result))
+  (ces/mk-component-state {} :renderable entity-id result))
 
 (defmulti react-to-input
   (fn [input-state component-state component-id entity-id] entity-id))

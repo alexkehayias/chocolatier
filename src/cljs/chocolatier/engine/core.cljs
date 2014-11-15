@@ -114,7 +114,7 @@
                       "/static/images/tile.png")
         asset-loader (new js/PIXI.AssetLoader assets)]
     (debug "Initial game state:" init-state)
-    ;; Async load all the assets and build start the game on complete
+    ;; Async load all the assets and start the game on complete
     (aset asset-loader "onComplete"
           #(do (debug "Assets loaded")
                ;; Append the canvas to the dom    
