@@ -15,6 +15,8 @@
 
 (defmethod update-sprite :player1
   [entity-id component-state inbox]
+  (when-not (empty? inbox)
+    (debug ":renderable inbox:" inbox))
   (let [sprite (:sprite component-state)
         {:keys [pos-x pos-y offset-x offset-y]} component-state
         updated-state (assoc component-state :pos-x (- pos-x offset-x )

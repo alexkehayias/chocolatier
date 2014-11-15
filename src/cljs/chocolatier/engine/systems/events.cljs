@@ -20,13 +20,13 @@
 ;; event/entity/component id
 
 
-(defn mk-events-system
+(defn init-events-system
   "Adds an :events entry to the state hashmap."
   [state]
   (assoc-in state [:state :events] {:queue [] :subscriptions {}}))
 
 (defn subscribe
-  "Subscribe to the given event. Optionally pass in a functiyon that takes
+  "Subscribe to the given event. Optionally pass in a function that takes
    a queue of events and returns a vector."
   [state event-id entity-id component-id & [f]]
   ;; If no function is supplied, the events parsing function is an identity
@@ -34,7 +34,8 @@
             (or f (fn [& args] true))))
 
 (defn msg->subscribers
-  "Fans out messages to subscribers"
+  "Fans out messages to subscribers. 
+   Returns a lazy seq of events with subscriber information."
   [queue subscriptions]
   (for [[event-id from msg] queue
         [entity-id components] (-> subscriptions event-id)
@@ -43,10 +44,19 @@
       [event-id from msg entity-id component-id])))
 
 (defn to-inbox
-  [state event]
-  (let [[event-id from msg entity-id component-id] event]
+  "Adds a message to the inbox of all subscribers of the event.
+   Returns updated game state."
+  [state subscriber-event]
+  (let [[event-id from msg entity-id component-id] subscriber-event]
     (update-in state [:state :inbox entity-id component-id]
                conj {:event-id event-id :from from :msg msg})))
+
+(defn clear-inbox
+  "Remove all component messages for the give entity IDs"
+  [state entity-ids component-id]
+  (if (seq entity-ids)
+    (reduce #(assoc-in %1 [:state :inbox %2 component-id] []) state entity-ids)
+    state))
 
 (defn valid-event?
   "Asserts the validity of an event. A properly formed event has the
@@ -75,9 +85,15 @@
         (update-in state [:state :events :queue] concat events)) 
     state))
 
+(defn clear-events-queue
+  "Resets event queue to an empty vector. Returns updates state."
+  [state]
+  (assoc-in state [:state :events :queue] []))
+
 (defn event-system
-  "Send a message to all mailboxes that are subscribed to any events"
+  "Send a message to all mailboxes that are subscribed to any events,
+   clear out events queue. Returns update game state."
   [state]
   (let [{:keys [queue subscriptions]} (-> state :state :events)
         events (msg->subscribers queue subscriptions)]
-    (reduce to-inbox state events)))
+    (clear-events-queue (reduce to-inbox state events))))

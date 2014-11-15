@@ -15,7 +15,7 @@
 (deftest test-msg->subscribers
   (let [queue [[:my-event :someone {:foo :bar}]]
         subscriptions {:my-event {:me {:my-component identity}}} 
-        actual (ev/msg->inbox queue subscriptions)]
+        actual (ev/msg->subscribers queue subscriptions)]
     (is (= actual [[:my-event :someone {:foo :bar} :me :my-component]]))))
 
 (deftest test-to-inbox

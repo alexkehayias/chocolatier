@@ -8,16 +8,8 @@
    component-id and entity-id"
   [state component-id entity-id]
   (let [input-state (-> state :game :input)
-        component-state (ces/get-component-state state :renderable entity-id)]
+        component-state (ces/get-component-state state component-id entity-id)]
     [input-state component-state component-id entity-id]))
-
-;; TODO remove!!! This alters another component's state!
-;; Replace with an event emitter
-(defn output-to-renderable
-  "Format function that outputs result of a component function into component
-   state of :renderable and returns updated game state"
-  [state component-id entity-id result]
-  (ces/mk-component-state state :renderable entity-id result))
 
 (defmulti react-to-input
   (fn [input-state component-state component-id entity-id] entity-id))
@@ -68,6 +60,13 @@
 
 (defmethod react-to-input :player1
   [input-state component-state component-id entity-id]
-  (merge component-state (get-offsets input-state)))
+  (let [offsets (get-offsets input-state)]
+    (if (or (not= (:offset-x offsets) 0)
+            (not= (:offset-x offsets) 0))
+      ;; Return component state and events
+      (do (log/debug component-id "emitting event:"
+                     [:input-change entity-id offsets])
+          [offsets [[:input-change entity-id offsets]]]) 
+      offsets)))
 
 

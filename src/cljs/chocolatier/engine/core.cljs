@@ -6,13 +6,15 @@
             [chocolatier.engine.systems.user-input :refer [user-input-system]]
             [chocolatier.engine.systems.render :refer [render-system]]
             [chocolatier.engine.systems.collision :refer [collision-system]]
+            [chocolatier.engine.systems.tiles :refer [tile-system create-tiles!]]
+            [chocolatier.engine.systems.events :refer [event-system
+                                                       init-events-system
+                                                       subscribe]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.engine.components.controllable :refer [react-to-input
-                                                                include-input-state
-                                                                output-to-renderable]]
+                                                                include-input-state]]
             [chocolatier.engine.components.collidable :refer [check-collisions
                                                               include-collidable-entities]]
-            [chocolatier.engine.systems.tiles :refer [tile-system create-tiles!]]
             [chocolatier.entities.player :refer [create-player!]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
@@ -77,11 +79,15 @@
                         :state {:events {:queue []}}}
                        ;; A collection of keys representing systems
                        ;; that will be called in sequential order
-                       (ces/mk-scene :default [:input
+                       (ces/mk-scene :default [:event
+                                               :input
                                                :user-input
                                                :collision
                                                :tiles
                                                :render])
+                       ;; Global event system broadcaster
+                       (ces/mk-system :event event-system)
+                       (init-events-system)
                        ;; Updates the user input from keyboard,
                        ;; standalone system with no components
                        (ces/mk-system :input input-system)
@@ -92,8 +98,7 @@
                                          ;; with additional argument
                                          ;; for the current input
                                          ;; state 
-                                         [[react-to-input {:args-fn include-input-state
-                                                           :format-fn output-to-renderable}]])
+                                         [[react-to-input {:args-fn include-input-state}]])
                        ;; Draw tile map in background
                        (ces/mk-system :tiles tile-system)
                        ;; Initial tile map
@@ -107,6 +112,9 @@
                                                        {:args-fn include-collidable-entities}]])
                        ;; Add entities
                        (mk-player-1)
+                       ;; Subscribe :player1 to the :input-change
+                       ;; event so we can render movement
+                       (subscribe :input-change :player1 :renderable)
                        (mk-player-2))
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"

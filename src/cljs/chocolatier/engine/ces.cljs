@@ -169,18 +169,19 @@
   "Returns a function representing a system.
 
    Has two arrities:
-   - [f] function f is called with state and wrapped to merge the return
-     value of the function with state
+   - [f] function f is called with state and returns updated game state
    - [f component-id] function f is called with state, a collection of
      component functions, and a collection of entity ids that match the
-     given component id. Results are merged with game state."
+     given component id. Return result is updated game state and inbox
+     messages are removed."
   ([f]
    (fn [state] (f state)))  
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component (:entities state) component-id)
-           component-fns (get-component-fns state component-id)]
-       (f state component-fns entities)))))
+           component-fns (get-component-fns state component-id)
+           updated-state (f state component-fns entities)]
+       (ev/clear-inbox updated-state entities component-id)))))
 
 (defn mk-system
   "Add the system function to the state. Wraps the system function using
