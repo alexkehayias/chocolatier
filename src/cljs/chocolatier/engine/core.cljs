@@ -34,13 +34,8 @@
 (def running (atom true))
 
 (defn game-loop
-  "Fixed timestep gameloop that calculates changes based on the 
-   time duration since last run.
-
-   Calls all systems with the current state n times where n
-   is the number of steps in the duration.
-
-   The render system is called separately so that animation stays smooth."
+  "Simple game loop using requestAnimation to optimize frame rate.
+   If the atom running is false, returns the game state."
   [state scene-id]
   (let [systems (ces/get-system-fns state (-> state :scenes scene-id))
         updated-state (ces/iter-fns state systems)]

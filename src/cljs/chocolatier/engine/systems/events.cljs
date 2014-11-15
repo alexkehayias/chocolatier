@@ -57,7 +57,8 @@
   "Remove all component messages for the give entity IDs"
   [state entity-ids component-id]
   (if (seq entity-ids)
-    (reduce #(assoc-in %1 [:state :inbox component-id %2] []) state entity-ids)
+    (assoc-in state [:state :inbox component-id]
+              (into {} (map #(vector % []) entity-ids)))
     state))
 
 (defn valid-event?
