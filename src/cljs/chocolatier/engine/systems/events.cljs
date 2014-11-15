@@ -27,7 +27,7 @@
 
 (defn subscribe
   "Subscribe to the given event. Optionally pass in a function that takes
-   a queue of events and returns a vector."
+   an event and returns true or false to keep or discard it"
   [state event-id entity-id component-id & [f]]
   ;; If no function is supplied, the events parsing function is an identity
   (assoc-in state [:state :events :subscriptions event-id entity-id component-id]
@@ -41,21 +41,21 @@
         [entity-id components] (-> subscriptions event-id)
         [component-id add-to-inbox?] components]
     (if (add-to-inbox? event-id from msg)
-      [event-id from msg entity-id component-id])))
+      [event-id from msg component-id entity-id])))
 
 (defn to-inbox
   "Adds a message to the inbox of all subscribers of the event.
    Returns updated game state."
   [state subscriber-event]
-  (let [[event-id from msg entity-id component-id] subscriber-event]
-    (update-in state [:state :inbox entity-id component-id]
+  (let [[event-id from msg component-id entity-id] subscriber-event]
+    (update-in state [:state :inbox component-id entity-id]
                conj {:event-id event-id :from from :msg msg})))
 
 (defn clear-inbox
   "Remove all component messages for the give entity IDs"
   [state entity-ids component-id]
   (if (seq entity-ids)
-    (reduce #(assoc-in %1 [:state :inbox %2 component-id] []) state entity-ids)
+    (reduce #(assoc-in %1 [:state :inbox component-id %2] []) state entity-ids)
     state))
 
 (defn valid-event?

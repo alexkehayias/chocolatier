@@ -64,9 +64,7 @@
     (if (or (not= (:offset-x offsets) 0)
             (not= (:offset-x offsets) 0))
       ;; Return component state and events
-      (do (log/debug component-id "emitting event:"
-                     [:input-change entity-id offsets])
-          [offsets [[:input-change entity-id offsets]]]) 
+      [offsets [[:input-change entity-id offsets]]]
       offsets)))
 
 

@@ -16,15 +16,15 @@
   (let [queue [[:my-event :someone {:foo :bar}]]
         subscriptions {:my-event {:me {:my-component identity}}} 
         actual (ev/msg->subscribers queue subscriptions)]
-    (is (= actual [[:my-event :someone {:foo :bar} :me :my-component]]))))
+    (is (= actual [[:my-event :someone {:foo :bar} :my-component :me]]))))
 
 (deftest test-to-inbox
   "Test putting an event into an inbox"
-  (let [actual (ev/to-inbox {} [:event :someone {} :me :comp])]
+  (let [actual (ev/to-inbox {} [:event :someone {} :comp :me])]
     (is (= actual
-           {:state {:inbox {:me {:comp '({:event-id :event
-                                          :from :someone
-                                          :msg {}})}}}}))))
+           {:state {:inbox {:comp {:me (seq [{:event-id :event
+                                              :from :someone
+                                              :msg {}}])}}}}))))
 
 (deftest test-emit-event
   (is (= (ev/emit-event {} :test :me {:foo :bar})
@@ -36,8 +36,8 @@
   (let [queue [[:my-event :someone {:foo :bar}]]
         subscriptions {:my-event {:me {:my-component identity}}}
         state {:state {:events {:queue queue :subscriptions subscriptions}}}
-        inbox (-> (ev/event-system state) :state :inbox :me)]
+        inbox (-> (ev/event-system state) :state :inbox :my-component :me)]
     (is (= inbox
-           {:my-component '({:event-id :my-event
-                             :from :someone
-                             :msg {:foo :bar}})}))))
+           (seq [{:event-id :my-event
+                  :from :someone
+                  :msg {:foo :bar}}])))))
