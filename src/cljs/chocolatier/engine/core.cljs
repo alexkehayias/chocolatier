@@ -89,6 +89,7 @@
                                                :input
                                                :user-input
                                                :collision
+                                               :collision-debug
                                                :tiles
                                                :render])
                        ;; Global event system broadcaster
@@ -116,9 +117,9 @@
                        (ces/mk-system :collision collision-system :collidable)
                        (ces/mk-component :collidable [[check-collisions
                                                        {:args-fn include-collidable-entities}]])
-                       (ces/mk-system :collision-debug debug-collision-system :collidable-debug)
-                       (ces/mk-component :collidable-debug [[draw-collision-zone
-                                                             {:args-fn include-renderable-state}]])
+                       (ces/mk-system :collision-debug debug-collision-system :collision-debuggable)
+                       (ces/mk-component :collision-debuggable [[draw-collision-zone
+                                                                 {:args-fn include-renderable-state}]])
                        ;; Add entities
                        (mk-player-1)
                        ;; Subscribe :player1 to the :input-change

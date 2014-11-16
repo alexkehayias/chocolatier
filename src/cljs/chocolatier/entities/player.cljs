@@ -25,4 +25,4 @@
       (.addChild stage sprite)
       (-> state
           (assoc-in [:state :renderable uid] init-render-state)
-          (ces/mk-entity uid [:renderable :controllable :collidable])))))
+          (ces/mk-entity uid [:renderable :controllable :collidable :collision-debuggable])))))

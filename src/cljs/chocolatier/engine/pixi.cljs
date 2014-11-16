@@ -41,11 +41,13 @@
 (defn add-to-stage
   "Works for PIXI.Sprite and PIXI.Graphics and probably some others"
   [stage graphic]
-  (.addChild stage graphic))
+  (.addChild stage graphic)
+  graphic)
 
 (defn circle
   [graphic x y r]
-  (.drawCircle graphic x y r))
+  (.drawCircle graphic x y r)
+  graphic)
 
 (defn mk-sprite! [stage image-url]
   (.addChild stage (js/PIXI.Sprite. (js/PIXI.Texture.fromImage image-url))))

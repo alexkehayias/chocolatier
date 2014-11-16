@@ -1,5 +1,6 @@
 (ns chocolatier.engine.components.debuggable
   (:require [chocolatier.utils.logging :as log]
+            [chocolatier.engine.ces :as ces]
             [chocolatier.engine.pixi :as pixi]))
 
 (defn include-renderable-state
@@ -8,7 +9,8 @@
   [state component-id entity-id]
   (let [renderable-state (ces/get-component-state state :renderable entity-id)
         component-state (ces/get-component-state state component-id entity-id)
-        inbox (ces/get-event-inbox state component-id entity-id)]
+        inbox (ces/get-event-inbox state component-id entity-id)
+        stage (-> state :game :rendering-engine :stage)]
     [stage component-state renderable-state component-id entity-id inbox]))
 
 (defn base-style
@@ -27,19 +29,18 @@
 (defmethod draw-collision-zone :default
   [stage component-state renderable-state component-id entity-id inbox]
   (let [{:keys [pos-x pos-y hit-radius height width]} renderable-state
-        ;; Try to get the sprite for collision zone or create a new one
-        sprite (or (:sprite component-state)
-                   (-> (pixi/mk-graphic! stage)
-                       (pixi/add-to-stage stage)
-                       (base-style)
-                       (pixi/circle pos-x pos-y hit-radius)))
         ;; Center hitzone on middle of entity
         half-height (/ height 2) 
         half-width (/ width 2) 
         x (+ pos-x half-width)
-        y (+ pos-y half-height)]
+        y (+ pos-y half-height)
+        ;; Try to get the sprite for collision zone or create a new one
+        sprite (or (:sprite component-state)
+                   (-> (pixi/mk-graphic! stage)
+                       (base-style)
+                       (pixi/circle x y hit-radius)))]
     ;; Mutate the x and y position
-    (set! (.-position.x sprite) (:pos-x renderable))
-    (set! (.-position.y sprite) (:pos-y renderable))
+    (set! (.-position.x sprite) (- x width))
+    (set! (.-position.y sprite) (- y height))
     ;; If the sprite does not exist it will add it to component state
     (assoc component-state :sprite sprite)))
