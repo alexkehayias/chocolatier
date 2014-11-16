@@ -10,11 +10,14 @@
             [chocolatier.engine.systems.events :refer [event-system
                                                        init-events-system
                                                        subscribe]]
+            [chocolatier.engine.systems.debug :refer [debug-collision-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
             [chocolatier.engine.components.collidable :refer [check-collisions
                                                               include-collidable-entities]]
+            [chocolatier.engine.components.debuggable :refer [draw-collision-zone
+                                                              include-renderable-state]]
             [chocolatier.entities.player :refer [create-player!]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
@@ -113,6 +116,9 @@
                        (ces/mk-system :collision collision-system :collidable)
                        (ces/mk-component :collidable [[check-collisions
                                                        {:args-fn include-collidable-entities}]])
+                       (ces/mk-system :collision-debug debug-collision-system :collidable-debug)
+                       (ces/mk-component :collidable-debug [[draw-collision-zone
+                                                             {:args-fn include-renderable-state}]])
                        ;; Add entities
                        (mk-player-1)
                        ;; Subscribe :player1 to the :input-change
@@ -143,6 +149,6 @@
 (defn stop-game! []
   (reset! *running false))
 
-(defn reset-game! []
+(defn restart-game! []
   (cleanup!)
   (start-game!))
