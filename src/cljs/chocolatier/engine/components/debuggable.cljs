@@ -13,12 +13,18 @@
         stage (-> state :game :rendering-engine :stage)]
     [stage component-state renderable-state component-id entity-id inbox]))
 
-(defn base-style
+(defn base-style!
   "Applies styles to the graphic."
   [graphic]
   (-> graphic
       (pixi/line-style 0)
-      (pixi/fill 0xFFFF0B 0.5)))
+      (pixi/fill 0xFFFF0B 0.3)))
+
+(defn collision-style!
+  [graphic]
+  (-> graphic
+      (pixi/line-style 0)
+      (pixi/fill 0xFF0000 0.3)))
 
 (defmulti draw-collision-zone
   "Debug collision detection by drawing circles for the hitzone and turning red 
@@ -35,12 +41,10 @@
         x (+ pos-x half-width)
         y (+ pos-y half-height)
         ;; Try to get the sprite for collision zone or create a new one
-        sprite (or (:sprite component-state)
-                   (-> (pixi/mk-graphic! stage)
-                       (base-style)
-                       (pixi/circle x y hit-radius)))]
-    ;; Mutate the x and y position
-    (set! (.-position.x sprite) (- x width))
-    (set! (.-position.y sprite) (- y height))
+        graphic (or (:graphic component-state) (pixi/mk-graphic! stage))]
+    ;; If there is a collision going on change set the color to red
+    (if (empty? inbox)
+      (-> graphic (pixi/clear) (base-style!) (pixi/circle x y hit-radius))
+      (-> graphic (pixi/clear) (collision-style!) (pixi/circle x y hit-radius)))
     ;; If the sprite does not exist it will add it to component state
-    (assoc component-state :sprite sprite)))
+    (assoc component-state :graphic graphic)))

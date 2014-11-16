@@ -38,6 +38,10 @@
   (.beginFill graphic color-hex opacity)
   graphic)
 
+(defn clear [graphic]
+  (.clear graphic)
+  graphic)
+
 (defn add-to-stage
   "Works for PIXI.Sprite and PIXI.Graphics and probably some others"
   [stage graphic]

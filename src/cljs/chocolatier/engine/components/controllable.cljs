@@ -66,5 +66,3 @@
       ;; Return component state and events
       [offsets [[:input-change entity-id offsets]]]
       offsets)))
-
-

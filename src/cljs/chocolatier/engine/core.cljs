@@ -125,7 +125,11 @@
                        ;; Subscribe :player1 to the :input-change
                        ;; event so we can render movement
                        (subscribe :input-change :renderable :player1)
-                       (mk-player-2))
+                       ;; Subscribe :collision-debuggable:player1 to
+                       ;; the collision event
+                       (subscribe :collision :collision-debuggable :player1)
+                       (mk-player-2)
+                       (subscribe :collision :collision-debuggable :player2))
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"

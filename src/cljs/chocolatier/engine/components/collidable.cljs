@@ -58,6 +58,7 @@
     [entities component-state component-id entity-id]))
 
 (defmulti check-collisions
+  "Returns updated component state and collision events when colliding"
   (fn [entities component-state component-id entity-id] entity-id))
 
 (defmethod check-collisions :default
@@ -73,5 +74,7 @@
         ;; In order to have a collision the collisions seq must not be
         ;; empty and must have a falsey value
         colliding? (and (every? boolean collisions) (seq collisions))]
-    (when colliding? (log/debug "Colliding!!!"))
-    component-state))
+    (if colliding?
+      (do (log/debug "Colliding!!!")
+          [component-state [[:collision entity-id {:colliding? true}]]])
+      component-state)))
