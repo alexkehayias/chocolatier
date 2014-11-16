@@ -75,6 +75,5 @@
         ;; empty and must have a falsey value
         colliding? (and (every? boolean collisions) (seq collisions))]
     (if colliding?
-      (do (log/debug "Colliding!!!")
-          [component-state [[:collision entity-id {:colliding? true}]]])
+      [component-state [[:collision entity-id {:colliding? true}]]]
       component-state)))
