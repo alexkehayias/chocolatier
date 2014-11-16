@@ -66,6 +66,29 @@ A browser repl is automatically available when the server is started. This allow
 
 Any changes to a running browser game take effect immediately on the next frame. Just about everything can be re-evaluated on the fly. For example, changing the moving rate of the player and evaluating the code in the browser repl will show the change in movement rate right away!
 
+## Cross-component communication
+
+A global pub-sub event queue is available for any component enabling cross component communication without coupling the state of any of the components. For example, suppose the render component needs to update the screen position of the player sprite. The render component needs information from the input component, but we don't want to couple the state of either components together. Instead of directly accessing the input component's state from the render component we subscribe to messages about player movement and update based on that. We can broadcast that information without any knowledge of who is listening to it and no one can change the component state from another component.
+
+By default, component functions created with `ces/mk-component` can output a single value, representing component state, or two values, component state and a collection of events to emit. 
+
+For example, the following component will emit a single event called `:my-event` with the message `{:foo :bar}`:
+
+```clojure
+(defn component-a [entity-id component-state inbox]
+  [component-state [[:my-event entity-id {:foo :bar}]]])
+```
+
+Any component can subscribe to it by calling `events/subscribe` on the game state. For example, subscribing `:component-b` to the `:my-event` event:
+
+```clojure
+(subscribe my-game-state :my-event :component-b)
+```
+
+Note: this is an idempotent operation and you can not subscribe more than once.
+
+The subscribed component will receive the event in it's inbox (third arg to component functions by default) the frame after it is emitted. This means the game loop acts as a double buffer (atomic operation on game state changes) so in the middle of iterating through systems and components you can not inadvertently send and receive a message that could change the systems state.
+
 ## Running Tests
 
 Currently does not support `lein-cljsbuild` tests. Instead, load a namespace in a brepl and use the `test-ns` macro to run the tests.

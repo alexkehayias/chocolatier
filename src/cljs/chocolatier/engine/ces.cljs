@@ -188,9 +188,9 @@
            component-fns (get-component-fns state component-id)
            updated-state (f state component-fns entities)]
        (ev/clear-inbox updated-state entities component-id))))
-  ([f component-id & component-ids]
+  ([f component-id & more-component-ids]
    (fn [state]
-     (let [ids (conj component-ids component-id)
+     (let [ids (conj component-ids more-component-id)
            entities (entities-with-multi-components (:entities state) ids)
            component-fns (get-component-fns state component-id)
            updated-state (f state component-fns entities)]
