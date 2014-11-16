@@ -56,6 +56,12 @@
   (map first
        (filter #(boolean (some #{component-id} (second %))) entities)))
 
+(defn entities-with-multi-component
+  "Takes a hashmap and returns all keys whose values has all component-ids"
+  [entities component-ids]
+  (map first
+       (filter #(boolean (some #{component-ids} (second %))) entities)))
+
 (defn mk-entity
   "Adds entity with uid that has component-ids into state"
   [state uid component-ids]
@@ -179,6 +185,13 @@
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component (:entities state) component-id)
+           component-fns (get-component-fns state component-id)
+           updated-state (f state component-fns entities)]
+       (ev/clear-inbox updated-state entities component-id))))
+  ([f component-id & component-ids]
+   (fn [state]
+     (let [ids (conj component-ids component-id)
+           entities (entities-with-multi-components (:entities state) ids)
            component-fns (get-component-fns state component-id)
            updated-state (f state component-fns entities)]
        (ev/clear-inbox updated-state entities component-id)))))
