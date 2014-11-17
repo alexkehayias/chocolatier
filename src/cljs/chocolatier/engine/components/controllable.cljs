@@ -62,7 +62,7 @@
   [input-state component-state component-id entity-id]
   (let [offsets (get-offsets input-state)]
     (if (or (not= (:offset-x offsets) 0)
-            (not= (:offset-x offsets) 0))
+            (not= (:offset-y offsets) 0))
       ;; Return component state and events
       [offsets [[:input-change entity-id offsets]]]
       offsets)))
