@@ -8,11 +8,9 @@
    component-id and entity-id"
   [state component-id entity-id]
   (let [input-state (-> state :game :input)
-        component-state (ces/get-component-state state component-id entity-id)]
-    [input-state component-state component-id entity-id]))
-
-(defmulti react-to-input
-  (fn [input-state component-state component-id entity-id] entity-id))
+        component-state (ces/get-component-state state component-id entity-id)
+        inbox (ces/get-event-inbox state component-id entity-id)]
+    [input-state component-state component-id entity-id inbox]))
 
 (def move-rate 4)
 
@@ -54,13 +52,34 @@
         offsets 
         (recur updated-offsets remaining)))))
 
+(defn reverse-offsets [{:keys [offset-x offset-y] :as offset-hm}]
+  {:offset-x (if (pos? offset-x) (- offset-x) (max offset-x (- offset-x)))
+   :offset-y (if (pos? offset-y) (- offset-y) (max offset-y (- offset-y)))})
+
+(defmulti react-to-input
+  (fn [input-state component-state component-id entity-id inbox] entity-id))
+
 (defmethod react-to-input :default
-  [input-state component-state component-id entity-id]
+  [input-state component-state component-id entity-id inbox]
   component-state)
 
 (defmethod react-to-input :player1
-  [input-state component-state component-id entity-id]
-  (let [offsets (get-offsets input-state)]
+  [input-state component-state component-id entity-id inbox]
+  ;; If we have a collision message we need to stop movement (don't
+  ;; emit events)
+  (let [colliding? (seq inbox)
+        offsets (get-offsets input-state)
+        ;; FIX we need to prevent from making the move if it would
+        ;; result in a collision. Need to combine collision movement
+        ;; and collision detection otherwise you will alway be one
+        ;; frame behind if you use messages. Collidable sends a
+        ;; message when there is a collision. Messages are not
+        ;; recieved until the next frame!
+        
+        ;; If we are colliding then we want to reverse the movement
+        offsets (if colliding?
+                  (merge-with + (reverse-offsets component-state) (reverse-offsets offsets)) 
+                  offsets)]
     (if (or (not= (:offset-x offsets) 0)
             (not= (:offset-y offsets) 0))
       ;; Return component state and events

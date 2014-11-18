@@ -20,7 +20,7 @@
 ;; event/entity/component id
 
 
-(defn init-events-system
+(defn mk-events-system
   "Adds an :events entry to the state hashmap."
   [state]
   (assoc-in state [:state :events] {:queue [] :subscriptions {}}))
@@ -88,6 +88,13 @@
         (update-in state [:state :events :queue] concat events)) 
     state))
 
+(defn fan-out-messages
+  "Sends all events to all subscribers"
+  [state]
+  (let [{:keys [queue subscriptions]} (-> state :state :events)
+        events (msg->subscribers queue subscriptions)]
+    (reduce to-inbox state events)))
+
 (defn clear-events-queue
   "Resets event queue to an empty vector. Returns updates state."
   [state]
@@ -97,6 +104,4 @@
   "Send a message to all mailboxes that are subscribed to any events,
    clear out events queue. Returns update game state."
   [state]
-  (let [{:keys [queue subscriptions]} (-> state :state :events)
-        events (msg->subscribers queue subscriptions)]
-    (clear-events-queue (reduce to-inbox state events))))
+  (-> state fan-out-messages clear-events-queue))

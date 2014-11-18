@@ -54,23 +54,34 @@
         ;; Add on the id of the entity
         entities (map #(assoc (ces/get-component-state state :renderable %) :id %)
                       entity-ids)
-        component-state (ces/get-component-state state component-id entity-id)]
-    [entities component-state component-id entity-id]))
+        component-state (ces/get-component-state state component-id entity-id)
+        inbox (ces/get-event-inbox state component-id entity-id)]
+    [entities component-state component-id entity-id inbox]))
 
 (defmulti check-collisions
   "Returns updated component state and collision events when colliding"
-  (fn [entities component-state component-id entity-id] entity-id))
+  (fn [entities component-state component-id entity-id inbox] entity-id))
 
 (defmethod check-collisions :default
-  [entities component-state component-id entity-id]
+  [entities component-state component-id entity-id inbox]
   component-state)
 
+
+;; Get messages from controllable, apply the offsets to the
+;; position of the target entity-id this will indicate that the entity
+;; WILL collide if it moves to the intended position
 (defmethod check-collisions :player1
-  [entities component-state component-id entity-id]
-  (let [player (first (filter #(= (:id %) entity-id) entities)) 
+  [entities component-state component-id entity-id inbox]
+  ;; TODO if the player has not moved don't bother with collision
+  ;; detection that way each entity is in charge of their own
+  ;; collision detection
+  (let [offsets (-> inbox first last :msg)
+        player (first (filter #(= (:id %) entity-id) entities))
+        player-with-offsets (merge-with + player offsets) 
         ;; Exclude the player from collection of collidable entities
         filtered-entities (filter #(not= (:id %) entity-id) entities)
-        collisions (doall (for [e filtered-entities] (collision? player e)))
+        collisions (doall (for [e filtered-entities]
+                            (collision? player-with-offsets e)))
         ;; In order to have a collision the collisions seq must not be
         ;; empty and must have a falsey value
         colliding? (and (every? boolean collisions) (seq collisions))]

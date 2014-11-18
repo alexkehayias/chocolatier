@@ -8,7 +8,7 @@
             [chocolatier.engine.systems.collision :refer [collision-system]]
             [chocolatier.engine.systems.tiles :refer [tile-system create-tiles!]]
             [chocolatier.engine.systems.events :refer [event-system
-                                                       init-events-system
+                                                       mk-events-system
                                                        subscribe]]
             [chocolatier.engine.systems.debug :refer [debug-collision-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
@@ -94,7 +94,8 @@
                                                :render])
                        ;; Global event system broadcaster
                        (ces/mk-system :event event-system)
-                       (init-events-system)
+                       ;; TODO change this to mk- instead of init-
+                       (mk-events-system)
                        ;; Updates the user input from keyboard,
                        ;; standalone system with no components
                        (ces/mk-system :input input-system)
@@ -122,12 +123,20 @@
                                                                  {:args-fn include-renderable-state}]])
                        ;; Add entities
                        (mk-player-1)
-                       ;; Subscribe :player1 to the :input-change
-                       ;; event so we can render movement
-                       (subscribe :input-change :renderable :player1)
+                       ;; Subscribe :rednerable:player1 to the
+                       ;; :input-change  event so we can render
+                       ;; movement
                        ;; Subscribe :collision-debuggable:player1 to
+                       (subscribe :input-change :renderable :player1)
                        ;; the collision event
                        (subscribe :collision :collision-debuggable :player1)
+                       ;; Subscribe :controllable:player1 to
+                       ;; collisions events
+                       (subscribe :collision :controllable :player1)
+                       ;; Subscribe :collidable:player1 to
+                       ;; :input-change events so we can detect
+                       ;; collisions before they happen
+                       (subscribe :input-change :collidable :player1)
                        (mk-player-2)
                        (subscribe :collision :collision-debuggable :player2))
         ;; PIXI requires a js array not a persistent vector
