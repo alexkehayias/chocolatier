@@ -54,7 +54,7 @@
                conj {:event-id event-id :from from :msg msg})))
 
 (defn clear-inbox
-  "Remove all component messages for the give entity IDs"
+  "Remove all component messages for the given entity IDs"
   [state entity-ids component-id]
   (if (seq entity-ids)
     (assoc-in state [:state :inbox component-id]
@@ -93,6 +93,7 @@
   [state]
   (let [{:keys [queue subscriptions]} (-> state :state :events)
         events (msg->subscribers queue subscriptions)]
+    (when (seq events) (debug events)) 
     (reduce to-inbox state events)))
 
 (defn clear-events-queue

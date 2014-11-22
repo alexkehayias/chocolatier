@@ -3,7 +3,7 @@
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.pixi :as pixi]))
 
-(defn include-renderable-state
+(defn include-renderable-state-and-stage
   "Include the renderable component state and stage (for drawing new things adhoc)
    in the args passed to draw-collision-zone"
   [state component-id entity-id]

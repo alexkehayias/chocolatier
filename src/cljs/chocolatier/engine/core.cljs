@@ -11,13 +11,16 @@
                                                        mk-events-system
                                                        subscribe]]
             [chocolatier.engine.systems.debug :refer [debug-collision-system]]
+            [chocolatier.engine.systems.movement :refer [movement-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
             [chocolatier.engine.components.collidable :refer [check-collisions
                                                               include-collidable-entities]]
             [chocolatier.engine.components.debuggable :refer [draw-collision-zone
-                                                              include-renderable-state]]
+                                                              include-renderable-state-and-stage]]
+            [chocolatier.engine.components.moveable :refer [move
+                                                            include-renderable-state]]
             [chocolatier.entities.player :refer [create-player!]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
@@ -85,16 +88,15 @@
                         :state {:events {:queue []}}}
                        ;; A collection of keys representing systems
                        ;; that will be called in sequential order
-                       (ces/mk-scene :default [:event
-                                               :input
+                       (ces/mk-scene :default [:input
                                                :user-input
                                                :collision
                                                :collision-debug
+                                               :movement
                                                :tiles
                                                :render])
                        ;; Global event system broadcaster
-                       (ces/mk-system :event event-system)
-                       ;; TODO change this to mk- instead of init-
+                       ;; (ces/mk-system :event event-system)
                        (mk-events-system)
                        ;; Updates the user input from keyboard,
                        ;; standalone system with no components
@@ -120,23 +122,19 @@
                                                        {:args-fn include-collidable-entities}]])
                        (ces/mk-system :collision-debug debug-collision-system :collision-debuggable)
                        (ces/mk-component :collision-debuggable [[draw-collision-zone
-                                                                 {:args-fn include-renderable-state}]])
-                       ;; Add entities
+                                                                 {:args-fn include-renderable-state-and-stage}]])
+                       (ces/mk-system :movement movement-system :moveable)
+                       (ces/mk-component :moveable [[move
+                                                     {:args-fn include-renderable-state}]])
+                       ;; Player 1 entity
                        (mk-player-1)
-                       ;; Subscribe :rednerable:player1 to the
-                       ;; :input-change  event so we can render
-                       ;; movement
-                       ;; Subscribe :collision-debuggable:player1 to
-                       (subscribe :input-change :renderable :player1)
-                       ;; the collision event
-                       (subscribe :collision :collision-debuggable :player1)
-                       ;; Subscribe :controllable:player1 to
-                       ;; collisions events
-                       (subscribe :collision :controllable :player1)
-                       ;; Subscribe :collidable:player1 to
-                       ;; :input-change events so we can detect
-                       ;; collisions before they happen
                        (subscribe :input-change :collidable :player1)
+                       (subscribe :input-change :moveable :player1)
+                       (subscribe :collision :moveable :player1)
+                       (subscribe :collision :collision-debuggable :player1)
+                       (subscribe :move :renderable :player1)
+
+                       ;; Other entities
                        (mk-player-2)
                        (subscribe :collision :collision-debuggable :player2))
         ;; PIXI requires a js array not a persistent vector
@@ -164,5 +162,9 @@
   (reset! *running false))
 
 (defn restart-game! []
+  (debug "Restarting...")
+  (stop-game!)
   (cleanup!)
-  (start-game!))
+  ;; Give it a second to end the game
+  (js/setTimeout start-game! 1000)
+  nil)

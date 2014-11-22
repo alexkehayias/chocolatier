@@ -34,7 +34,7 @@
    ;; Direction pad   
    :& [:offset-y (* 1 move-rate)]
    ;; Use keyword here since parahs are reserved
-   (keyword "(") [:offset-y (* -1 move-rate)]
+   (keyword \() [:offset-y (* -1 move-rate)]
    :' [:offset-x (* -1 move-rate)]
    :% [:offset-x (* 1 move-rate)]})
 
@@ -45,7 +45,7 @@
          i (seq input-state)]
     (let [[k v] (first i)
           remaining (rest i)
-          updated-offsets (if (= v "on")
+          updated-offsets (if (and (= v "on") (k keycode->offset))
                             (apply assoc offsets (k keycode->offset))
                             offsets)]
       (if (empty? remaining)
@@ -65,23 +65,9 @@
 
 (defmethod react-to-input :player1
   [input-state component-state component-id entity-id inbox]
-  ;; If we have a collision message we need to stop movement (don't
-  ;; emit events)
-  (let [colliding? (seq inbox)
-        offsets (get-offsets input-state)
-        ;; FIX we need to prevent from making the move if it would
-        ;; result in a collision. Need to combine collision movement
-        ;; and collision detection otherwise you will alway be one
-        ;; frame behind if you use messages. Collidable sends a
-        ;; message when there is a collision. Messages are not
-        ;; recieved until the next frame!
-        
-        ;; If we are colliding then we want to reverse the movement
-        offsets (if colliding?
-                  (merge-with + (reverse-offsets component-state) (reverse-offsets offsets)) 
-                  offsets)]
+  (let [offsets (get-offsets input-state)]
     (if (or (not= (:offset-x offsets) 0)
             (not= (:offset-y offsets) 0))
       ;; Return component state and events
-      [offsets [[:input-change entity-id offsets]]]
+      [offsets [[:input-change entity-id offsets]]] 
       offsets)))

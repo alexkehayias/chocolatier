@@ -33,7 +33,7 @@
    result of the function called is passed as an arg to the next
    function."
   [init fn-coll]
-  ((apply comp fn-coll) init))
+  (reduce #(%2 %1) init fn-coll))
 
 (defn get-system-fns
   "Return system functions with an id that matches system-ids in order."
@@ -185,9 +185,16 @@
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component (:entities state) component-id)
-           component-fns (get-component-fns state component-id)
-           updated-state (f state component-fns entities)]
-       (ev/clear-inbox updated-state entities component-id))))
+           component-fns (get-component-fns state component-id)]
+       ;; Update game state
+       (-> (f state component-fns entities)
+           ;; Clear out inbox from all the system's components
+           ;; (implicit acknowledgement of the messages)
+           (ev/clear-inbox entities component-id)
+           ;; Emit all the messages to subscribers
+           (ev/fan-out-messages)
+           ;; Clear events queue
+           (ev/clear-events-queue)))))
   ([f component-id & more-component-ids]
    (fn [state]
      (let [ids (conj component-ids more-component-id)

@@ -36,10 +36,10 @@
           ;; The hit circles are drawn around the center of the entity
           ;; by halving the height and width
           [center-x1 center-y1] (map + [x1 y1] (map halve [w1 h1]))
-          [center-x2 center-y2] (map + [x2 y2] (map halve [w2 h2]))          
+          [center-x2 center-y2] (map + [x2 y2] (map halve [w2 h2]))
           ;; Apply offsets of where the two entities will be
-          [adj-x1 adj-y1] (map + [center-x1 center-y1] [off-x1 off-y1])
-          [adj-x2 adj-y2] (map + [center-x2 center-y2] [off-x2 off-y2])
+          [adj-x1 adj-y1] (map - [center-x1 center-y1] [off-x1 off-y1])
+          [adj-x2 adj-y2] (map - [center-x2 center-y2] [off-x2 off-y2])
           colliding? (circle-collision? adj-x1 adj-y1 r1 adj-x2 adj-y2 r2)]
       colliding?)
     false))
@@ -72,19 +72,22 @@
 ;; WILL collide if it moves to the intended position
 (defmethod check-collisions :player1
   [entities component-state component-id entity-id inbox]
-  ;; TODO if the player has not moved don't bother with collision
-  ;; detection that way each entity is in charge of their own
-  ;; collision detection
-  (let [offsets (-> inbox first last :msg)
-        player (first (filter #(= (:id %) entity-id) entities))
-        player-with-offsets (merge-with + player offsets) 
-        ;; Exclude the player from collection of collidable entities
-        filtered-entities (filter #(not= (:id %) entity-id) entities)
-        collisions (doall (for [e filtered-entities]
-                            (collision? player-with-offsets e)))
-        ;; In order to have a collision the collisions seq must not be
-        ;; empty and must have a falsey value
-        colliding? (and (every? boolean collisions) (seq collisions))]
-    (if colliding?
-      [component-state [[:collision entity-id {:colliding? true}]]]
-      component-state)))
+  (let [input-change (filter #(= (:event-id %) :input-change) inbox)]
+    ;; If the player has not moved don't bother with collision
+    ;; detection that way each entity is in charge of their own
+    ;; collision detection
+    (if-not (seq input-change)
+      component-state
+      (let [offsets (apply merge-with + (map :msg inbox))
+            player (first (filter #(= (:id %) entity-id) entities))
+            player-with-offsets (merge player offsets)
+            ;; Exclude the player from collection of collidable entities
+            filtered-entities (filter #(not= (:id %) entity-id) entities)
+            collisions (doall (for [e filtered-entities]
+                                (collision? player-with-offsets e)))
+            ;; In order to have a collision the collisions seq must not be
+            ;; empty and must have a true value
+            colliding? (some #{true} collisions)]
+        (if colliding?
+          [component-state [[:collision entity-id {:colliding? true}]]]
+          component-state)))))

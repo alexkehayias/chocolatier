@@ -16,7 +16,6 @@
                              :height h :width w
                              :map-x map-x :map-y map-y
                              :pos-x pos-x :pos-y pos-y
-                             :offset-x 0 :offset-y 0
                              :hit-radius hit-radius}]
       (info "Creating player" pos-x pos-y map-x map-y hit-radius)
       ;; Mutate the sprite and stage
@@ -25,4 +24,8 @@
       (.addChild stage sprite)
       (-> state
           (assoc-in [:state :renderable uid] init-render-state)
-          (ces/mk-entity uid [:renderable :controllable :collidable :collision-debuggable])))))
+          (ces/mk-entity uid [:renderable
+                              :controllable
+                              :collidable
+                              :collision-debuggable
+                              :moveable])))))
