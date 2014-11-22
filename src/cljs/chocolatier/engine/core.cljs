@@ -12,6 +12,7 @@
                                                        subscribe]]
             [chocolatier.engine.systems.debug :refer [debug-collision-system]]
             [chocolatier.engine.systems.movement :refer [movement-system]]
+            [chocolatier.engine.systems.ai :refer [ai-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
@@ -21,7 +22,10 @@
                                                               include-renderable-state-and-stage]]
             [chocolatier.engine.components.moveable :refer [move
                                                             include-renderable-state]]
-            [chocolatier.entities.player :refer [create-player!]])
+            [chocolatier.engine.components.ai :refer [behavior
+                                                      include-player-and-renderable-state]]
+            [chocolatier.entities.player :refer [create-player!]]
+            [chocolatier.entities.enemy :refer [create-enemy!]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
 
 ;; Controls game loop and allows dynamic changes to state even after
@@ -82,7 +86,7 @@
         step (/ 1 frame-rate)
         rendering-engine {:renderer renderer :stage stage}
         mk-player-1 (create-player! stage :player1 20 20 0 0 20)
-        mk-player-2 (create-player! stage :player2 80 80 0 0 20)
+        mk-enemy (create-enemy! stage (keyword (gensym)) 80 80 0 0 20)
         mk-tiles (create-tiles! stage)
         init-state (-> {:game {:rendering-engine rendering-engine}
                         :state {:events {:queue []}}}
@@ -90,6 +94,7 @@
                        ;; that will be called in sequential order
                        (ces/mk-scene :default [:input
                                                :user-input
+                                               :ai
                                                :collision
                                                :collision-debug
                                                :movement
@@ -126,17 +131,14 @@
                        (ces/mk-system :movement movement-system :moveable)
                        (ces/mk-component :moveable [[move
                                                      {:args-fn include-renderable-state}]])
+                       (ces/mk-system :ai ai-system :ai)
+                       (ces/mk-component :ai [[behavior
+                                               {:args-fn include-player-and-renderable-state}]])
                        ;; Player 1 entity
                        (mk-player-1)
-                       (subscribe :input-change :collidable :player1)
-                       (subscribe :input-change :moveable :player1)
-                       (subscribe :collision :moveable :player1)
-                       (subscribe :collision :collision-debuggable :player1)
-                       (subscribe :move :renderable :player1)
 
                        ;; Other entities
-                       (mk-player-2)
-                       (subscribe :collision :collision-debuggable :player2))
+                       (mk-enemy))
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"

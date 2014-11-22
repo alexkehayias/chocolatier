@@ -1,6 +1,8 @@
 (ns chocolatier.entities.player
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
-            [chocolatier.engine.ces :as ces]))
+            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.systems.events :as ev]))
+
 
 
 (defn create-player!
@@ -28,4 +30,9 @@
                               :controllable
                               :collidable
                               :collision-debuggable
-                              :moveable])))))
+                              :moveable])
+          (ev/subscribe :input-change :collidable uid (ev/from-id? uid))
+          (ev/subscribe :input-change :moveable uid (ev/from-id? uid))
+          (ev/subscribe :collision :moveable uid (ev/from-id? uid))
+          (ev/subscribe :collision :collision-debuggable uid (ev/from-id? uid))
+          (ev/subscribe :move :renderable uid (ev/from-id? uid))))))

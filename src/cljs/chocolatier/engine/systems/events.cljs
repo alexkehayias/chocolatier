@@ -35,6 +35,12 @@
   (assoc-in state [:state :events :subscriptions event-id component-id entity-id]
             (or f (fn [& args] true))))
 
+(defn from-id?
+  "Returns boolean of whether event is from the specified id"
+  [id]
+  (fn [event-id from msg]
+    (= from id)))
+
 (defn msg->subscribers
   "Fans out messages to subscribers. 
    Returns a lazy seq of events with subscriber information."

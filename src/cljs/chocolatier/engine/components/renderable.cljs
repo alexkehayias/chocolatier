@@ -7,14 +7,6 @@
 
 (defmethod update-sprite :default
   [entity-id component-state inbox]
-  (let [sprite (:sprite component-state)]
-    ;; Mutate the x and y position
-    (set! (.-position.x sprite) (:pos-x component-state))
-    (set! (.-position.y sprite) (:pos-y component-state))
-    component-state))
-
-(defmethod update-sprite :player1
-  [entity-id component-state inbox]
   (let [move-events (filter #(= (:event-id %) :move) inbox)
         ;; Offsets come from messages in the inbox and are aggregated
         {:keys [move-x move-y]
