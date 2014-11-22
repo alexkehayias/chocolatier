@@ -20,7 +20,7 @@
   [entity-id component-state renderable-state player-state component-id inbox]
   (let [{player-pos-x :pos-x player-pos-y :pos-y}  player-state
         {:keys [pos-x pos-y]} renderable-state
-        event [:ai entity-id {:offset-x (if (< player-pos-x pos-x) 1 -1)
-                              :offset-y (if (< player-pos-y pos-y) 1 -1)}]]
+        event [:move-change entity-id {:offset-x (if (< player-pos-x pos-x) 1 -1)
+                                       :offset-y (if (< player-pos-y pos-y) 1 -1)}]]
     ;; Go towards the x,y of the player
     [component-state [event]]))

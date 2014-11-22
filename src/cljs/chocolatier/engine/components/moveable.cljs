@@ -18,22 +18,9 @@
 
 (defmethod move :default
   [entity-id component-state renderable-state component-id inbox]
-  (let [collision? (seq (filter #(= (:event-id %) :collision) inbox))
-        ai (first (filter #(= (:event-id %) :ai) inbox)) 
-        {:keys [offset-x offset-y] :or {offset-x 0 offset-y 0}} (:msg ai)]
-    ;; If there WILL be a collision, don't emit a move otherwise emit
-    ;; the intended movement
-    (if collision?
-      component-state
-      (if ai
-        [component-state [[:move entity-id {:move-x offset-x :move-y offset-y}]]] 
-        component-state))))
-
-(defmethod move :player1
-  [entity-id component-state renderable-state component-id inbox]
   ;; Check if there is an input-change, collision events
   (let [collision? (seq (filter #(= (:event-id %) :collision) inbox))
-        input-change (first (filter #(= (:event-id %) :input-change) inbox)) 
+        input-change (first (filter #(= (:event-id %) :move-change) inbox)) 
         {:keys [offset-x offset-y] :or {offset-x 0 offset-y 0}} (:msg input-change)]
     ;; If there WILL be a collision, don't emit a move otherwise emit
     ;; the intended movement

@@ -99,7 +99,6 @@
   [state]
   (let [{:keys [queue subscriptions]} (-> state :state :events)
         events (msg->subscribers queue subscriptions)]
-    (when (seq events) (debug events)) 
     (reduce to-inbox state events)))
 
 (defn clear-events-queue
