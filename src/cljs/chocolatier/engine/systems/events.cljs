@@ -46,10 +46,10 @@
    Returns a lazy seq of events with subscriber information."
   [queue subscriptions]
   (for [[event-id from msg] queue
-        [component-id entity-subs] (-> subscriptions event-id)
-        [entity-id add-to-inbox?] entity-subs]
-    (if (add-to-inbox? event-id from msg)
-      [event-id from msg component-id entity-id])))
+        [component-id entity-subs] (event-id subscriptions)
+        [entity-id add-to-inbox?] entity-subs
+        :when (add-to-inbox? event-id from msg)]
+    [event-id from msg component-id entity-id]))
 
 (defn to-inbox
   "Adds a message to the inbox of all subscribers of the event.

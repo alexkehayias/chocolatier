@@ -112,6 +112,13 @@
    format-fn or update-component-state-and-events which returns an updated 
    game state.
 
+   The component function must take & args or & {:as sys-kwargs} so that
+   a system may pass in keyword arguments directly to the the component
+   function. System keyword arguments will be at the end of the argument
+   list even if an :args-fn is specified. This is useful for optimizations
+   where each entity would otherwise perform the same operation multiple
+   times.
+
    The component function can return 1 result or 2. If 1 result then the
    output is treated as the component state. If it is 2 then the second
    argument is events that should be emitted. If format-fn is specified
@@ -129,14 +136,15 @@
      - format-fn: called with component-id, entity-id and the result of f,
        must return a mergeable hashmap"
   [component-id f & [{:keys [args-fn format-fn]} options]]
-  (fn [state entity-id]
+  (fn [state entity-id & {:as sys-kwargs}]
     (let [args (if args-fn
                  (args-fn state component-id entity-id)
                  ;; Default args to the component function
                  [entity-id
                   (get-component-state state component-id entity-id)
                   (get-event-inbox state component-id entity-id)])
-          result (apply f args)
+          ;; Pass args and system argument to the component function
+          result (apply f (concat args (apply concat sys-kwargs)))
           output-fn (partial (or format-fn update-component-state-and-events)
                              state component-id entity-id)]
       ;; Handle if the result is going to include events or not

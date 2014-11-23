@@ -44,31 +44,24 @@
       colliding?)
     false))
 
-(defn include-collidable-entities
-  "State parsing function. Returns a vector of component-state
-   positions of all collidable entities and their id, component-id and this entity-id"
-  [state component-id entity-id]
-  (let [entity-ids (ces/entities-with-component (:entities state) component-id)
-        ;; Only want the renderable component state as that has the
-        ;; actual sprites with real positions
-        ;; Add on the id of the entity
-        entities (map #(assoc (ces/get-component-state state :renderable %) :id %)
-                      entity-ids)
-        component-state (ces/get-component-state state component-id entity-id)
-        inbox (ces/get-event-inbox state component-id entity-id)]
-    [entities component-state component-id entity-id inbox]))
-
 (defmulti check-collisions
   "Returns updated component state and collision events when colliding"
-  (fn [entities component-state component-id entity-id inbox] entity-id))
+  (fn [entity-id component-state inbox & {:as sys-kwargs}]
+    entity-id))
 
+;; TODO Only check for entities in the vicinity of the entity using
+;; spatial trees http://gameprogrammingpatterns.com/spatial-partition.html
+;; In the short term how about sorting the list of entities by x and
+;; another by y and then slice anyone that is within distance of 2x
+;; the hit radius
 
-;; Get messages from controllable, apply the offsets to the
+;; Get move-change events and apply the offsets to the
 ;; position of the target entity-id this will indicate that the entity
 ;; WILL collide if it moves to the intended position
 (defmethod check-collisions :default
-  [entities component-state component-id entity-id inbox]
-  (let [input-change (filter #(= (:event-id %) :move-change) inbox)]
+  [entity-id component-state inbox & {:as sys-kwargs}]
+  (let [{entities :entities-x} sys-kwargs
+        input-change (filter #(= (:event-id %) :move-change) inbox)]
     ;; If this-entity has not moved don't bother with collision
     ;; detection that way each entity is in charge of their own
     ;; collision detection

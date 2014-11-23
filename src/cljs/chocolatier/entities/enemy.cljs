@@ -30,8 +30,8 @@
                               :collision-debuggable
                               :ai
                               :moveable])
-          (ev/subscribe :collision :collision-debuggable uid (ev/from-id? uid))
-          (ev/subscribe :move-change :moveable uid (ev/from-id? uid))
           (ev/subscribe :move-change :collidable uid (ev/from-id? uid))
+          (ev/subscribe :move-change :moveable uid (ev/from-id? uid))
           (ev/subscribe :collision :moveable uid (ev/from-id? uid))
+          (ev/subscribe :collision :collision-debuggable uid (ev/from-id? uid))
           (ev/subscribe :move :renderable uid (ev/from-id? uid))))))

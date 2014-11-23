@@ -8,16 +8,14 @@
             [chocolatier.engine.systems.collision :refer [collision-system]]
             [chocolatier.engine.systems.tiles :refer [tile-system create-tiles!]]
             [chocolatier.engine.systems.events :refer [event-system
-                                                       mk-events-system
-                                                       subscribe]]
+                                                       mk-events-system]]
             [chocolatier.engine.systems.debug :refer [debug-collision-system]]
             [chocolatier.engine.systems.movement :refer [movement-system]]
             [chocolatier.engine.systems.ai :refer [ai-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
-            [chocolatier.engine.components.collidable :refer [check-collisions
-                                                              include-collidable-entities]]
+            [chocolatier.engine.components.collidable :refer [check-collisions]]
             [chocolatier.engine.components.debuggable :refer [draw-collision-zone
                                                               include-renderable-state-and-stage]]
             [chocolatier.engine.components.moveable :refer [move
@@ -86,7 +84,11 @@
         step (/ 1 frame-rate)
         rendering-engine {:renderer renderer :stage stage}
         mk-player-1 (create-player! stage :player1 20 20 0 0 20)
-        mk-enemy (create-enemy! stage (keyword (gensym)) 80 80 0 0 20)
+        mk-enemy (create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20)
         mk-tiles (create-tiles! stage)
         init-state (-> {:game {:rendering-engine rendering-engine}
                         :state {:events {:queue []}}}
@@ -96,12 +98,10 @@
                                                :user-input
                                                :ai
                                                :collision
-                                               :collision-debug
                                                :movement
                                                :tiles
                                                :render])
                        ;; Global event system broadcaster
-                       ;; (ces/mk-system :event event-system)
                        (mk-events-system)
                        ;; Updates the user input from keyboard,
                        ;; standalone system with no components
