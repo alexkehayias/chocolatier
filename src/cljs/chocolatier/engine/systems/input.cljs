@@ -22,18 +22,20 @@
   ;; Add js events for keyup and keydown
   (.addEventListener js/document "keydown" keydown)
   (.addEventListener js/document "keyup" keyup)
-  (add-watch KEYBOARD-INPUT :debug hashmap-watcher)
+  ;; (add-watch KEYBOARD-INPUT :debug hashmap-watcher)
   ;; Reset the atom tracking keyboard input
   (reset! KEYBOARD-INPUT
           {:keydown #(.removeEventListener js/document "keydown" keydown)
            :keyup #(.removeEventListener js/document "keyup" keyup)
-           :watchers #(remove-watch KEYBOARD-INPUT :debug)}))
+           ;; :watchers #(remove-watch KEYBOARD-INPUT :debug)
+           }))
 
 (defn reset-input! []
   (debug "Resetting input")
   (when-not (empty? @KEYBOARD-INPUT)
     (debug "Removing input listeners")
-    (doseq [k [:keydown :keyup :watchers]]
+    (doseq [k [:keydown :keyup ;; :watchers
+               ]]
       (let [f (k @KEYBOARD-INPUT)]
         (f))))
   (init-input!))

@@ -85,11 +85,6 @@
         step (/ 1 frame-rate)
         rendering-engine {:renderer renderer :stage stage}
         mk-player-1 (create-player! stage :player1 20 20 0 0 20)
-        mk-enemy (create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20)
         mk-tiles (create-tiles! stage)
         init-state (-> {:game {:rendering-engine rendering-engine}
                         :state {:events {:queue []}}}
@@ -125,7 +120,7 @@
                        (ces/mk-system :render render-system :renderable)
                        (ces/mk-component :renderable [update-sprite])
                        ;; Collision detection system
-                       (ces/mk-system :broad-collision (broad-collision-system (/ width 40)))
+                       (ces/mk-system :broad-collision (broad-collision-system (/ width 20)))
                        (ces/mk-system :narrow-collision narrow-collision-system)
                        (ces/mk-system :collision-debug debug-collision-system :collision-debuggable)
                        (ces/mk-component :collision-debuggable [[draw-collision-zone
@@ -140,102 +135,8 @@
                        (mk-player-1)
 
                        ;; Other entities
-                       (mk-enemy)
-
-((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))((create-enemy! stage
-                                (keyword (gensym))
-                                (* 1000 (js/Math.random))
-                                (* 1000 (js/Math.random))
-                                0 0 20))
-                       )
+                       (ces/iter-fns (for [i (range 50)]
+                                       #(create-enemy! % stage (keyword (gensym)) 20))) )
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"

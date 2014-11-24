@@ -56,12 +56,14 @@
     (if (empty? entities)
       accum
       (recur (rest entities)
-             (concat accum
-                     (for [other-entity entities
-                           :let [entity (first entities)]
-                           :when (and (not= entity other-entity)
-                                      (collision? entity other-entity))]
-                       [:collision (:id entity) {:colliding? true}]))))))
+             (apply concat accum
+                    (for [other-entity entities
+                          :let [entity (first entities)]
+                          :when (and (not= entity other-entity)
+                                     (collision? entity other-entity))]
+                      ;; Emit a message for both entities that collided
+                      [[:collision (:id entity) {:colliding? true}]
+                       [:collision (:id other-entity) {:colliding? true}]]))))))
 
 (defn narrow-collision-system
   "Performs narrow collision detection between entities in each cell of the spatial 
