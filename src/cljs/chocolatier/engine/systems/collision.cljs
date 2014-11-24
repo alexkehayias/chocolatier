@@ -1,16 +1,99 @@
 (ns chocolatier.engine.systems.collision
-  "System for rendering entities"
+  "System for checking collisions between entities"
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]))
+            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.systems.events :as ev]))
 
 
-(defn collision-system
-  [state fns entity-ids]
-  (let [entity-ids (ces/entities-with-component (:entities state) :collidable)
-        entities (map #(assoc (ces/get-component-state state :renderable %) :id %)
-                      entity-ids)
-        ;; Sort entities by x and y
-        entities-x (sort-by :x entities)
-        entities-y (sort-by :y entities)]
-    (ces/iter-fns state (for [f fns, e entity-ids]
-                          #(f % e :entities-x entities-x :entities-y entities-y)))))
+(defn exp
+  "Raise x to the exponent of n"
+  [x n]
+  (reduce * (repeat n x)))
+
+(defn halve
+  "Divide n by 2"
+  [n]
+  (/ n 2))
+
+(defn circle-collision?
+  "Basic circle collision detection. Returns true if x and y 
+   are colliding.
+
+   Two circles are colliding if distance between the center 
+   points is less than the sum of the radii."
+  [x1 y1 r1 x2 y2 r2]
+  (<= (+ (exp (- x2 x1) 2) (exp (- y2 y1) 2))
+      (exp (+ r1 r2) 2)))
+
+(defn collision?
+  "Compare two entities future position to see if they are colliding. 
+   Returns a boolean of whether the two entities are colliding."
+  [e1 e2]
+  (if (and (seq e1) (seq e2))
+    (let [key-list [:pos-x :pos-y
+                    :offset-x :offset-y
+                    :height :width
+                    :hit-radius]
+          [x1 y1 off-x1 off-y1 h1 w1 r1] (map #(% e1) key-list)
+          [x2 y2 off-x2 off-y2 h2 w2 r2] (map #(% e2) key-list)
+          ;; The hit circles are drawn around the center of the entity
+          ;; by halving the height and width
+          [center-x1 center-y1] (map + [x1 y1] (map halve [w1 h1]))
+          [center-x2 center-y2] (map + [x2 y2] (map halve [w2 h2]))
+          ;; Apply offsets of where the two entities will be
+          [adj-x1 adj-y1] (map - [center-x1 center-y1] [off-x1 off-y1])
+          [adj-x2 adj-y2] (map - [center-x2 center-y2] [off-x2 off-y2])
+          colliding? (circle-collision? adj-x1 adj-y1 r1 adj-x2 adj-y2 r2)]
+      colliding?)
+    false))
+
+(defn check-collisions
+  "Returns a collection of events."
+  [entities]
+  ;; Loop through so we don't check entities more than once
+  (loop [entities entities
+         accum []]
+    (if (empty? entities)
+      accum
+      (recur (rest entities)
+             (concat accum
+                     (for [other-entity entities
+                           :let [entity (first entities)]
+                           :when (and (not= entity other-entity)
+                                      (collision? entity other-entity))]
+                       [:collision (:id entity) {:colliding? true}]))))))
+
+(defn narrow-collision-system
+  "Performs narrow collision detection between entities in each cell of the spatial 
+   grid where there are more than one entities."
+  [state]
+  (ev/emit-events state (reduce
+                         concat
+                         (for [[coords entities] (-> state :state :spatial-grid)]
+                           (check-collisions entities)))))
+
+(defn mk-spatial-grid
+  "col = Math.floor( (46 - grid.min.x) / grid.pxCellSize )
+   cell = Math.floor( (237 - grid.min.y) / grid.pxCellSize );"
+  [entities cell-size]
+  (group-by (fn [entity]
+              (let [{:keys [pos-x pos-y]} entity
+                    col (js/Math.floor (/ pos-x cell-size))
+                    row (js/Math.floor (/ pos-y cell-size))]
+                (str col ":" row)))
+            entities))
+
+(defn broad-collision-system
+  "Returns a function that divides entities into a spatial grid based on their screen 
+   position. Takes the screen height width and dimension of cells."
+  [cell-size]
+  (fn [state]
+    (let [;; Get only the entities that are collidable and renderable
+          entity-ids (ces/entities-with-multi-components (:entities state)
+                                                         [:collidable :renderable])
+          ;; Get each entities renderable state and include their ID
+          get-renderable-with-id #(assoc (ces/get-component-state state :renderable %) :id %)
+          ;; TODO include :move-change messages
+          entities (map get-renderable-with-id entity-ids)
+          grid (mk-spatial-grid entities cell-size)]
+      (assoc-in state [:state :spatial-grid] grid))))

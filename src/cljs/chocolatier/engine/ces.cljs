@@ -56,11 +56,11 @@
   (map first
        (filter #(boolean (some #{component-id} (second %))) entities)))
 
-(defn entities-with-multi-component
+(defn entities-with-multi-components
   "Takes a hashmap and returns all keys whose values has all component-ids"
   [entities component-ids]
   (map first
-       (filter #(boolean (some #{component-ids} (second %))) entities)))
+       (filter #(boolean (some (set component-ids) (second %))) entities)))
 
 (defn mk-entity
   "Adds entity with uid that has component-ids into state"
@@ -189,7 +189,12 @@
      given component id. Return result is updated game state and inbox
      messages are removed."
   ([f]
-   (fn [state] (f state)))  
+   (fn [state]
+     (-> (f state)
+         ;; Emit all the messages to subscribers
+         (ev/fan-out-messages)
+         ;; Clear events queue
+         (ev/clear-events-queue))))  
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component (:entities state) component-id)
@@ -205,7 +210,7 @@
            (ev/clear-events-queue)))))
   ([f component-id & more-component-ids]
    (fn [state]
-     (let [ids (conj component-ids more-component-id)
+     (let [ids (conj more-component-id component-id)
            entities (entities-with-multi-components (:entities state) ids)
            component-fns (get-component-fns state component-id)]
        ;; Update game state

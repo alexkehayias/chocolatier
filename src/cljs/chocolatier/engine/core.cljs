@@ -5,7 +5,8 @@
             [chocolatier.engine.systems.input :refer [input-system]]
             [chocolatier.engine.systems.user-input :refer [user-input-system]]
             [chocolatier.engine.systems.render :refer [render-system]]
-            [chocolatier.engine.systems.collision :refer [collision-system]]
+            [chocolatier.engine.systems.collision :refer [broad-collision-system
+                                                          narrow-collision-system]]
             [chocolatier.engine.systems.tiles :refer [tile-system create-tiles!]]
             [chocolatier.engine.systems.events :refer [event-system
                                                        mk-events-system]]
@@ -97,7 +98,9 @@
                        (ces/mk-scene :default [:input
                                                :user-input
                                                :ai
-                                               :collision
+                                               :broad-collision
+                                               :narrow-collision
+                                               :collision-debug
                                                :movement
                                                :tiles
                                                :render])
@@ -122,9 +125,8 @@
                        (ces/mk-system :render render-system :renderable)
                        (ces/mk-component :renderable [update-sprite])
                        ;; Collision detection system
-                       (ces/mk-system :collision collision-system :collidable)
-                       (ces/mk-component :collidable [[check-collisions
-                                                       {:args-fn include-collidable-entities}]])
+                       (ces/mk-system :broad-collision (broad-collision-system (/ width 40)))
+                       (ces/mk-system :narrow-collision narrow-collision-system)
                        (ces/mk-system :collision-debug debug-collision-system :collision-debuggable)
                        (ces/mk-component :collision-debuggable [[draw-collision-zone
                                                                  {:args-fn include-renderable-state-and-stage}]])
@@ -138,7 +140,102 @@
                        (mk-player-1)
 
                        ;; Other entities
-                       (mk-enemy))
+                       (mk-enemy)
+
+((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))((create-enemy! stage
+                                (keyword (gensym))
+                                (* 1000 (js/Math.random))
+                                (* 1000 (js/Math.random))
+                                0 0 20))
+                       )
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"
