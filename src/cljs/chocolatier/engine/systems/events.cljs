@@ -46,8 +46,8 @@
    - from is the sender of the message as a keyword
    - msg is a hashmap"
   [{:keys [event-id msg] :as event}]
-  (assert (map? msg) "msg is a hash-map")
-  (doseq [s event-id] (assert (keyword? s) "not a keyword")))
+  (assert (map? msg) "msg is not a hash-map")
+  (doseq [s event-id] (assert (keyword? s) "selector is not a keyword")))
 
 (defn mk-event [msg & selectors]
   {:selectors selectors :msg msg})

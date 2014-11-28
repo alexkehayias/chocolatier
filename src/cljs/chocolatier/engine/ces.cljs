@@ -148,7 +148,7 @@
           output-fn (partial (or format-fn update-component-state-and-events)
                              state component-id entity-id)]
       ;; Handle if the result is going to include events or not
-      (if (seqable? result)
+      (if (vector? result)
         (do
           ;; Make sure the results are not more than 2 items and not
           ;; an empty vector
