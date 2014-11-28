@@ -21,16 +21,14 @@
 
 
 (defn subscribe
-  "Subscribe to the given event. Optionally pass in a function that takes
+  "Subscribe to the given event. 
+
+   TODO Optionally pass in a function that takes
    an event and returns true or false to keep or discard it. Multiple subscribe
    calls with the same event-id component-id entity-id will not duplicate
    subscriptions."
-  [state entity-id event-id & selectors]
-  ;; If no function is supplied, the events parsing function is an identity
-  (update-in state [:state :events :subscriptions entity-id]
-             conj (if (empty? selectors)
-                    event-id
-                    (conj selectors event-id))))
+  [state entity-id & selectors]
+  (update-in state [:state :events :subscriptions entity-id] conj selectors))
 
 (defn get-subscribed-events
   "Returns a lazy seq of events for entity-id based on their subscriptions"
@@ -45,17 +43,20 @@
    - event-id is a keyword
    - from is the sender of the message as a keyword
    - msg is a hashmap"
-  [{:keys [event-id msg] :as event}]
+  [{:keys [selectors msg] :as event}]
   (assert (map? msg) "msg is not a hash-map")
   (doseq [s event-id] (assert (keyword? s) "selector is not a keyword")))
 
-(defn mk-event [msg & selectors]
-  {:selectors selectors :msg msg})
+(defn mk-event
+  "Takes message and selectors and formats them for the event representation.
+   The first selector, by convention, is called the event-d. Returns a hashmap."
+  [msg & selectors]
+  {:event-id (first selectors) :selectors selectors :msg msg})
 
 (defn emit-event
   "Enqueues an event onto the queue"
   [state msg & selectors]
-  (let [event (apply mk-event msg selectors)]
+  (let [event (apply (partial mk-event msg) selectors)]
     (valid-event? event)
     (update-in state (concat [:state :events :queue] selectors) conj event)))
 

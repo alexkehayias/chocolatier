@@ -9,15 +9,10 @@
   (let [renderable-state (ces/get-component-state state :renderable entity-id)
         player-state (ces/get-component-state state :renderable :player1)
         component-state (ces/get-component-state state component-id entity-id)
-        inbox (ces/get-event-inbox state component-id entity-id)]
+        inbox (ev/get-subscribed-events state entity-id)]
     [entity-id component-state renderable-state player-state component-id inbox]))
 
-(defmulti behavior
-  "Decides what the entity should do. Emits messages."
-  (fn [entity-id component-state renderable-state player-state component-id inbox]
-    entity-id))
-
-(defmethod behavior :default
+(defn behavior
   [entity-id component-state renderable-state player-state component-id inbox]
   (let [{player-pos-x :pos-x player-pos-y :pos-y} player-state
         {:keys [pos-x pos-y]} renderable-state

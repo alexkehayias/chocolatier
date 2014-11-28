@@ -98,7 +98,8 @@
                                                :collision-debug
                                                :movement
                                                :tiles
-                                               :render])
+                                               :render
+                                               :events])
                        ;; Global event system broadcaster
                        (init-events-system)
                        (ces/mk-system :events event-system)
@@ -137,7 +138,8 @@
 
                        ;; Other entities
                        (ces/iter-fns (for [i (range 50)]
-                                       #(create-enemy! % stage (keyword (gensym)) 20))) )
+                                       #(create-enemy! % stage (keyword (gensym)) 20))) 
+                       )
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"

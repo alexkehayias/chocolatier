@@ -67,12 +67,6 @@
   [state uid component-ids]
   (assoc-in state [:entities uid] component-ids))
 
-(defn get-event-inbox
-  "Returns a collections of event hashmaps representing the inbox of the given
-   component-id/entity-id. Returns an empty vector there are no events."
-  [state component-id entity-id]
-  (or (get-in state [:state :inbox component-id entity-id]) []))
-
 (defn get-component-fns
   [state component-id]
   (or (get-in state [:components component-id :fns])

@@ -2,10 +2,7 @@
   (:use [chocolatier.utils.logging :only [debug error]]))
 
 
-(defmulti update-sprite
-  (fn [entity-id component-state inbox] entity-id))
-
-(defmethod update-sprite :default
+(defn update-sprite
   [entity-id component-state inbox]
   (let [move-events (filter #(= (:event-id %) :move) inbox)
         ;; Offsets come from messages in the inbox and are aggregated

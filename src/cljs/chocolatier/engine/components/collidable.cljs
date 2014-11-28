@@ -1,6 +1,7 @@
 (ns chocolatier.engine.components.collidable
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]))
+            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.events :as ev]))
 
 (defn exp
   "Raise x to the exponent of n"
@@ -44,21 +45,10 @@
       colliding?)
     false))
 
-(defmulti check-collisions
-  "Returns updated component state and collision events when colliding"
-  (fn [entity-id component-state inbox & {:as sys-kwargs}]
-    entity-id))
-
-;; TODO Only check for entities in the vicinity of the entity using
-;; spatial trees http://gameprogrammingpatterns.com/spatial-partition.html
-;; In the short term how about sorting the list of entities by x and
-;; another by y and then slice anyone that is within distance of 2x
-;; the hit radius
-
-;; Get move-change events and apply the offsets to the
-;; position of the target entity-id this will indicate that the entity
-;; WILL collide if it moves to the intended position
-(defmethod check-collisions :default
+(defn check-collisions
+  "Get move-change events and apply the offsets to the
+   position of the target entity-id this will indicate that the entity
+   WILL collide if it moves to the intended position"
   [entity-id component-state inbox & {:as sys-kwargs}]
   (let [{entities :entities-x} sys-kwargs
         input-change (filter #(= (:event-id %) :move-change) inbox)]
@@ -78,5 +68,5 @@
             ;; empty and must have a true value
             colliding? (some #{true} collisions)]
         (if colliding?
-          [component-state [[:collision entity-id {:colliding? true}]]]
+          [component-state [(ev/mk-event {:colliding? true} :collision entity-id)]]
           component-state)))))

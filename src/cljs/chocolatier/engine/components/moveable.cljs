@@ -1,6 +1,7 @@
 (ns chocolatier.engine.components.moveable
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]))
+            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.systems.events :as ev]))
 
 
 (defn include-renderable-state
@@ -8,15 +9,10 @@
   [state component-id entity-id]
   (let [renderable-state (ces/get-component-state state :renderable entity-id)
         component-state (ces/get-component-state state component-id entity-id)
-        inbox (ces/get-event-inbox state component-id entity-id)]
+        inbox (ev/get-subscribed-events state entity-id)]
     [entity-id component-state renderable-state component-id inbox]))
 
-(defmulti move
-  "Determine the movement of the entity in screen coordinates.
-   Emits an event of :move with a hashmap of move-x move-y."
-  (fn [entity-id component-state renderable-state component-id inbox] entity-id))
-
-(defmethod move :default
+(defn move
   [entity-id component-state renderable-state component-id inbox]
   ;; Check if there is an input-change, collision events
   (let [collision? (seq (filter #(= (:event-id %) :collision) inbox))
@@ -27,5 +23,7 @@
     (if collision?
       component-state
       (if move-change
-        [component-state [[:move entity-id {:move-x offset-x :move-y offset-y}]]] 
+        [component-state [(ev/mk-event {:move-x offset-x :move-y offset-y}
+                                       :move
+                                       entity-id)]] 
         component-state))))
