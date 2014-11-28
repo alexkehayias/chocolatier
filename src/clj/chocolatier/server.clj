@@ -8,7 +8,7 @@
             [compojure.core :refer (GET defroutes)]
             ring.adapter.jetty))
 
-(def server (atom nil))
+(defonce server (atom nil))
 
 (def project-root
   (str (System/getProperty "user.dir") "/resources/public"))

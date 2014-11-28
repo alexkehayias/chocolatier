@@ -4,13 +4,20 @@
             [chocolatier.engine.systems.events :as ev]))
 
 (deftest test-subscribe
-  (is (= (ev/subscribe {} :my-event :my-component :me identity)
+  (is (= (ev/subscribe {} :me :my-event :some-source)
          {:state
           {:events
-           {:subscriptions
-            {:my-event
-             {:my-component
-              {:me identity}}}}}})))
+           {:subscriptions {:me [[:my-event :some-source]]} }}})))
+
+(deftest test-get-subscribed-events
+  "Test getting messages for an entity that has nested and not nested subscriptions"
+  (let [state {:state
+               {:events
+                {:queue {:x {:y [{:event-id :x}]}
+                         :z [{:event-id :broadcast}]
+                         :y {:x [{:event-id :x}]}}
+                 :subscriptions {:a [[:x :y] :z]}}}}]
+    (is (= (ev/get-subscribed-events state :a) [{:event-id :x} {:event-id :broadcast}]))))
 
 (deftest test-msg->subscribers
   (let [queue [[:my-event :someone {:foo :bar}]]

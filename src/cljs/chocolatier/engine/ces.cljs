@@ -142,13 +142,13 @@
                  ;; Default args to the component function
                  [entity-id
                   (get-component-state state component-id entity-id)
-                  (get-event-inbox state component-id entity-id)])
+                  (ev/get-subscribed-events state entity-id)])
           ;; Pass args and system argument to the component function
           result (apply f (concat args (apply concat sys-kwargs)))
           output-fn (partial (or format-fn update-component-state-and-events)
                              state component-id entity-id)]
       ;; Handle if the result is going to include events or not
-      (if (vector? result)
+      (if (seqable? result)
         (do
           ;; Make sure the results are not more than 2 items and not
           ;; an empty vector
@@ -171,7 +171,7 @@
      component fn and an args fn"
   [state uid fn-specs]
   (let [wrapped-fns (for [spec fn-specs]
-                      (if (satisfies? ISeqable spec)
+                      (if (seqable? spec)
                         (do (log/debug "mk-component: found options" spec)
                             (apply (partial mk-component-fn uid) spec))
                         (mk-component-fn uid spec)))]
@@ -182,46 +182,32 @@
 (defn mk-system-fn
   "Returns a function representing a system.
 
-   Has two arrities:
+   Has three arrities:
    - [f] function f is called with state and returns updated game state
    - [f component-id] function f is called with state, a collection of
      component functions, and a collection of entity ids that match the
      given component id. Return result is updated game state and inbox
+     messages are removed.
+   - [f component-id & more-ids] function f is called with state, a collection 
+     of component functions, and a collection of entity ids that match ALL
+     given component ids. Return result is updated game state and inbox
      messages are removed."
   ([f]
    (fn [state]
-     (-> (f state)
-         ;; Emit all the messages to subscribers
-         (ev/fan-out-messages)
-         ;; Clear events queue
-         (ev/clear-events-queue))))  
+     (-> (f state))))  
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component (:entities state) component-id)
            component-fns (get-component-fns state component-id)]
        ;; Update game state
-       (-> (f state component-fns entities)
-           ;; Clear out inbox from all the system's components
-           ;; (implicit acknowledgement of the messages)
-           (ev/clear-inbox entities component-id)
-           ;; Emit all the messages to subscribers
-           (ev/fan-out-messages)
-           ;; Clear events queue
-           (ev/clear-events-queue)))))
+       (f state component-fns entities))))
   ([f component-id & more-component-ids]
    (fn [state]
      (let [ids (conj more-component-id component-id)
            entities (entities-with-multi-components (:entities state) ids)
            component-fns (get-component-fns state component-id)]
        ;; Update game state
-       (-> (f state component-fns entities)
-           ;; Clear out inbox from all the system's components
-           ;; (implicit acknowledgement of the messages)
-           (ev/clear-inbox entities component-id)
-           ;; Emit all the messages to subscribers
-           (ev/fan-out-messages)
-           ;; Clear events queue
-           (ev/clear-events-queue))))))
+       (f state component-fns entities)))))
 
 (defn mk-system
   "Add the system function to the state. Wraps the system function using
