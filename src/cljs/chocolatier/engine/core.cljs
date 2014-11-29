@@ -137,9 +137,8 @@
                        (mk-player-1)
 
                        ;; Other entities
-                       (ces/iter-fns (for [i (range 50)]
-                                       #(create-enemy! % stage (keyword (gensym)) 20))) 
-                       )
+                       (ces/iter-fns (for [i (range 25)]
+                                       #(create-enemy! % stage (keyword (gensym)) 20))))
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"

@@ -4,7 +4,6 @@
             [chocolatier.engine.systems.events :as ev]))
 
 
-
 (defn create-player!
   "Create a player by initializing some component state and adding the 
    entity to state. Returns a function that takes a state hashmap."

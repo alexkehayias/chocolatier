@@ -183,8 +183,8 @@
      given component id. Return result is updated game state and inbox
      messages are removed.
    - [f component-id & more-ids] function f is called with state, a collection 
-     of component functions, and a collection of entity ids that match ALL
-     given component ids. Return result is updated game state and inbox
+     of component functions for component-id, and a collection of entity ids that 
+     match ALL given component ids. Return result is updated game state and inbox
      messages are removed."
   ([f]
    (fn [state]
@@ -193,14 +193,12 @@
    (fn [state]
      (let [entities (entities-with-component (:entities state) component-id)
            component-fns (get-component-fns state component-id)]
-       ;; Update game state
        (f state component-fns entities))))
   ([f component-id & more-component-ids]
    (fn [state]
      (let [ids (conj more-component-id component-id)
            entities (entities-with-multi-components (:entities state) ids)
            component-fns (get-component-fns state component-id)]
-       ;; Update game state
        (f state component-fns entities)))))
 
 (defn mk-system

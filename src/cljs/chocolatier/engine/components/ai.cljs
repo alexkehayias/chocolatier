@@ -7,13 +7,11 @@
   "Include the renderable component state for :player1"
   [state component-id entity-id]
   (let [renderable-state (ces/get-component-state state :renderable entity-id)
-        player-state (ces/get-component-state state :renderable :player1)
-        component-state (ces/get-component-state state component-id entity-id)
-        inbox (ev/get-subscribed-events state entity-id)]
-    [entity-id component-state renderable-state player-state component-id inbox]))
+        component-state (ces/get-component-state state component-id entity-id)]
+    [entity-id component-state renderable-state]))
 
 (defn behavior
-  [entity-id component-state renderable-state player-state component-id inbox]
+  [entity-id component-state renderable-state {:keys [player-state]}]
   (let [{player-pos-x :pos-x player-pos-y :pos-y} player-state
         {:keys [pos-x pos-y]} renderable-state
         msg {:offset-x (if (< player-pos-x pos-x) 1 -1)
