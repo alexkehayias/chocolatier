@@ -53,5 +53,12 @@
   (.drawCircle graphic x y r)
   graphic)
 
-(defn mk-sprite! [stage image-url]
-  (.addChild stage (js/PIXI.Sprite. (js/PIXI.Texture.fromImage image-url))))
+(defn mk-sprite! [stage image-location]
+  (.addChild stage (js/PIXI.Sprite. (js/PIXI.Texture.fromImage image-location))))
+
+(defn mk-tiling-sprite! [stage image-location width height]
+  ;; TODO cache the texture instead of creating a new one all the time
+  (let [texture (js/PIXI.Texture.fromImage image-location)
+        sprite (js/PIXI.TilingSprite. texture width height)]
+    (.addChild stage sprite)
+    sprite))

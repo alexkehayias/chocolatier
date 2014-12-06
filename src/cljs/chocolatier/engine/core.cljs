@@ -7,7 +7,7 @@
             [chocolatier.engine.systems.render :refer [render-system]]
             [chocolatier.engine.systems.collision :refer [broad-collision-system
                                                           narrow-collision-system]]
-            [chocolatier.engine.systems.tiles :refer [tile-system create-tiles!]]
+            [chocolatier.engine.systems.tiles :refer [tile-system load-tilemap mk-tiles-from-tilemap!]]
             [chocolatier.engine.systems.events :refer [event-system
                                                        init-events-system]]
             [chocolatier.engine.systems.debug :refer [debug-collision-system]]
@@ -69,10 +69,7 @@
   (.setInterval js/window f (/ 1000 n))
   #(.clearInterval f (/ 1000 n)))
 
-(defn start-game!
-  "Renders the game every n seconds."
-  []
-  (reset! *running true)
+(defn -start-game! [tilemap]
   (let [;; TODO reset the game height on screen resize
         width (aget js/window "innerWidth")
         height (aget js/window "innerHeight")
@@ -85,7 +82,7 @@
         step (/ 1 frame-rate)
         rendering-engine {:renderer renderer :stage stage}
         mk-player-1 (create-player! stage :player1 20 20 0 0 20)
-        mk-tiles (create-tiles! stage)
+        mk-tiles! (mk-tiles-from-tilemap! stage tilemap)
         init-state (-> {:game {:rendering-engine rendering-engine}
                         :state {:events {:queue []}}}
                        ;; A collection of keys representing systems
@@ -117,7 +114,7 @@
                        ;; Draw tile map in background
                        (ces/mk-system :tiles tile-system)
                        ;; Initial tile map
-                       (mk-tiles)
+                       (mk-tiles!)
                        ;; Render system for drawing sprites
                        (ces/mk-system :render render-system :renderable)
                        (ces/mk-component :renderable [update-sprite])
@@ -142,7 +139,8 @@
         ;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"
-                      "/static/images/tile.png")
+                      "/static/images/tile.png"
+                      "/static/images/snowtiles_1.gif")
         asset-loader (new js/PIXI.AssetLoader assets)]
     (debug "Loading game state into atom")
     (reset! *state init-state)    
@@ -155,6 +153,14 @@
                (game-loop *state :default)))
     ;; Call the asset-loader
     (.load asset-loader)))
+
+(defn start-game!
+  "Renders the game every n seconds."
+  []
+  (reset! *running true)
+  ;; Async load the tilemap, on callback start the game
+  (load-tilemap "/static/tilemaps/snow_town_tile_map_v1.json"
+                -start-game!))
 
 (defn cleanup! []
   (try (dom/remove! (sel1 :canvas))
