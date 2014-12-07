@@ -76,7 +76,7 @@
   "Creates a texture from the sprites in container and renders them to the stage."
   [stage container w h]
   (let [texture (mk-render-texture w h)]
-    ;; Gross
+    ;; This is a side-effect with no return value
     (.render texture container)
     (add-child! stage (new js/PIXI.Sprite texture))))
 

@@ -76,40 +76,39 @@
         height-px (* map-h tile-px-h)]
     (loop [tile-specs (map-indexed vector map-spec)
            tiles []]
-      (if (empty? tile-specs)
+      (if-let [[indx tile-pos] (first tile-specs)]
+        (if-not (== tile-pos 0)
+          (let [map-row (js/Math.floor (/ indx map-w))
+                map-col (if (> (inc indx) map-w)
+                          (- indx (* map-row map-w))
+                          indx)
+                map-x (* map-col tile-px-w)
+                map-y (* map-row tile-px-h)
+                ;; Tile positions are indexed to 1 where 0 denotes
+                ;; no tile so we have to decrement the tile number
+                ;; Tiled specifies
+                tileset-pos (dec tile-pos)
+                tileset-row (js/Math.floor (/ tileset-pos tileset-w))
+                tileset-col (if (> (inc tileset-pos) tileset-w)
+                              (- tileset-pos (* tileset-row tileset-w))
+                              tileset-pos)
+                ;; Need to take the inverse of the coordinance since
+                ;; setting the tileset image x y is right aligned
+                tileset-x (- (* tileset-w tile-px-w) (* tileset-col tile-px-w))
+                tileset-y (- (* tileset-h tile-px-h) (* tileset-row tile-px-h))
+                tile (create-tile! tileset-texture
+                                   tile-px-w tile-px-h 
+                                   map-row map-col
+                                   map-x map-y
+                                   tileset-x tileset-y)]
+            (pixi/add-child! container (:sprite tile))
+            (recur (rest tile-specs) (conj tiles tile)))
+          (recur (rest tile-specs) tiles))
         (do (pixi/render-from-object-container stage
                                                container
                                                width-px
                                                height-px)
-            tiles)
-        (let [[indx tile-pos] (first tile-specs)]
-          (if (== indx 0)
-            (recur (rest tile-specs) tiles)
-            (let [map-row (js/Math.floor (/ indx map-w))
-                  map-col (if (> (inc indx) map-w)
-                            (- indx (* map-row map-w))
-                            indx)
-                  map-x (* map-col tile-px-w)
-                  map-y (* map-row tile-px-h)
-                  ;; Tile positions are indexed to 1 where 0 denotes
-                  ;; no tile so we have to decrement the tile number
-                  ;; Tiled specifies
-                  tileset-pos (dec tile-pos)
-                  tileset-row (js/Math.floor (/ tileset-pos tileset-w))
-                  tileset-col (if (> (inc tileset-pos) tileset-w)
-                                (- tileset-pos (* tileset-row tileset-w))
-                                tileset-pos)
-                  ;; Need to take the inverse of the coordinance since
-                  ;; setting the tileset image x y is right aligned
-                  tileset-x (- (* tileset-w tile-px-w) (* tileset-col tile-px-w))
-                  tileset-y (- (* tileset-h tile-px-h) (* tileset-row tile-px-h))
-                  tile (create-tile! tileset-texture
-                                     tile-px-w tile-px-h 
-                                     map-row map-col
-                                     map-x map-y
-                                     tileset-x tileset-y)]
-              (pixi/add-child! container (:sprite tile))
-              (recur (rest tile-specs) (conj tiles tile)))))))))
+            tiles)))))
 
 (defn mk-tiles-from-tilemap!
   "Returns a collection of tile hashmaps according to the spec.
@@ -130,14 +129,18 @@
            tileset-texture (pixi/mk-texture (-> tilesets first :image))]
       ;; Draw tiles from all layers of the tile map
       (assoc-in state [:state :tiles]
-                (doall
-                 (for [l layers]
-                   (create-tiles-from-spec! stage
-                                            tileset-texture
-                                            width height
-                                            tileset-width tileset-height
-                                            tilewidth tileheight
-                                            (:data l))))))))
+                (loop [layers layers
+                       tiles []]
+                  (if-let [l (first layers)]
+                    (recur (rest layers)
+                           (conj tiles
+                                 (create-tiles-from-spec! stage
+                                                          tileset-texture
+                                                          width height
+                                                          tileset-width tileset-height
+                                                          tilewidth tileheight
+                                                          (:data l))))
+                    tiles))))))
 
 (defn load-tilemap
   "Async load a json tilemap at the url. Calls callback function with the
