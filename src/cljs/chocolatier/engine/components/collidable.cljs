@@ -1,7 +1,7 @@
 (ns chocolatier.engine.components.collidable
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.events :as ev]))
+            [chocolatier.engine.systems.events :as ev]))
 
 (defn exp
   "Raise x to the exponent of n"

@@ -5,8 +5,7 @@
 
 
 (defn render-system
-  "Mutates all sprites then renders the stage in one shot. 
-   Returns updated state."
+  "Mutates all sprites then renders the stage. Returns updated state."
   [state fns entity-ids]
   (let [{:keys [renderer stage]} (-> state :game :rendering-engine)
         ;; WARNING this is stateful since sprites are objects and are

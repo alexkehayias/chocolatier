@@ -1,6 +1,6 @@
 (ns chocolatier.engine.state
-  (:require [chocolatier.engine.watchers :refer [hashmap-watcher
-                                                 entity-watcher]])
+  (:require [chocolatier.engine.utils.watchers :refer [hashmap-watcher
+                                                       entity-watcher]])
   (:require-macros [chocolatier.macros :refer [defonce]]))
 
 

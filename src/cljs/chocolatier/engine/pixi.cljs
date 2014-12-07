@@ -10,10 +10,10 @@
 (defn mk-stage []
   (new js/PIXI.Stage))
 
-(defn mk-renderer []
+(defn mk-renderer [width height]
   (new js/PIXI.CanvasRenderer width height nil true))
 
-(defn mk-asset-loader [image-urls]
+(defn mk-asset-loader [image-urls assets]
   (new js/PIXI.AssetLoader (apply array assets)))
 
 (defn load-assets
@@ -53,12 +53,31 @@
   (.drawCircle graphic x y r)
   graphic)
 
+(defn mk-texture [image-location]
+  (js/PIXI.Texture.fromImage image-location))
+
 (defn mk-sprite! [stage image-location]
   (.addChild stage (js/PIXI.Sprite. (js/PIXI.Texture.fromImage image-location))))
 
-(defn mk-tiling-sprite! [stage image-location width height]
-  ;; TODO cache the texture instead of creating a new one all the time
-  (let [texture (js/PIXI.Texture.fromImage image-location)
-        sprite (js/PIXI.TilingSprite. texture width height)]
-    (.addChild stage sprite)
-    sprite))
+(defn mk-tiling-sprite [texture width height]
+  (js/PIXI.TilingSprite. texture width height))
+
+(defn mk-display-object-container []
+  (new js/PIXI.DisplayObjectContainer))
+
+(defn mk-render-texture [w h]
+  (new js/PIXI.RenderTexture w h))
+
+(defn add-child! [obj item]
+  (.addChild obj item)
+  obj)
+
+(defn render-from-object-container
+  "Creates a texture from the sprites in container and renders them to the stage."
+  [stage container w h]
+  (let [texture (mk-render-texture w h)]
+    ;; Gross
+    (.render texture container)
+    (add-child! stage (new js/PIXI.Sprite texture))))
+
+

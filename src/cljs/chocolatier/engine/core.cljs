@@ -71,8 +71,8 @@
 
 (defn -start-game! [tilemap]
   (let [;; TODO reset the game height on screen resize
-        width (aget js/window "innerWidth")
-        height (aget js/window "innerHeight")
+        width 800 ;; (aget js/window "innerWidth")
+        height 600 ;; (aget js/window "innerHeight")
         frame-rate 60
         _ (debug "Setting renderer to" width "x" height "frame-rate" frame-rate)
         stage (new js/PIXI.Stage)
@@ -136,31 +136,31 @@
                        ;; Other entities
                        (ces/iter-fns (for [i (range 25)]
                                        #(create-enemy! % stage (keyword (gensym)) 20))))
-        ;; PIXI requires a js array not a persistent vector
+]
+    (debug "Loading game state into atom")
+    (reset! *state init-state)
+    ;; Append the canvas to the dom    
+    (dom/append! (sel1 :body) (.-view renderer))             
+    ;; Start the game loop
+    (game-loop *state :default)))
+
+(defn start-game!
+  "Load all assets and call the tilemap loader. This is some async wankery to
+   start the game."
+  []
+  (reset! *running true)
+  (let [;; PIXI requires a js array not a persistent vector
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"
                       "/static/images/tile.png"
                       "/static/images/snowtiles_1.gif")
+        ;; Async load all the assets and start the game on complete
         asset-loader (new js/PIXI.AssetLoader assets)]
-    (debug "Loading game state into atom")
-    (reset! *state init-state)    
-    ;; Async load all the assets and start the game on complete
     (aset asset-loader "onComplete"
-          #(do (debug "Assets loaded")
-               ;; Append the canvas to the dom    
-               (dom/append! (sel1 :body) (.-view renderer))             
-               ;; Start the game loop
-               (game-loop *state :default)))
-    ;; Call the asset-loader
+          ;; Async load the tilemap, on callback start the game
+          #(load-tilemap "/static/tilemaps/snow_town_tile_map_v1.json"
+                         -start-game!))
     (.load asset-loader)))
-
-(defn start-game!
-  "Renders the game every n seconds."
-  []
-  (reset! *running true)
-  ;; Async load the tilemap, on callback start the game
-  (load-tilemap "/static/tilemaps/snow_town_tile_map_v1.json"
-                -start-game!))
 
 (defn cleanup! []
   (try (dom/remove! (sel1 :canvas))

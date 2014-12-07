@@ -196,7 +196,7 @@
        (f state component-fns entities))))
   ([f component-id & more-component-ids]
    (fn [state]
-     (let [ids (conj more-component-id component-id)
+     (let [ids (conj more-component-ids component-id)
            entities (entities-with-multi-components (:entities state) ids)
            component-fns (get-component-fns state component-id)]
        (f state component-fns entities)))))

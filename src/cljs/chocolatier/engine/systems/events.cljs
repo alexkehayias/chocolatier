@@ -45,7 +45,7 @@
    - msg is a hashmap"
   [{:keys [selectors msg] :as event}]
   (assert (map? msg) "msg is not a hash-map")
-  (doseq [s event-id] (assert (keyword? s) "selector is not a keyword")))
+  (doseq [s selectors] (assert (keyword? s) "selector is not a keyword")))
 
 (defn mk-event
   "Takes message and selectors and formats them for the event representation.

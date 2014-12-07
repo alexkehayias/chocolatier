@@ -17,10 +17,7 @@
                            :pos-x (* 1000 (js/Math.random))
                            :pos-y (* 1000 (js/Math.random))
                            :hit-radius hit-radius}]
-    (info "Creating enemy" pos-x pos-y map-x map-y hit-radius)
     ;; Mutate the sprite and stage
-    (set! (.-position.x sprite) pos-x)
-    (set! (.-position.y sprite) pos-y)
     (.addChild stage sprite)
     (-> state
         (assoc-in [:state :renderable uid] init-render-state)

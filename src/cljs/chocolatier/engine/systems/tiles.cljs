@@ -25,16 +25,13 @@
 (defn create-tile!
   "Adds a tile to the stage and returns the hashmap representation
    of a tile."
-  [stage tileset-image
+  [tileset-texture
    width height 
    map-x map-y ;; coords on the grid i.e 0,1
    screen-x screen-y ;; postiion on the screen
    tileset-x tileset-y ;; position on the tileset image
    & [attrs-hm]]
-  (let [sprite (pixi/mk-tiling-sprite! stage
-                                       tileset-image
-                                       width
-                                       height)]
+  (let [sprite (pixi/mk-tiling-sprite tileset-texture width height)]
     (set! (.-position.x sprite) screen-x)
     (set! (.-position.y sprite) screen-y)
     (set! (.-tilePosition.x sprite) tileset-x)
@@ -43,7 +40,6 @@
     (merge {:sprite sprite
             :height height
             :width width
-            :traversable traversable
             :map-x map-x :map-y map-y
             :screen-x screen-x :screen-y screen-y}
            attrs-hm)))
@@ -67,51 +63,53 @@
     - tileset-h: number of tiles high in the tileset
     - tileset-w: number of tiles wide in the tileset
     - map-spec: a one dimensional array of integers"
-  [stage tileset-image
+  [stage tileset-texture
    map-w map-h
    tileset-w tileset-h
    tile-px-w tile-px-h
    map-spec
    & {:keys [offset-x offset-y]
       :or {offset-x 0 offset-y 0}}]
-  (doall
-   (for [[indx tile-pos] (map-indexed vector map-spec)
-         ;; Only draw tiles that have a tileset location
-         ;; Tiled specifies that 0 is no tile
-         :when (> tile-pos 0)]
-     ;; TODO put this in a separate function for testing
-     (let [map-row (js/Math.floor (/ indx map-w))
-           map-col (if (> (inc indx) map-w)
-                     (- indx (* map-row map-w))
-                     indx)
-           map-x (* map-col tile-px-w)
-           map-y (* map-row tile-px-h)
-
-           ;; Tile positions are indexed to 1
-           tileset-pos (dec tile-pos)
-           tileset-row (js/Math.floor (/ tileset-pos tileset-w))
-           tileset-col (if (> (inc tileset-pos) tileset-w)
-                         (- tileset-pos (* tileset-row tileset-w))
-                         tileset-pos)
-           ;; Need to take the inverse of the coordinance since
-           ;; setting the tileset image x y is right aligned
-           tileset-x (- (* tileset-w tile-px-w) (* tileset-col tile-px-w))
-           tileset-y (- (* tileset-h tile-px-h) (* tileset-row tile-px-h))]
-       ;;[map-row map-col map-x map-y tileset-row tileset-col
-       ;;tileset-x tileset-y]
-       (println :tile-pos tile-pos
-                :tileset-w tileset-w
-                :tileset-h tileset-h
-                :tileset-pos tileset-pos
-                :tileset-row tileset-row
-                :tileset-col tileset-col
-                :tileset-x tileset-x
-                :tileset-y tileset-y)
-       (create-tile! stage tileset-image
-                     tile-px-w tile-px-h 
-                     map-row map-col
-                     map-x map-y
-                     tileset-x tileset-y)))))
+  (let [;; WARNING this is mutable
+        container (pixi/mk-display-object-container)
+        width-px (* map-w tile-px-w)
+        height-px (* map-h tile-px-h)]
+    (loop [tile-specs (map-indexed vector map-spec)
+           tiles []]
+      (if (empty? tile-specs)
+        (do (pixi/render-from-object-container stage
+                                               container
+                                               width-px
+                                               height-px)
+            tiles)
+        (let [[indx tile-pos] (first tile-specs)]
+          (if (== indx 0)
+            (recur (rest tile-specs) tiles)
+            (let [map-row (js/Math.floor (/ indx map-w))
+                  map-col (if (> (inc indx) map-w)
+                            (- indx (* map-row map-w))
+                            indx)
+                  map-x (* map-col tile-px-w)
+                  map-y (* map-row tile-px-h)
+                  ;; Tile positions are indexed to 1 where 0 denotes
+                  ;; no tile so we have to decrement the tile number
+                  ;; Tiled specifies
+                  tileset-pos (dec tile-pos)
+                  tileset-row (js/Math.floor (/ tileset-pos tileset-w))
+                  tileset-col (if (> (inc tileset-pos) tileset-w)
+                                (- tileset-pos (* tileset-row tileset-w))
+                                tileset-pos)
+                  ;; Need to take the inverse of the coordinance since
+                  ;; setting the tileset image x y is right aligned
+                  tileset-x (- (* tileset-w tile-px-w) (* tileset-col tile-px-w))
+                  tileset-y (- (* tileset-h tile-px-h) (* tileset-row tile-px-h))
+                  tile (create-tile! tileset-texture
+                                     tile-px-w tile-px-h 
+                                     map-row map-col
+                                     map-x map-y
+                                     tileset-x tileset-y)]
+              (pixi/add-child! container (:sprite tile))
+              (recur (rest tile-specs) (conj tiles tile)))))))))
 
 (defn mk-tiles-from-tilemap!
   "Returns a collection of tile hashmaps according to the spec.
@@ -128,12 +126,14 @@
                   tilewidth]} tilemap
                   {:keys [imageheight imagewidth]} (-> tilesets first)
            tileset-width (/ imagewidth tilewidth) 
-           tileset-height (/ imageheight tileheight)]
+           tileset-height (/ imageheight tileheight)
+           tileset-texture (pixi/mk-texture (-> tilesets first :image))]
       ;; Draw tiles from all layers of the tile map
       (assoc-in state [:state :tiles]
                 (doall
                  (for [l layers]
-                   (create-tiles-from-spec! stage (-> tilesets first :image)
+                   (create-tiles-from-spec! stage
+                                            tileset-texture
                                             width height
                                             tileset-width tileset-height
                                             tilewidth tileheight
