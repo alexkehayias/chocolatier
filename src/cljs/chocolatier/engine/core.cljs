@@ -13,6 +13,7 @@
             [chocolatier.engine.systems.debug :refer [debug-collision-system]]
             [chocolatier.engine.systems.movement :refer [movement-system]]
             [chocolatier.engine.systems.ai :refer [ai-system]]
+            [chocolatier.engine.systems.replay :refer [replay-system]]
             [chocolatier.engine.components.renderable :refer [update-sprite]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
@@ -58,7 +59,7 @@
     (swap! state #(ces/iter-fns % systems))
     (if @*running
       (request-animation #(game-loop state scene-id))
-      (debug @state))))
+      (debug "Game stopped"))))
 
 ;; TODO this should be used as a fallback if requestAnimationFrame is
 ;; not available in this browser
@@ -95,6 +96,7 @@
                                                :collision-debug
                                                :movement
                                                :tiles
+                                               :replay
                                                :render
                                                :events])
                        ;; Global event system broadcaster
@@ -128,6 +130,9 @@
                        (ces/mk-component :moveable [[move
                                                      {:args-fn include-renderable-state}]])
                        (ces/mk-system :ai ai-system :ai)
+                       ;; Replay game state on user input
+                       (ces/mk-system :replay (replay-system :player1 14 50))
+                       
                        (ces/mk-component :ai [[behavior
                                                {:args-fn include-player-and-renderable-state}]])
                        ;; Player 1 entity

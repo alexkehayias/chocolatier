@@ -66,9 +66,15 @@
 
 (defmethod react-to-input :player1
   [input-state component-state component-id entity-id inbox]
-  (let [offsets (get-offsets input-state)]
-    (if (or (not= (:offset-x offsets) 0)
-            (not= (:offset-y offsets) 0))
-      ;; Return component state and events
-      [offsets [(ev/mk-event offsets :move-change entity-id)]]
-      offsets)))
+  (let [offsets (get-offsets input-state)
+        move-change? (or (not= (:offset-x offsets) 0)
+                         (not= (:offset-y offsets) 0))
+        ;; TODO clean this up
+        events []
+        events (if move-change?
+                 (conj events (ev/mk-event offsets :move-change entity-id))
+                 events)
+        events (if (= (:B input-state) "on")
+                 (conj events (ev/mk-event {:replay? true} :replay entity-id))
+                 events)]
+    [offsets events]))
