@@ -24,36 +24,38 @@ Organization:
 The following example implements a simple game loop, system, component, and entities to show you how it all fits together. See the rest of the game for a more in-depth example (and graphics).
 
 ```clojure
+(ns my-ns
+  (:require [chocolatier.engine.ces :as ces]))
+
 (defn game-loop
-  "Simple game loop that runs 10 times and returns the state on the last frame."
+  "Simple game loop that runs 10 times and returns the state after 10 frames."
   [state scene-id frame-count]
-  (if (< frame-count 10)
-    (recur (ces/iter-fns state (ces/get-system-fns state (-> state :scenes scene-id)))
-           scene-id
-           (inc frame-count))
-    state))
+  (if (> frame-count 10)
+    state
+    (let [fns (ces/get-system-fns state (-> state :scenes scene-id))
+          updated-state (ces/iter-fns state fns)]
+      (recur updated-state scene-id (inc frame-count)))))
 
 (defn test-system
-  "Call all the system functions and merge their changes together"
-  [state component-fns entity-ids]
-  (apply ces/deep-merge (for [f fns, e entity-ids]
-                          (f state e))))
+  "Call all the component functions and return update game state"
+  [state fns entity-ids]
+  (ces/iter-fns state (for [f fns, e entity-ids] #(f % e))))
                             
 (defn test-fn
   "Increment the :x value by 1"
-  [component-state entity-id]
+  [entity-id component-state inbox]
   (assoc component-state :x (inc (:x component-state))))
 
 (defn my-game
   "Test the entire CES implementation with a system that changes component state"
   []
-  (let [init-state (-> {}
-                       (ces/mk-scene :test-scene [:test-system])
-                       (ces/mk-system :test-system test-system :testable)
-                       (ces/mk-entity :player1 [:testable])
-                       (ces/mk-entity :player2 [:testable])
-                       (ces/mk-component :testable [test-fn]))]
-        (game-loop init-state :test-scene 0)))
+  (-> {}
+      (ces/mk-scene :test-scene [:test-system])
+      (ces/mk-system :test-system test-system :testable)
+      (ces/mk-component :testable [test-fn])
+      (ces/mk-entity :player1 [:testable])
+      (ces/mk-entity :player2 [:testable])
+      (game-loop :test-scene 0)))
 ```
 
 ## State
@@ -88,6 +90,12 @@ Any component can subscribe to it by calling `events/subscribe` on the game stat
 Note: this is an idempotent operation and you can not subscribe more than once.
 
 The subscribed component will receive the event in it's inbox (third arg to component functions by default) the frame after it is emitted. This means the game loop acts as a double buffer (atomic operation on game state changes) so in the middle of iterating through systems and components you can not inadvertently send and receive a message that could change the systems state.
+
+## Tilemaps
+
+The game engine supports tilemaps generated from the Tiled map editor http://www.mapeditor.org. Export the map as json and include the tileset image in the `resources/public/static/images` directory.
+
+Tilemaps require all assets to be loaded (tileset images) to prevent any race conditions with loading a tilemap see `chocolatier.engine.systems.tiles/load-assets`. Tilemaps are loaded asynchronously from the server via `chocolatier.engine.systems.tiles/load-tilemap` which takes a callback.
 
 ## Running Tests
 
