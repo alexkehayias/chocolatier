@@ -41,7 +41,7 @@ The following example implements a simple game loop, system, component, and enti
   [state fns entity-ids]
   (ces/iter-fns state (for [f fns, e entity-ids] #(f % e))))
                             
-(defn test-fn
+(defn test-component-fn
   "Increment the :x value by 1"
   [entity-id component-state inbox]
   (assoc component-state :x (inc (:x component-state))))
@@ -52,7 +52,7 @@ The following example implements a simple game loop, system, component, and enti
   (-> {}
       (ces/mk-scene :test-scene [:test-system])
       (ces/mk-system :test-system test-system :testable)
-      (ces/mk-component :testable [test-fn])
+      (ces/mk-component :testable [test-component-fn])
       (ces/mk-entity :player1 [:testable])
       (ces/mk-entity :player2 [:testable])
       (game-loop :test-scene 0)))
