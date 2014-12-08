@@ -78,7 +78,7 @@ For example, the following component will emit a single event called `:my-event`
 
 ```clojure
 (defn component-a [entity-id component-state inbox]
-  [component-state [[:my-event entity-id {:foo :bar}]]])
+  [component-state [(ev/mk-event {:foo :bar} :my-event entity-id)]]])
 ```
 
 Any component can subscribe to it by calling `events/subscribe` on the game state. For example, subscribing `:component-b` to the `:my-event` event:
@@ -89,7 +89,7 @@ Any component can subscribe to it by calling `events/subscribe` on the game stat
 
 Note: this is an idempotent operation and you can not subscribe more than once.
 
-The subscribed component will receive the event in it's inbox (third arg to component functions by default) the frame after it is emitted. This means the game loop acts as a double buffer (atomic operation on game state changes) so in the middle of iterating through systems and components you can not inadvertently send and receive a message that could change the systems state.
+The subscribed component will receive the event in it's inbox (third arg to component functions by default) as soon as the component function is called next. This allows for events to be sent and received within the same frame.
 
 ## Tilemaps
 
