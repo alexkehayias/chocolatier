@@ -36,11 +36,10 @@
   (reduce #(%2 %1) init fn-coll))
 
 (defn get-system-fns
-  "Return system functions with an id that matches system-ids in order."
+  "Return system functions with an id that matches system-ids in order.
+   If a key is not found it will not be returned."
   [state system-ids]
-  (map #(or (% (:systems state))
-            (throw (js/Error. (str "System " % " not found") % )))
-       system-ids))
+  (vals (select-keys (:systems state) system-ids)))
 
 (defn deep-merge
   "Recursively merges maps. If vals are not maps, the last value wins.
@@ -94,7 +93,7 @@
       (ev/emit-events events)))
 
 (defn all-not-nil?
-  "Returns true if any of the items in coll are nil"
+  "Returns false if any of the items in coll are nil"
   [coll]
   (empty? (filter nil? coll)))
 

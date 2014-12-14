@@ -140,7 +140,8 @@
 
                        ;; Other entities
                        (ces/iter-fns (for [i (range 25)]
-                                       #(create-enemy! % stage (keyword (gensym)) 20))))
+                                       #(create-enemy! % stage (keyword (gensym)) 20)))
+                       )
 ]
     (debug "Loading game state into atom")
     (reset! *state init-state)

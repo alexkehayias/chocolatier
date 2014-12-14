@@ -21,13 +21,24 @@
       (pixi/line-style 0)
       (pixi/fill 0xFFFF0B 0.3)))
 
+(defn player-style!
+  "Applies styles to the graphic."
+  [graphic]
+  (-> graphic
+      (pixi/line-style 0)
+      (pixi/fill 0x00FF0B 0.3)))
+
 (defn collision-style!
   [graphic]
   (-> graphic
       (pixi/line-style 0)
       (pixi/fill 0xFF0000 0.3)))
 
-(defn draw-collision-zone
+(defmulti draw-collision-zone
+  (fn [stage component-state renderable-state component-id entity-id inbox]
+    entity-id))
+
+(defmethod draw-collision-zone :default
   [stage component-state renderable-state component-id entity-id inbox]
   (let [{:keys [pos-x pos-y hit-radius height width]} renderable-state
         ;; Center hitzone on middle of entity
@@ -40,6 +51,23 @@
     ;; If there is a collision going on change set the color to red
     (if (empty? (seq (filter #(= (:event-id %) :collision) inbox)))
       (-> graphic (pixi/clear) (base-style!) (pixi/circle x y hit-radius))
+      (-> graphic (pixi/clear) (collision-style!) (pixi/circle x y hit-radius)))
+    ;; If the sprite does not exist it will add it to component state
+    (assoc component-state :graphic graphic)))
+
+(defmethod draw-collision-zone :player1
+  [stage component-state renderable-state component-id entity-id inbox]
+  (let [{:keys [pos-x pos-y hit-radius height width]} renderable-state
+        ;; Center hitzone on middle of entity
+        half-height (/ height 2) 
+        half-width (/ width 2) 
+        x (+ pos-x half-width)
+        y (+ pos-y half-height)
+        ;; Try to get the sprite for collision zone or create a new one
+        graphic (or (:graphic component-state) (pixi/mk-graphic! stage))]
+    ;; If there is a collision going on change set the color to red
+    (if (empty? (seq (filter #(= (:event-id %) :collision) inbox)))
+      (-> graphic (pixi/clear) (player-style!) (pixi/circle x y hit-radius))
       (-> graphic (pixi/clear) (collision-style!) (pixi/circle x y hit-radius)))
     ;; If the sprite does not exist it will add it to component state
     (assoc component-state :graphic graphic)))
