@@ -30,12 +30,25 @@
   [state entity-id & selectors]
   (update-in state [:state :events :subscriptions entity-id] conj selectors))
 
+(defn get-events
+  "Returns a lazy sequence of events matching the selectors.
+   Selectors are scoped from general to more specific.
+
+   For example:
+   - [:s1 :s2 :s3] matches all events with all 3 selectors
+   - [:s1] matches all results in the :s2 and :s3 key"
+  [state selectors]
+  (when (seq selectors)
+    (let [result (get-in state (concat [:state :events :queue] selectors))]
+      (if (map? result)
+        (mapcat #(get-events state (conj selectors %)) (keys result))
+        result))))
+
 (defn get-subscribed-events
   "Returns a lazy seq of events for entity-id based on their subscriptions"
   [state entity-id]
-  (let [subscriptions (get-in state [:state :events :subscriptions entity-id])
-        events (get-in state [:state :events :queue])]
-    (mapcat #(get-in events (if (seqable? %) % [%])) subscriptions)))
+  (mapcat #(get-events state %)
+          (get-in state [:state :events :subscriptions entity-id])))
 
 (defn valid-event?
   "Asserts the validity of an event. A properly formed event has the
