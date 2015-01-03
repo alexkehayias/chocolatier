@@ -69,10 +69,11 @@
   "Performs narrow collision detection between entities in each cell of the spatial 
    grid where there are more than one entities."
   [state]
-  (ev/emit-events state (reduce
-                         concat
-                         (for [[coords entities] (-> state :state :spatial-grid)]
-                           (check-collisions entities)))))
+  (let [events (for [[coords entities] (-> state :state :spatial-grid)
+                     :let [collisions (check-collisions entities)]
+                     :when (seq collisions)]
+                 collisions)]
+    (ev/emit-events state (reduce concat events))))
 
 (defn mk-spatial-grid
   "col = Math.floor( (46 - grid.min.x) / grid.pxCellSize )

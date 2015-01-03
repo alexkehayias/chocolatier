@@ -39,7 +39,8 @@
   "Return system functions with an id that matches system-ids in order.
    If a key is not found it will not be returned."
   [state system-ids]
-  (vals (select-keys (:systems state) system-ids)))
+  (let [systems (:systems state)]
+    (map #(% systems) system-ids)))
 
 (defn deep-merge
   "Recursively merges maps. If vals are not maps, the last value wins.
@@ -187,7 +188,7 @@
      messages are removed."
   ([f]
    (fn [state]
-     (-> (f state))))  
+     (f state)))
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component (:entities state) component-id)

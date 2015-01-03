@@ -3,40 +3,39 @@
             [chocolatier.engine.utils.watchers :refer [hashmap-watcher]]))
 
 
-(def KEYBOARD-INPUT (atom nil))
+(def *keyboard-input (atom nil))
 
 (defn keydown [e]
   (.preventDefault e)
   (let [key (String.fromCharCode (aget e "keyCode"))]
-    (swap! KEYBOARD-INPUT assoc (keyword key) "on")))
+    (swap! *keyboard-input assoc (keyword key) "on")))
 
 (defn keyup [e]
   (.preventDefault e)
   (let [key (String.fromCharCode (aget e "keyCode"))]
-    (swap! KEYBOARD-INPUT assoc (keyword key) "off")))
+    (swap! *keyboard-input assoc (keyword key) "off")))
 
 (defn init-input!
   "Adds event listener to input events. Assoc's a removal function to 
-   the KEYBOARD-INPUT"  
+   the *keyboard-input"  
   []
   ;; Add js events for keyup and keydown
   (.addEventListener js/document "keydown" keydown)
   (.addEventListener js/document "keyup" keyup)
-  ;; (add-watch KEYBOARD-INPUT :debug hashmap-watcher)
+  ;; (add-watch *keyboard-input :debug hashmap-watcher)
   ;; Reset the atom tracking keyboard input
-  (reset! KEYBOARD-INPUT
+  (reset! *keyboard-input
           {:keydown #(.removeEventListener js/document "keydown" keydown)
            :keyup #(.removeEventListener js/document "keyup" keyup)
-           ;; :watchers #(remove-watch KEYBOARD-INPUT :debug)
+           ;; :watchers #(remove-watch *keyboard-input :debug)
            }))
 
 (defn reset-input! []
   (debug "Resetting input")
-  (when-not (empty? @KEYBOARD-INPUT)
+  (when-not (empty? @*keyboard-input)
     (debug "Removing input listeners")
-    (doseq [k [:keydown :keyup ;; :watchers
-               ]]
-      (let [f (k @KEYBOARD-INPUT)]
+    (doseq [k [:keydown :keyup]]
+      (let [f (k @*keyboard-input)]
         (f))))
   (init-input!))
 
@@ -44,5 +43,5 @@
   "Update current user input"
   [state]
   ;; Make sure the keyboard listener is hooked up
-  (when-not @KEYBOARD-INPUT (init-input!))
-  (assoc-in state [:game :input] @KEYBOARD-INPUT))
+  (when-not @*keyboard-input (init-input!))
+  (assoc-in state [:game :input] @*keyboard-input))

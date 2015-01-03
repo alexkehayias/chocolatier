@@ -5,11 +5,10 @@
 
 (defn replay-system
   "Returns a system function that makes a copy of the game state every n frames."
-  [subscriber-id interval-n keep-copies-n]
+  [interval-n keep-copies-n]
   (fn [state]
     (let [{:keys [snapshot-counter snapshots]} (:game state)
-          ;; TODO decouple this from any entity
-          replay? (seq (get-in state [:state :events :queue :replay subscriber-id])) 
+          replay? (seq (ev/get-events state [:replay]))
           take-snapshot? (> (inc snapshot-counter) interval-n)
           counter (if take-snapshot? 0 (inc snapshot-counter))
           interum-state (assoc-in state [:game :snapshot-counter] counter)

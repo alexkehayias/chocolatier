@@ -43,15 +43,14 @@
   "Returns offset-x and offset-y based on input state as a hashmap"
   [input-state]
   (loop [offsets {:offset-x 0 :offset-y 0}
-         i (seq input-state)]
-    (let [[k v] (first i)
-          remaining (rest i)
-          updated-offsets (if (and (= v "on") (k keycode->offset))
-                            (apply assoc offsets (k keycode->offset))
-                            offsets)]
-      (if (empty? remaining)
-        offsets 
-        (recur updated-offsets remaining)))))
+         input-seq (seq input-state)]
+    (if (empty? input-seq)
+      offsets
+      (let [[k v] (first input-seq)
+            offsets (if (and (= v "on") (k keycode->offset))
+                      (apply assoc offsets (k keycode->offset))
+                      offsets)]
+        (recur offsets (rest input-seq))))))
 
 (defn reverse-offsets [{:keys [offset-x offset-y] :as offset-hm}]
   {:offset-x (if (pos? offset-x) (- offset-x) (max offset-x (- offset-x)))
@@ -69,12 +68,14 @@
   (let [offsets (get-offsets input-state)
         move-change? (or (not= (:offset-x offsets) 0)
                          (not= (:offset-y offsets) 0))
-        ;; TODO clean this up
+        replay? (= (:B input-state) "on")
         events []
         events (if move-change?
                  (conj events (ev/mk-event offsets :move-change entity-id))
                  events)
-        events (if (= (:B input-state) "on")
-                 (conj events (ev/mk-event {:replay? true} :replay entity-id))
+        events (if replay?
+                 (conj events (ev/mk-event {:replay? true} :replay))
                  events)]
-    [offsets events]))
+    (if (empty? events)
+      offsets
+      [offsets events])))

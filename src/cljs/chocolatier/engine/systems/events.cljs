@@ -76,7 +76,9 @@
 (defn emit-events
   "Emits a collection of events at the same time. Returns update game state."
   [state events]
-  (reduce #(apply emit-event %1 (:msg %2) (:selectors %2)) state events))
+  (if (seq events)
+    (reduce #(apply emit-event %1 (:msg %2) (:selectors %2)) state events)
+    state))
 
 (defn clear-events-queue
   "Resets event queue to an empty vector. Returns updates state."

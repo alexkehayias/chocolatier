@@ -85,7 +85,7 @@
         mk-player-1 (create-player! stage :player1 20 20 0 0 20)
         mk-tiles! (mk-tiles-from-tilemap! stage tilemap)
         init-state (-> {:game {:rendering-engine rendering-engine}
-                        :state {:events {:queue []}}}
+                        :state {:events {:queue {}}}}
                        ;; A collection of keys representing systems
                        ;; that will be called in sequential order
                        (ces/mk-scene :default [:input
@@ -131,7 +131,7 @@
                                                      {:args-fn include-renderable-state}]])
                        (ces/mk-system :ai ai-system :ai)
                        ;; Replay game state on user input
-                       (ces/mk-system :replay (replay-system :player1 14 50))
+                       (ces/mk-system :replay (replay-system 14 50))
                        
                        (ces/mk-component :ai [[behavior
                                                {:args-fn include-player-and-renderable-state}]])
