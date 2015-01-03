@@ -72,6 +72,8 @@ Any changes to a running browser game take effect immediately on the next frame.
 
 A global pub-sub event queue is available for any component enabling cross component communication without coupling the state of any of the components. For example, suppose the render component needs to update the screen position of the player sprite. The render component needs information from the input component, but we don't want to couple the state of either components together. Instead of directly accessing the input component's state from the render component we subscribe to messages about player movement and update based on that. We can broadcast that information without any knowledge of who is listening to it and no one can change the component state from another component.
 
+### Events
+
 By default, component functions created with `ces/mk-component` can output a single value, representing component state, or two values, component state and a collection of events to emit. 
 
 For example, the following component will emit a single event called `:my-event` with the message `{:foo :bar}`:
@@ -80,6 +82,8 @@ For example, the following component will emit a single event called `:my-event`
 (defn component-a [entity-id component-state inbox]
   [component-state [(ev/mk-event {:foo :bar} :my-event entity-id)]]])
 ```
+
+### Subscriptions
 
 Any component can subscribe to it by calling `events/subscribe` on the game state. For example, subscribing `:component-b` to the `:my-event` event:
 
@@ -90,6 +94,10 @@ Any component can subscribe to it by calling `events/subscribe` on the game stat
 Note: this is an idempotent operation and you can not subscribe more than once.
 
 The subscribed component will receive the event in it's inbox (third arg to component functions by default) as soon as the component function is called next. This allows for events to be sent and received within the same frame.
+
+### Hierarchical Events
+
+Events use selectors (a vector of keywords) to determine which events are returned. This allows specificity in messages returned. For example, an event emitted with selectors `:a :b :c` will be returned to all subscribers of `:b` and `:a`. This can be useful for aggregating messages for use with a debug system that will overlay information about all the intended movements of all entities.
 
 ## Tilemaps
 
