@@ -1,5 +1,15 @@
 (ns chocolatier.engine.pixi)
 
+(defn alter-obj!
+  "Alter a js object's fields. Returns the object.
+   
+   Example: 
+   (alter-obj! s  \"x\" 1 \"y\" 2)"
+  [sprite & alterations]
+  (doseq [[k v] (partition 2 alterations)]
+    (aset sprite k v))
+  sprite)
+
 (defn add-child! [obj item]
   (.addChild obj item)
   obj)
@@ -24,7 +34,36 @@
   (js/PIXI.Texture.fromImage image-location))
 
 (defn mk-sprite! [stage image-location]
-  (add-child! stage (js/PIXI.Sprite. (js/PIXI.Texture.fromImage image-location))))
+  (let [texture (js/PIXI.Texture.fromImage image-location)
+        sprite (js/PIXI.Sprite. texture)]
+    (add-child! stage sprite)
+    sprite))
+
+(defn set-sprite-frame!
+  "Set the frame of the sprite's spritesheet coords and dimensions
+   Returns the updated sprite."
+  [sprite x y w h]
+  (.setFrame (.-texture sprite) (new js/PIXI.Rectangle x y w h))
+  sprite)
+
+(defn circle
+  [graphic x y r]
+  (.drawCircle graphic x y r)
+  graphic)
+
+(defn rectangle
+  [graphic x y h w]
+  (.beginFill graphic)
+  (.drawRect graphic x y h w)
+  (.endFill graphic)
+  graphic)
+
+(defn add-rect-mask!
+  "Adds a mask to sprite at the screen location x, y with height and width h, w"
+  [stage sprite x y h w]
+  (-> (mk-graphic! stage)
+      (rectangle x y h w)
+      (#(alter-obj! sprite "mask" %))))
 
 (defn mk-tiling-sprite [texture width height]
   (js/PIXI.TilingSprite. texture width height))
@@ -42,8 +81,10 @@
   (aset asset-loader "onComplete" f)
   (.load asset-loader))
 
-(defn render [renderer stage]
-  (.render renderer stage)) 
+(defn render!
+  "Renders a pixi Stage object"
+  [renderer stage]
+  (.render renderer stage))
 
 (defn line-style
   ([graphic weight]
@@ -65,11 +106,6 @@
   "Works for PIXI.Sprite and PIXI.Graphics and probably some others"
   [stage graphic]
   (add-child! stage graphic)
-  graphic)
-
-(defn circle
-  [graphic x y r]
-  (.drawCircle graphic x y r)
   graphic)
 
 (defn render-from-object-container

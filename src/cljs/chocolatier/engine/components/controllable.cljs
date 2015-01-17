@@ -16,10 +16,10 @@
 (def move-rate 4)
 
 (def keycode->direction
-  {:W :n
-   :S :s
-   :D :e
-   :A :w
+  {:W :walk-up    ;; :n
+   :S :walk-down  ;; :s
+   :D :walk-right ;; :e
+   :A :walk-left  ;; :w
    ;; Direction pad
    :& :n
    ;; Use keyword here since paranths are reserved
@@ -48,7 +48,10 @@
       offsets
       (let [[k v] (first input-seq)
             offsets (if (and (= v "on") (k keycode->offset))
-                      (apply assoc offsets (k keycode->offset))
+                      (into offsets [(k keycode->offset)
+                                     ;; WARNING: There can only be one
+                                     ;; direction, last input wins
+                                     [:direction (k keycode->direction)]])
                       offsets)]
         (recur offsets (rest input-seq))))))
 
@@ -71,7 +74,8 @@
         replay? (= (:B input-state) "on")
         events []
         events (if move-change?
-                 (conj events (ev/mk-event offsets :move-change entity-id))
+                 (concat events [(ev/mk-event offsets :move-change entity-id)
+                                 (ev/mk-event {:action (:direction offsets)} :action entity-id)])
                  events)
         events (if replay?
                  (conj events (ev/mk-event {:replay? true} :replay))

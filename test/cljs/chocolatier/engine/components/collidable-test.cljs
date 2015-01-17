@@ -1,4 +1,4 @@
-(ns chocolatier.engine.test-collidable
+(ns chocolatier.engine.collidable-test
   (:require-macros [cemerick.cljs.test
                     :refer [is deftest]])
   (:require [cemerick.cljs.test :refer [test-ns]]

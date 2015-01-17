@@ -4,26 +4,22 @@
             [chocolatier.engine.systems.events :as ev]))
 
 
-(defn include-renderable-state
-  "Include the renderable component state for the entity-id"
-  [state component-id entity-id]
-  (let [renderable-state (ces/get-component-state state :renderable entity-id)
-        component-state (ces/get-component-state state component-id entity-id)
-        inbox (ev/get-subscribed-events state entity-id)]
-    [entity-id component-state renderable-state component-id inbox]))
-
 (defn move
-  [entity-id component-state renderable-state component-id inbox]
-  ;; Check if there is an input-change, collision events
-  (let [collision? (seq (filter #(= (:event-id %) :collision) inbox))
+  "Check if there is an input-change, collision events, and calculates the
+   new position of the entity on the screen."
+  [entity-id component-state inbox]
+  (let [{:keys [pos-x pos-y]} component-state
+        collision? (seq (filter #(= (:event-id %) :collision) inbox))
         move-change (first (filter #(= (:event-id %) :move-change) inbox)) 
-        {:keys [offset-x offset-y] :or {offset-x 0 offset-y 0}} (:msg move-change)]
+        {:keys [offset-x offset-y] :or {offset-x 0 offset-y 0}} (:msg move-change)
+        new-pos-x (- pos-x offset-x)
+        new-pos-y (- pos-y offset-y)
+        updated-state (assoc component-state :pos-x new-pos-x :pos-y new-pos-y)]
     ;; If there WILL be a collision, don't emit a move otherwise emit
     ;; the intended movement
     (if collision?
       component-state
       (if move-change
-        [component-state [(ev/mk-event {:move-x offset-x :move-y offset-y}
-                                       :move
-                                       entity-id)]] 
+        [updated-state
+         [(ev/mk-event {:pos-x new-pos-x :pos-y new-pos-y} :move entity-id)]]
         component-state))))

@@ -91,12 +91,12 @@
    position. Takes the screen height width and dimension of cells."
   [cell-size]
   (fn [state]
-    (let [;; Get only the entities that are collidable and renderable
+    (let [;; Get only the entities that are collidable and moveable
           entity-ids (ces/entities-with-multi-components (:entities state)
-                                                         [:collidable :renderable])
-          ;; Get each entities renderable state and include their ID
-          get-renderable-with-id #(assoc (ces/get-component-state state :renderable %) :id %)
+                                                         [:collidable :moveable])
+          ;; Get each entities moveable state and include their ID
+          get-moveable-with-id #(assoc (ces/get-component-state state :moveable %) :id %)
           ;; TODO include :move-change messages
-          entities (map get-renderable-with-id entity-ids)
+          entities (map get-moveable-with-id entity-ids)
           grid (mk-spatial-grid entities cell-size)]
       (assoc-in state [:state :spatial-grid] grid))))

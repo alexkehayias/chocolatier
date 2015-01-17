@@ -205,7 +205,8 @@
   "Add the system function to the state. Wraps the system function using
    mk-system-fn. Returns an update hashmap."
   [state uid f & [component-id]]
-  (log/debug "mk-system:" uid "component-id:" (or component-id "nil"))
+  (log/debug "mk-system:" uid (when component-id
+                                (str "component-id: " component-id)))
   (let [system-fn (if component-id
                     (mk-system-fn f component-id)
                     (mk-system-fn f))]

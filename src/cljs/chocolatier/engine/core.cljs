@@ -5,6 +5,7 @@
             [chocolatier.engine.systems.input :refer [input-system]]
             [chocolatier.engine.systems.user-input :refer [user-input-system]]
             [chocolatier.engine.systems.render :refer [render-system]]
+            [chocolatier.engine.systems.animation :refer [animation-system]]
             [chocolatier.engine.systems.collision :refer [broad-collision-system
                                                           narrow-collision-system]]
             [chocolatier.engine.systems.tiles :refer [tile-system load-tilemap mk-tiles-from-tilemap!]]
@@ -14,14 +15,13 @@
             [chocolatier.engine.systems.movement :refer [movement-system]]
             [chocolatier.engine.systems.ai :refer [ai-system]]
             [chocolatier.engine.systems.replay :refer [replay-system]]
-            [chocolatier.engine.components.renderable :refer [update-sprite]]
+            [chocolatier.engine.components.animateable :refer [animate]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
             [chocolatier.engine.components.collidable :refer [check-collisions]]
             [chocolatier.engine.components.debuggable :refer [draw-collision-zone
                                                               include-renderable-state-and-stage]]
-            [chocolatier.engine.components.moveable :refer [move
-                                                            include-renderable-state]]
+            [chocolatier.engine.components.moveable :refer [move]]
             [chocolatier.engine.components.ai :refer [behavior
                                                       include-player-and-renderable-state]]
             [chocolatier.entities.player :refer [create-player!]]
@@ -90,13 +90,14 @@
                        ;; that will be called in sequential order
                        (ces/mk-scene :default [:input
                                                :user-input
-                                               :ai
-                                               :broad-collision
-                                               :narrow-collision
-                                               :collision-debug
+                                               ;; :ai
+                                               ;; :broad-collision
+                                               ;; :narrow-collision
+                                               ;; :collision-debug
                                                :movement
                                                :tiles
                                                :replay
+                                               :animate
                                                :render
                                                :events])
                        ;; Global event system broadcaster
@@ -118,8 +119,10 @@
                        ;; Initial tile map
                        (mk-tiles!)
                        ;; Render system for drawing sprites
-                       (ces/mk-system :render render-system :renderable)
-                       (ces/mk-component :renderable [update-sprite])
+                       (ces/mk-system :render render-system)
+                       ;; Animation system for animating sprites
+                       (ces/mk-system :animate animation-system :animateable)
+                       (ces/mk-component :animateable [animate])
                        ;; Collision detection system
                        (ces/mk-system :broad-collision (broad-collision-system (/ width 20)))
                        (ces/mk-system :narrow-collision narrow-collision-system)
@@ -127,22 +130,18 @@
                        (ces/mk-component :collision-debuggable [[draw-collision-zone
                                                                  {:args-fn include-renderable-state-and-stage}]])
                        (ces/mk-system :movement movement-system :moveable)
-                       (ces/mk-component :moveable [[move
-                                                     {:args-fn include-renderable-state}]])
+                       (ces/mk-component :moveable [move])
                        (ces/mk-system :ai ai-system :ai)
+                       (ces/mk-component :ai [[behavior
+                                               {:args-fn include-player-and-renderable-state}]])                       
                        ;; Replay game state on user input
                        (ces/mk-system :replay (replay-system 14 50))
-                       
-                       (ces/mk-component :ai [[behavior
-                                               {:args-fn include-player-and-renderable-state}]])
                        ;; Player 1 entity
                        (mk-player-1)
-
                        ;; Other entities
-                       (ces/iter-fns (for [i (range 25)]
-                                       #(create-enemy! % stage (keyword (gensym)) 20)))
-                       )
-]
+                       ;; (ces/iter-fns (for [i (range 25)]
+                       ;;                 #(create-enemy! % stage (keyword (gensym)) 20)))
+                       )]
     (debug "Loading game state into atom")
     (reset! *state init-state)
     ;; Append the canvas to the dom    
@@ -159,7 +158,8 @@
         assets (array "/static/images/bunny.png"
                       "/static/images/monster.png"
                       "/static/images/tile.png"
-                      "/static/images/snowtiles_1.gif")
+                      "/static/images/snowtiles_1.gif"
+                      "static/images/test_spritesheet.png")
         ;; Async load all the assets and start the game on complete
         asset-loader (new js/PIXI.AssetLoader assets)]
     (aset asset-loader "onComplete"
@@ -173,7 +173,7 @@
        (catch js/Object e (error (str e)))))
 
 (defn stop-game! []
-  (reset! *running false))
+  (reset! *running false) nil)
 
 (defn restart-game! []
   (debug "Restarting...")
