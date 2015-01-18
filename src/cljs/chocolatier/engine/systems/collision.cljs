@@ -109,6 +109,6 @@
           component-ids [:collidable :moveable]
           entity-ids (ces/entities-with-multi-components (:entities state)
                                                          component-ids)
-          entity-state (get-component-state state component-ids entity-ids)
+          entity-state (get-multi-component-state state component-ids entity-ids)
           grid (mk-spatial-grid entity-state cell-size)]
       (assoc-in state [:state :spatial-grid] grid))))

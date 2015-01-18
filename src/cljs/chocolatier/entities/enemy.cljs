@@ -2,7 +2,9 @@
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]
-            [chocolatier.engine.components.animateable :as a]))
+            [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
+            [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
+            [chocolatier.engine.components.moveable :refer [mk-moveable-state]]))
 
 (def texture (js/PIXI.Texture.fromImage "static/images/bunny.png"))
 
@@ -13,20 +15,18 @@
   (let [sprite (js/PIXI.Sprite. texture)
         [h w] (map #(aget sprite %) ["height" "width"])
         pos-x (* 1000 (js/Math.random))
-        pos-y (* 1000 (js/Math.random))
-        init-moveable-state {:pos-x pos-x
-                             :pos-y pos-y}
-        init-animateable-state (a/mk-animation-state
-                                stage
-                                "static/images/bunny.png"
-                                pos-x pos-y
-                                :standing
-                                [:standing 26 37 26 37 0 0 1])]
+        pos-y (* 1000 (js/Math.random))]
     ;; Mutate the sprite and stage
     (.addChild stage sprite)
     (-> state
-        (assoc-in [:state :moveable uid] init-moveable-state)
-        (assoc-in [:state :animateable uid] init-animateable-state)        
+        (mk-animateable-state stage
+                              uid
+                              "static/images/bunny.png"
+                              pos-x pos-y
+                              :standing
+                              [:standing 26 37 26 37 0 0 1])
+        (mk-moveable-state uid pos-x pos-y)
+        (mk-collidable-state uid 26 37 hit-radius)
         (ces/mk-entity uid [:moveable
                             :animateable
                             :collidable
