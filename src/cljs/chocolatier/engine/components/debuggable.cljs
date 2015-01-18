@@ -4,15 +4,15 @@
             [chocolatier.engine.pixi :as pixi]
             [chocolatier.engine.systems.events :as ev]))
 
-(defn include-renderable-state-and-stage
-  "Include the renderable component state and stage (for drawing new things adhoc)
+(defn include-moveable-state-and-stage
+  "Include the moveable component state and stage (for drawing new things adhoc)
    in the args passed to draw-collision-zone"
   [state component-id entity-id]
-  (let [renderable-state (ces/get-component-state state :renderable entity-id)
+  (let [moveable-state (ces/get-component-state state :moveable entity-id)
         component-state (ces/get-component-state state component-id entity-id)
         inbox (ev/get-subscribed-events state entity-id)
         stage (-> state :game :rendering-engine :stage)]
-    [stage component-state renderable-state component-id entity-id inbox]))
+    [stage component-state moveable-state component-id entity-id inbox]))
 
 (defn base-style!
   "Applies styles to the graphic."
@@ -35,12 +35,12 @@
       (pixi/fill 0xFF0000 0.3)))
 
 (defmulti draw-collision-zone
-  (fn [stage component-state renderable-state component-id entity-id inbox]
+  (fn [stage component-state moveable-state component-id entity-id inbox]
     entity-id))
 
 (defmethod draw-collision-zone :default
-  [stage component-state renderable-state component-id entity-id inbox]
-  (let [{:keys [pos-x pos-y hit-radius height width]} renderable-state
+  [stage component-state moveable-state component-id entity-id inbox]
+  (let [{:keys [pos-x pos-y hit-radius height width]} moveable-state
         ;; Center hitzone on middle of entity
         half-height (/ height 2) 
         half-width (/ width 2) 
@@ -56,8 +56,8 @@
     (assoc component-state :graphic graphic)))
 
 (defmethod draw-collision-zone :player1
-  [stage component-state renderable-state component-id entity-id inbox]
-  (let [{:keys [pos-x pos-y hit-radius height width]} renderable-state
+  [stage component-state moveable-state component-id entity-id inbox]
+  (let [{:keys [pos-x pos-y hit-radius height width]} moveable-state
         ;; Center hitzone on middle of entity
         half-height (/ height 2) 
         half-width (/ width 2) 

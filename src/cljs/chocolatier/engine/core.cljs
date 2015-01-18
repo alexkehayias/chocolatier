@@ -18,12 +18,11 @@
             [chocolatier.engine.components.animateable :refer [animate]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
-            [chocolatier.engine.components.collidable :refer [check-collisions]]
             [chocolatier.engine.components.debuggable :refer [draw-collision-zone
-                                                              include-renderable-state-and-stage]]
+                                                              include-moveable-state-and-stage]]
             [chocolatier.engine.components.moveable :refer [move]]
             [chocolatier.engine.components.ai :refer [behavior
-                                                      include-player-and-renderable-state]]
+                                                      include-player-and-moveable-state]]
             [chocolatier.entities.player :refer [create-player!]]
             [chocolatier.entities.enemy :refer [create-enemy!]])
   (:use-macros [dommy.macros :only [node sel sel1]]))
@@ -90,10 +89,10 @@
                        ;; that will be called in sequential order
                        (ces/mk-scene :default [:input
                                                :user-input
-                                               ;; :ai
-                                               ;; :broad-collision
-                                               ;; :narrow-collision
-                                               ;; :collision-debug
+                                               :ai
+                                               :broad-collision
+                                               :narrow-collision
+                                               :collision-debug
                                                :movement
                                                :tiles
                                                :replay
@@ -128,20 +127,19 @@
                        (ces/mk-system :narrow-collision narrow-collision-system)
                        (ces/mk-system :collision-debug debug-collision-system :collision-debuggable)
                        (ces/mk-component :collision-debuggable [[draw-collision-zone
-                                                                 {:args-fn include-renderable-state-and-stage}]])
+                                                                 {:args-fn include-moveable-state-and-stage}]])
                        (ces/mk-system :movement movement-system :moveable)
                        (ces/mk-component :moveable [move])
                        (ces/mk-system :ai ai-system :ai)
                        (ces/mk-component :ai [[behavior
-                                               {:args-fn include-player-and-renderable-state}]])                       
+                                               {:args-fn include-player-and-moveable-state}]])                       
                        ;; Replay game state on user input
                        (ces/mk-system :replay (replay-system 14 50))
                        ;; Player 1 entity
                        (mk-player-1)
                        ;; Other entities
-                       ;; (ces/iter-fns (for [i (range 25)]
-                       ;;                 #(create-enemy! % stage (keyword (gensym)) 20)))
-                       )]
+                       (ces/iter-fns (for [i (range 25)]
+                                       #(create-enemy! % stage (keyword (gensym)) 20))))]
     (debug "Loading game state into atom")
     (reset! *state init-state)
     ;; Append the canvas to the dom    

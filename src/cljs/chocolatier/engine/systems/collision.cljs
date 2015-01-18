@@ -55,15 +55,16 @@
          accum []]
     (if (empty? entities)
       accum
-      (recur (rest entities)
-             (apply concat accum
-                    (for [other-entity entities
-                          :let [entity (first entities)]
-                          :when (and (not= entity other-entity)
-                                     (collision? entity other-entity))]
-                      ;; Emit a message for both entities that collided
-                      [(ev/mk-event {:colliding? true} :collision (:id entity))
-                       (ev/mk-event {:colliding? true} :collision (:id other-entity))]))))))
+      (recur
+       (rest entities)
+       (apply concat accum
+              (for [other-entity entities
+                    :let [entity (first entities)]
+                    :when (and (not= entity other-entity)
+                               (collision? entity other-entity))]
+                ;; Emit a message for both entities that collided
+                [(ev/mk-event {:colliding? true} :collision (:id entity))
+                 (ev/mk-event {:colliding? true} :collision (:id other-entity))]))))))
 
 (defn narrow-collision-system
   "Performs narrow collision detection between entities in each cell of the spatial 
@@ -76,8 +77,7 @@
     (ev/emit-events state (reduce concat events))))
 
 (defn mk-spatial-grid
-  "col = Math.floor( (46 - grid.min.x) / grid.pxCellSize )
-   cell = Math.floor( (237 - grid.min.y) / grid.pxCellSize );"
+  "Returns a hashmap representing a spatial grid"
   [entities cell-size]
   (group-by (fn [entity]
               (let [{:keys [pos-x pos-y]} entity
@@ -86,17 +86,29 @@
                 (str col ":" row)))
             entities))
 
+;; TODO use the moveable component to get position
+;; TODO use the collidable component to get the hitzone
+;; TODO use the :move-change messages to get the offsets
+
+(defn get-multi-component-state
+  "Returns a collection of hashmaps of component state. Append an :id field
+   for the entity's unique ID"
+  [state component-ids entity-ids]
+  (map
+   (fn [id]
+     (into {:id id} (map #(ces/get-component-state state % id) component-ids)))
+   entity-ids))
+  
+
 (defn broad-collision-system
   "Returns a function that divides entities into a spatial grid based on their screen 
    position. Takes the screen height width and dimension of cells."
   [cell-size]
   (fn [state]
     (let [;; Get only the entities that are collidable and moveable
+          component-ids [:collidable :moveable]
           entity-ids (ces/entities-with-multi-components (:entities state)
-                                                         [:collidable :moveable])
-          ;; Get each entities moveable state and include their ID
-          get-moveable-with-id #(assoc (ces/get-component-state state :moveable %) :id %)
-          ;; TODO include :move-change messages
-          entities (map get-moveable-with-id entity-ids)
-          grid (mk-spatial-grid entities cell-size)]
+                                                         component-ids)
+          entity-state (get-component-state state component-ids entity-ids)
+          grid (mk-spatial-grid entity-state cell-size)]
       (assoc-in state [:state :spatial-grid] grid))))

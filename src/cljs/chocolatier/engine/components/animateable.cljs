@@ -78,12 +78,12 @@
   [& animation-specs]
   (apply merge (map #(apply mk-animation %) animation-specs)))
 
-(defn mk-animation-state
+(defn -mk-animation-state
   "Helper function for constructing state for animating sprites based 
    on a spritesheet.
 
    Example:
-   (mk-animation-state \"static/images/my-spritesheet.png\" 
+   (-mk-animation-state \"static/images/my-spritesheet.png\" 
                        0 0
                        :walk
                        [:walk 10 10 2 2 0 0 5]
@@ -106,6 +106,17 @@
      :sprite sprite
      :animations animations
      :frame 0}))
+
+(defn mk-animateable-state
+  "Returns a hashmap of updated state with all required animation 
+   component state"
+  [state stage entity-id image-location x y default-animation & animation-specs]
+  (ces/mk-component-state
+   state
+   :animateable
+   entity-id
+   (apply (partial -mk-animation-state stage image-location x y default-animation)
+          animation-specs)))
 
 (defn incr-frame
   "Increments the frame of a sprite's spritesheet. If the animation sequence is

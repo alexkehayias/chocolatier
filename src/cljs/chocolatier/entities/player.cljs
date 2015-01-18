@@ -2,7 +2,10 @@
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]
-            [chocolatier.engine.components.animateable :as a]))
+            [chocolatier.engine.components.animateable :as a]
+            [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
+            [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
+            ))
 
 
 (defn create-player!
@@ -12,19 +15,18 @@
   (fn [state]
     (info "Creating player" pos-x pos-y map-x map-y hit-radius)
     (-> state
-        (assoc-in [:state :animateable uid]
-                  (a/mk-animation-state
-                   stage
-                   "static/images/test_spritesheet.png"
-                   pos-x pos-y
-                   :standing
-                   [:standing 832 1344 64 64 10 0 1]
-                   [:walk-up 832 1344 64 64 8 0 9]
-                   [:walk-down 832 1344 64 64 10 0 9]
-                   [:walk-left 832 1344 64 64 9 0 9]
-                   [:walk-right 832 1344 64 64 11 0 9]))
-        (assoc-in [:state :moveable uid]
-                  {:pos-x pos-x :pos-y pos-y})
+        (a/mk-animateable-state stage
+                                uid
+                                "static/images/test_spritesheet.png"
+                                pos-x pos-y
+                                :standing
+                                [:standing 832 1344 64 64 10 0 1]
+                                [:walk-up 832 1344 64 64 8 0 9]
+                                [:walk-down 832 1344 64 64 10 0 9]
+                                [:walk-left 832 1344 64 64 9 0 9]
+                                [:walk-right 832 1344 64 64 11 0 9])
+        (mk-moveable-state uid pos-x pos-y)
+        (mk-collidable-state uid 64 64 hit-radius)
         (ces/mk-entity uid [:animateable
                             :controllable
                             :collidable
