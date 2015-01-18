@@ -86,10 +86,6 @@
                 (str col ":" row)))
             entities))
 
-;; TODO use the moveable component to get position
-;; TODO use the collidable component to get the hitzone
-;; TODO use the :move-change messages to get the offsets
-
 (defn get-multi-component-state
   "Returns a collection of hashmaps of component state. Append an :id field
    for the entity's unique ID"
