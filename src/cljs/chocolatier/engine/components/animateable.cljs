@@ -132,9 +132,12 @@
   (:msg (first (filter #(= (:event-id %) :move) inbox))))
 
 (defn get-action
-  "Returns the first action event from the inbox"
+  "Returns a keyword of the first action event from the inbox and appends 
+   the direction"
   [inbox]
-  (get-in (first (filter #(= (:event-id %) :action) inbox)) [:msg :action]))
+  (when-let [event (first (filter #(= (:event-id %) :action) inbox))]
+    (let [{:keys [action direction]} (:msg event)]
+      (keyword (str (name action) "-" (name direction))))))
 
 (defn update-coords
   "Update the screen x, y position of the sprite based on any move events
@@ -175,7 +178,10 @@
       (assoc component-state
         :animation-stack (if animation-change?
                            (if new-action
-                             (conj animation-stack new-action)
+                             (conj (drop 1 animation-stack) new-action)
+                             ;; There always needs to be an animation
+                             ;; so if the stack has only 1 item in it
+                             ;; then do not drop any items
                              (if (> (count animation-stack) 1)
                                (drop 1 animation-stack)
                                animation-stack))

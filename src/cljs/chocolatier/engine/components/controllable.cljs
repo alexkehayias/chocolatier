@@ -16,16 +16,16 @@
 (def move-rate 4)
 
 (def keycode->direction
-  {:W :walk-up    ;; :n
-   :S :walk-down  ;; :s
-   :D :walk-right ;; :e
-   :A :walk-left  ;; :w
-   ;; Direction pad
-   :& :n
-   ;; Use keyword here since paranths are reserved
-   (keyword "(") :s
-   :' :e
-   :% :w})
+  {:W :up
+   :S :down
+   :A :left   
+   :D :right
+   ;; Direction keys
+   :& :up
+   ;; Use keyword here since parenths are reserved
+   (keyword "(") :down
+   :' :right
+   :% :left})
 
 (def keycode->offset
   {:W [:offset-y (* 1 move-rate)]
@@ -59,27 +59,31 @@
   {:offset-x (if (pos? offset-x) (- offset-x) (max offset-x (- offset-x)))
    :offset-y (if (pos? offset-y) (- offset-y) (max offset-y (- offset-y)))})
 
-(defmulti react-to-input
-  (fn [input-state component-state component-id entity-id inbox] entity-id))
-
-(defmethod react-to-input :default
+(defn react-to-input
   [input-state component-state component-id entity-id inbox]
-  component-state)
-
-(defmethod react-to-input :player1
-  [input-state component-state component-id entity-id inbox]
-  (let [offsets (get-offsets input-state)
-        move-change? (or (not= (:offset-x offsets) 0)
-                         (not= (:offset-y offsets) 0))
+  (let [{:keys [direction offset-x offset-y] :as offsets} (get-offsets input-state)
+        move-change? (or (not= offset-x 0) (not= offset-y 0))
+        [action direction] (if move-change?
+                             [:walk direction]
+                             ;; Default to :down so we don't need to
+                             ;; initialize any state for this component
+                             [:stand (or (:direction component-state) :down)])
         replay? (= (:B input-state) "on")
-        events []
         events (if move-change?
-                 (concat events [(ev/mk-event offsets :move-change entity-id)
-                                 (ev/mk-event {:action (:direction offsets)} :action entity-id)])
-                 events)
+                 ;; TODO allow different actions like
+                 ;; run/walk/attack/etc by some key mapping
+                 [(ev/mk-event offsets :move-change entity-id)
+                  (ev/mk-event {:action action :direction direction}
+                               :action entity-id)]
+                 ;; If we are not moving we are standing, take the
+                 ;; last direction from the component state of last
+                 ;; frame
+                 [(ev/mk-event {:action action :direction direction}
+                                :action entity-id)])
         events (if replay?
                  (conj events (ev/mk-event {:replay? true} :replay))
-                 events)]
+                 events)
+        updated-state (assoc component-state :action action :direction direction)]
     (if (empty? events)
-      offsets
-      [offsets events])))
+      updated-state
+      [updated-state events])))

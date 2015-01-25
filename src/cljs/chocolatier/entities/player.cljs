@@ -19,8 +19,11 @@
                               uid
                               "static/images/test_spritesheet.png"
                               pos-x pos-y
-                              :standing
-                              [:standing 832 1344 64 64 10 0 1]
+                              :stand-down
+                              [:stand-up 832 1344 64 64 8 0 1]
+                              [:stand-down 832 1344 64 64 10 0 1]
+                              [:stand-left 832 1344 64 64 9 0 1]
+                              [:stand-right 832 1344 64 64 11 0 1]
                               [:walk-up 832 1344 64 64 8 0 9]
                               [:walk-down 832 1344 64 64 10 0 9]
                               [:walk-left 832 1344 64 64 9 0 9]
