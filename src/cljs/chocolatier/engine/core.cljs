@@ -138,8 +138,8 @@
                        ;; Player 1 entity
                        (mk-player-1)
                        ;; Other entities
-                       ;; (ces/iter-fns (for [i (range 25)]
-                       ;;                 #(create-enemy! % stage (keyword (gensym)) 20)))
+                       (ces/iter-fns (for [i (range 25)]
+                                       #(create-enemy! % stage (keyword (gensym)) 20)))
                        )]
     (debug "Loading game state into atom")
     (reset! *state init-state)

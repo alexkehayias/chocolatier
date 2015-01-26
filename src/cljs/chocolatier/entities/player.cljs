@@ -27,7 +27,12 @@
                               [:walk-up 832 1344 64 64 8 0 9]
                               [:walk-down 832 1344 64 64 10 0 9]
                               [:walk-left 832 1344 64 64 9 0 9]
-                              [:walk-right 832 1344 64 64 11 0 9])
+                              [:walk-right 832 1344 64 64 11 0 9]
+                              [:attack-up 832 1344 64 64 4 0 9]
+                              [:attack-down 832 1344 64 64 6 0 9]
+                              [:attack-left 832 1344 64 64 5 0 9]
+                              [:attack-right 832 1344 64 64 7 0 9]
+                              )
         (mk-moveable-state uid pos-x pos-y)
         (mk-collidable-state uid 64 64 hit-radius)
         (ces/mk-entity uid [:animateable
