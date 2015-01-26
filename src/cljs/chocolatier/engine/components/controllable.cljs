@@ -50,7 +50,6 @@
   [input-state component-state component-id entity-id inbox]
   (let [prev-direction (or (:direction component-state) :down)
         {:keys [action direction offset-x offset-y]} (input->interaction input-state)
-        _ (println action direction offset-x offset-y)
         ;; Default to standing
         action (if-not action :stand action)
         ;; Default to prev direction

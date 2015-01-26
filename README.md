@@ -4,9 +4,9 @@ A work-in-progress web game engine for repl driven game development written in C
 
 ## Usage
 
-1. Load `chocolatier.server` to start the test server and a browser repl
-2. Go to http://127.0.0.1:9000/app
-3. Load the namespace `chocolatier.engine.core` and call `(start-game!)`
+1. Load `chocolatier.server` to start the test server and call `(restart-server!)`
+2. Once the browser repl loads, go to http://127.0.0.1:9000/app
+3. Load the namespace `chocolatier.core` and call `(restart-game!)`
 
 ## Entity Component System
 

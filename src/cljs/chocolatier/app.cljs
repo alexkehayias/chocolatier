@@ -3,7 +3,7 @@
   (:use-macros [dommy.macros :only [node sel sel1]])
   (:require [clojure.browser.repl :as repl]
             [dommy.core :as dom]
-            [chocolatier.engine.core :as engine]))
+            [chocolatier.core :refer [restart-game!]]))
 
 (def top-nav
   [:div#top-nav [:h1#logo "Chocolatier"]])
@@ -24,7 +24,7 @@
            (dom/remove! (sel1 :#main)))
        (catch js/Error e (error e)))
   (init-html!)
-  (engine/start-game!))
+  (restart-game!))
 
 ;; Start the game on page load
-(set! (.-onload js/window) engine/start-game!)
+(set! (.-onload js/window) restart-game!)

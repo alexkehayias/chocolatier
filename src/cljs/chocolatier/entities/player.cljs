@@ -4,8 +4,7 @@
             [chocolatier.engine.systems.events :as ev]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
-            [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
-            ))
+            [chocolatier.engine.components.moveable :refer [mk-moveable-state]]))
 
 
 (defn create-player!
@@ -31,8 +30,7 @@
                               [:attack-up 832 1344 64 64 4 0 9]
                               [:attack-down 832 1344 64 64 6 0 9]
                               [:attack-left 832 1344 64 64 5 0 9]
-                              [:attack-right 832 1344 64 64 7 0 9]
-                              )
+                              [:attack-right 832 1344 64 64 7 0 9])
         (mk-moveable-state uid pos-x pos-y)
         (mk-collidable-state uid 64 64 hit-radius)
         (ces/mk-entity uid [:animateable
