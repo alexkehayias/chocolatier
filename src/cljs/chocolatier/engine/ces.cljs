@@ -139,21 +139,20 @@
                   (ev/get-subscribed-events state entity-id)])
           ;; Pass args and system argument to the component function
           result (apply f (concat args (apply concat sys-kwargs)))
-          output-fn (partial (or format-fn update-component-state-and-events)
-                             state component-id entity-id)]
+          output-fn (or format-fn update-component-state-and-events)]
       ;; Handle if the result is going to include events or not
       (if (vector? result)
-        (do
+        (let [[component-state events] result]
           ;; Make sure the results are not more than 2 items and not
           ;; an empty vector
           (assert (and (<= (count result) 2) (not (empty? result))))
           ;; Make sure that the items in the list are not nil
           (assert (all-not-nil? result))
-          (apply output-fn result))
+          (output-fn state component-id entity-id component-state events))
         (do
           ;; Make sure the result is a hashmap (updated state)
           (assert (map? result))
-          (output-fn result))))))
+          (output-fn state component-id entity-id result))))))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.
@@ -167,7 +166,7 @@
   (let [wrapped-fns (for [spec fn-specs]
                       (if (seqable? spec)
                         (do (log/debug "mk-component: found options" spec)
-                            (apply (partial mk-component-fn uid) spec))
+                            (apply mk-component-fn uid spec))
                         (mk-component-fn uid spec)))]
     ;; Add the component to state map
     ;; TODO do we need a :fns keyword? there's no other data stored here

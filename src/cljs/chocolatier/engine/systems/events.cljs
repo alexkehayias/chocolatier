@@ -69,7 +69,7 @@
 (defn emit-event
   "Enqueues an event onto the queue"
   [state msg & selectors]
-  (let [event (apply (partial mk-event msg) selectors)]
+  (let [event (apply mk-event msg selectors)]
     (valid-event? event)
     (update-in state (concat [:state :events :queue] selectors) conj event)))
 

@@ -115,7 +115,7 @@
    state
    :animateable
    entity-id
-   (apply (partial -mk-animation-state stage image-location x y default-animation)
+   (apply -mk-animation-state stage image-location x y default-animation
           animation-specs)))
 
 (defn incr-frame
