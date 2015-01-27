@@ -32,8 +32,11 @@
   "Pass an initial value through a collection of functions with the 
    result of the function called is passed as an arg to the next
    function."
-  [init fn-coll]
-  (reduce #(%2 %1) init fn-coll))
+  [state [f & fns]]
+  (if f (recur (f state) fns) state)
+  ;; [init fn-coll]
+  ;; (reduce #(%2 %1) init fn-coll)
+  )
 
 (defn get-system-fns
   "Return system functions with an id that matches system-ids in order.
