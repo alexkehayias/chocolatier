@@ -33,10 +33,7 @@
    result of the function called is passed as an arg to the next
    function."
   [state [f & fns]]
-  (if f (recur (f state) fns) state)
-  ;; [init fn-coll]
-  ;; (reduce #(%2 %1) init fn-coll)
-  )
+  (if f (recur (f state) fns) state))
 
 (defn get-system-fns
   "Return system functions with an id that matches system-ids in order.
@@ -56,14 +53,14 @@
 (defn entities-with-component
   "Takes a hashmap and returns all keys whose values contain component-id"
   [entities component-id]
-  (map first
-       (filter #(boolean (some #{component-id} (second %))) entities)))
+  (mapv first
+        (filter #(boolean (some #{component-id} (second %))) entities)))
 
 (defn entities-with-multi-components
   "Takes a hashmap and returns all keys whose values has all component-ids"
   [entities component-ids]
-  (map first
-       (filter #(boolean (some (set component-ids) (second %))) entities)))
+  (mapv first
+        (filter #(boolean (some (set component-ids) (second %))) entities)))
 
 (defn mk-entity
   "Adds entity with uid that has component-ids into state"
@@ -166,11 +163,13 @@
    - fns: a vector of functions. Optionally these can be a pair of
      component fn and an args fn"
   [state uid fn-specs]
-  (let [wrapped-fns (for [spec fn-specs]
-                      (if (seqable? spec)
-                        (do (log/debug "mk-component: found options" spec)
-                            (apply mk-component-fn uid spec))
-                        (mk-component-fn uid spec)))]
+  ;; Force the functions into a vector rather than a lazy seq
+  (let [wrapped-fns (mapv
+                     #(if (seqable? %)
+                        (do (log/debug "mk-component: found options" %)
+                            (apply mk-component-fn uid %))
+                        (mk-component-fn uid %))
+                     fn-specs)]
     ;; Add the component to state map
     ;; TODO do we need a :fns keyword? there's no other data stored here
     (assoc-in state [:components uid] {:fns wrapped-fns})))

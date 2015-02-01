@@ -25,7 +25,8 @@
                                                       include-player-and-moveable-state]]
             [chocolatier.entities.player :refer [create-player!]]
             [chocolatier.entities.enemy :refer [create-enemy!]])
-  (:use-macros [dommy.macros :only [node sel sel1]]))
+  (:use-macros [dommy.macros :only [node sel sel1]]
+               [chocolatier.macros :only [local >> <<]]))
 
 ;; Controls game loop and allows dynamic changes to state even after
 ;; it is in the game loop

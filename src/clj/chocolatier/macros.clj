@@ -59,3 +59,27 @@
       `(defrecord ~vname [~@fields] ~@parsed-body)
       (throw (Exception. (str "Duplicate fields found across components. "
                               "Fields must all be unique."))))))
+
+(defmacro forloop [[init test step] & body]
+  "For loop implementation. Example:
+   (forloop [[i 0] (< i 16) (inc i)] (println i))"
+  `(loop [~@init]
+     (when ~test
+       ~@body
+       (recur ~step))))
+
+;; LOCALS
+
+;; Optimized locals that can be used as a mutable piece of state
+;; inside local scope
+(defmacro local
+  ([]
+   `(make-array 1))
+  ([x]
+   `(cljs.core/array ~x)))
+
+(defmacro >> [x v]
+  `(aset ~x 0 ~v))
+
+(defmacro << [x]
+  `(aget ~x 0))
