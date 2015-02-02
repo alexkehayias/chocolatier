@@ -83,3 +83,13 @@
 
 (defmacro << [x]
   `(aget ~x 0))
+
+(defmacro forloop-accum
+  "For loop with accumulation into a transient vector"
+  [[init test step] & body]
+  `(loop [~@init
+          res# (transient [])]
+     (if ~test
+       (do (conj! res# ~@body)
+           (recur ~step res#))
+       (persistent! res#))))

@@ -4,4 +4,4 @@
 (defn debug-collision-system
   "Adds debug information for any debuggable entity"
   [state fns entity-ids]
-  (ces/iter-fns state (for [f fns, e entity-ids] #(f % e))))
+  (ces/iter-entities state fns entity-ids))

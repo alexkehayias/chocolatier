@@ -1,6 +1,7 @@
 (ns chocolatier.engine.ces
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.systems.events :as ev]))
+            [chocolatier.engine.systems.events :as ev])
+  (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
 
 ;; Gameloop:   recursive function that calls all systems in a scene
 ;;
@@ -32,15 +33,35 @@
   "Pass an initial value through a collection of functions with the 
    result of the function called is passed as an arg to the next
    function."
-  [state [f & fns]]
-  (if f (recur (f state) fns) state))
+  [state fns]
+  (let [local-state (local state)
+        len-fns (count fns)]
+    (forloop [[i 0] (< i len-fns) (inc i)]
+             (>> (f (<< local-state))))
+    (<< local-state)))
 
 (defn get-system-fns
   "Return system functions with an id that matches system-ids in order.
    If a key is not found it will not be returned."
   [state system-ids]
   (let [systems (:systems state)]
-    (map #(% systems) system-ids)))
+    (mapv systems system-ids)))
+
+(defn iter-entities
+  "Iterate over a collection of entity-ids with component functions.
+   Optionally pass in additional opts hashmap that will be passed to
+   each component function"
+  [state fns entity-ids & [opts]]
+  (let [local-state (local state)
+        len-fns (count fns)
+        len-ents (count entity-ids)]
+    (forloop [[i 0] (< i len-fns) (inc i)]
+      (forloop [[j 0] (< j len-ents) (inc j)]
+               (>> local-state
+                   (if opts
+                     ((fns i) (<< local-state) (entity-ids j) opts)
+                     ((fns i) (<< local-state) (entity-ids j))))))
+    (<< local-state)))
 
 (defn deep-merge
   "Recursively merges maps. If vals are not maps, the last value wins.

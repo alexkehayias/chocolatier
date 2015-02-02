@@ -6,6 +6,6 @@
 
 (defn ai-system
   [state fns entity-ids]
-  (let [player-state (ces/get-component-state state :moveable :player1)]
-    (ces/iter-fns state (for [f fns, e entity-ids]
-                          #(f % e {:player-state player-state})))))
+  (let [player (ces/get-component-state state :moveable :player1)
+        player-state {:player-state player}]
+    (ces/iter-entities state fns entity-ids player-state)))

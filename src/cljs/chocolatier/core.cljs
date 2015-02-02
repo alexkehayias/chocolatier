@@ -26,7 +26,7 @@
             [chocolatier.entities.player :refer [create-player!]]
             [chocolatier.entities.enemy :refer [create-enemy!]])
   (:use-macros [dommy.macros :only [node sel sel1]]
-               [chocolatier.macros :only [local >> <<]]))
+               [chocolatier.macros :only [forloop local >> <<]]))
 
 ;; Controls game loop and allows dynamic changes to state even after
 ;; it is in the game loop
@@ -54,11 +54,14 @@
      if any changes are mode they can never happen in the middle of a frame
      being recalculated
    - scene-id: ignored"
-  [state scene-id]
-  (let [systems (ces/get-system-fns @state (-> @state :scenes scene-id))]
-    (swap! state #(ces/iter-fns % systems))
+  [game-state scene-id]
+  (let [state (local state)
+        systems (ces/get-system-fns @state (-> @state :scenes scene-id))]
+    (forloop [[i 0] (< i (count systems)) (inc i)]
+             (>> ((systems i) (<< state))))
+    (swap! state (<< state))
     (if @*running
-      (request-animation #(game-loop state scene-id))
+      (request-animation #(game-loop (<< state) scene-id))
       (debug "Game stopped"))))
 
 ;; TODO this should be used as a fallback if requestAnimationFrame is
