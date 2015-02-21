@@ -15,7 +15,7 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]                 
                  [prismatic/dommy "0.1.1"]
                  [com.cemerick/clojurescript.test "0.3.1"]]
-  :profiles {:dev {:plugins [[com.cemerick/austin "0.1.6"]
+  :profiles {:dev {:plugins [[com.cemerick/austin "0.1.7-SNAPSHOT"]
                              [lein-cljsbuild "1.0.6-SNAPSHOT"]]
                    :cljsbuild {:builds [{:source-paths ["src/cljs"]
                                          :compiler {:output-dir "resources/public/scripts"
