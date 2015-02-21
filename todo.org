@@ -28,6 +28,7 @@ CLOSED: [2015-01-18 Sun 13:52]
 - [X] Animations (sprites)
 
 * TODO Version 0.2.0 [0/3]
+- [ ] Update to version of clojurescipt and Austin plugin
 - [ ] Tile collision
 - [ ] Map to Screen coords
 - [ ] Text rendering component
@@ -48,6 +49,11 @@ CLOSED: [2015-01-18 Sun 13:52]
   - CES operations?
 - [X] Change all systems to use transients 
 - [ ] Change collision detection to use transients of js arrays to do collision detection
+* TODO "Threads" using core.async to run systems async based on deps
+- Example: 
+  - Given dependency tree [[a b] [a c] [c d]]
+  - Run in this order where a vector denotes async operation [a, [b c], d]
+- Probably need to cache this when game loop is initialized and recalc anytime a new system is added/removed
 
 * TODO input->interaction is non-deterministic
 FIX The output of the interaction hashmap is non-deterministic

@@ -55,10 +55,10 @@
      being recalculated
    - scene-id: ignored"
   [game-state scene-id]
-  (let [state (local state)
+  (let [state (local game-state)
         systems (ces/get-system-fns @state (-> @state :scenes scene-id))]
     (forloop [[i 0] (< i (count systems)) (inc i)]
-             (>> ((systems i) (<< state))))
+             (>> state ((systems i) (<< state))))
     (swap! state (<< state))
     (if @*running
       (request-animation #(game-loop (<< state) scene-id))
