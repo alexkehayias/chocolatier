@@ -39,7 +39,7 @@ The following example implements a simple game loop, system, component, and enti
 (defn test-system
   "Call all the component functions and return update game state"
   [state fns entity-ids]
-  (ces/iter-fns state (for [f fns, e entity-ids] #(f % e))))
+  (ces/iter-entities state fns entity-ids)
                             
 (defn test-component-fn
   "Increment the :x value by 1"
