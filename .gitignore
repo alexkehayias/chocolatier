@@ -10,6 +10,7 @@ pom.xml.asc
 /.repl
 .DS_Store
 *.org
+!todo.org
 \#*\#
 .\#*
 .nrepl-port

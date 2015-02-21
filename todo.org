@@ -1,0 +1,890 @@
+# Development Notes and TODO list
+# Date stamps are when the task was started
+# Closed stamps are when it was completed
+
+
+* DONE Version 0.1.0 [3/3]                                          :release:
+CLOSED: [2015-01-18 Sun 20:55]
+** DONE Core [2/2]
+CLOSED: [2014-11-15 Sat 11:27]
+- [X] Browser repl
+- [X] Centralized logging
+** DONE Scenes State Components Entities Systems [5/5]
+CLOSED: [2014-11-22 Sat 11:35]
+- [X] Scenes (collection of systems)
+- [X] Systems (collection of component functions)
+- [X] Entities (UIDs with collection of component IDs)
+- [X] State (nested hashmap representing scene state)
+- [X] Messaging (Event bus for sending and receiving messages between systems)
+** DONE Systems/Components [8/8]
+CLOSED: [2015-01-18 Sun 13:52]
+- [X] Movement
+- [X] Circle collision detection
+- [X] Rendering
+- [X] User input
+- [X] Tile mapping
+- [X] Debug layer (collision circles)
+- [X] Replay game state (go back to old game state on the fly)
+- [X] Animations (sprites)
+
+* TODO Version 0.2.0 [0/3]
+- [ ] Tile collision
+- [ ] Map to Screen coords
+- [ ] Text rendering component
+- [ ] Optimization
+  - [ ] Batch render sprites
+    Move sprites to a new display object group and render all at once
+  - [ ] Reducers?
+  - [ ] core.async to run systems async when marked as async-able
+- [ ] Game loop macro
+- [ ] Helper macros for entity creation
+  - [ ] Initialize state
+  - [ ] Initialize components
+  - [ ] Subscribe events
+* TODO Use transients for local mutability <2015-02-01 Sun>
+- [X] Figure out where we can use transients instead of normal hashmap operations
+  - Systems?
+  - Components?
+  - CES operations?
+- [X] Change all systems to use transients 
+- [ ] Change collision detection to use transients of js arrays to do collision detection
+
+* TODO input->interaction is non-deterministic
+FIX The output of the interaction hashmap is non-deterministic
+because it is iterating through a hashmap where ordering is not
+guaranteed. Need to iterate through only the accepted keycodes and
+check if the input-state shows the key is "on". That way order is
+controlled by the caller
+* TODO Moveable component-fn calls get-component-state twice for every entity
+According to the compiler, the move component requires multiple get-component-state calls
+* TODO Move rate should be calculated by Moveable and should have component state
+- Controllable should give the intended action based on user input i.e. :walk/run/attack :left/right etc
+- Another component should interpret that into a new screen position
+- Moveable needs to know if there is a collision before moving and intended position
+- Collideable needs to know the intended position of the character
+
+* TODO Function that generates all the animation declarations in each direction
+* Live demo <2014-12-10 Wed>
+Want to show how nice it is getting quick feedback loops and adding new features to the game
+- Start a game from scratch and build it up
+- Show how to inspect game state
+- Show what it's like to work with
+- Add a new system or feature
+- Update an existing system on the fly
+* TODO Key combinations from input
+* DONE Add direction to movement and animation so you remain in that direction when standing <2015-01-18 Sun>
+CLOSED: [2015-01-25 Sun 12:36]
+- [X] Add stand as an action if not walking to Controllable
+- [X] FIX animation stack keeps growing
+  Need to remove the last action if a new one comes in
+* TODO Debug layer for spatial grid
+Show grid lines with numbers based on the spatial grid of that frame
+* TODO Text rendering to sprites
+* DONE Add attack animation <2015-01-25 Sun>
+CLOSED: [2015-01-25 Sun 20:49]
+* DONE Animation system <2015-01-17 Sat>
+CLOSED: [2015-01-18 Sun 13:52]
+- State machine for representing animations
+- Hold on to the last state so that after an animation it goes back to what it was in
+- State
+  - Animation state key i.e. :walking :running
+  - Frame number (for sprite sheet)
+  - Dimensions of sprite sheet i.e width/height/frame-width/frame-height
+- Abstraction for specifying an animation
+- Key frame animation?
+- Multi part sprites?
+- [X] Renderable system should only call the stage render code
+- [X] Move sprite updating based on movement to the animateable component
+- [X] Can change to animateable system rather than renderable so all can share sprite stuff in one place. It only reacts to events so it's ok
+  - Handles changes to sprites based on events including movement, animation, image swaps
+- [X] Fix collision detection to use move component for position state or to get all info from the incoming event msg
+- [X] Hold the hit zone info about an entity in the collidable component state
+- [X] Position information should be held by the move component
+* TODO Add skip frames to animation declaration to control animation speed
+* DONE Fix replay not working when pressing :B <2015-01-03 Sat>
+CLOSED: [2015-01-03 Sat 17:41]
+- Looks like new events evaluation causes replay to not work
+- One of the systems is clearing out messages before it can make it to the replay system
+- Systems were seqing over a hashmap which is not guaranteed to have order
+* TODO Use transients for things that are going to be iterated over and only need a local mutable value. 
+Could work well for systems when iterating over them
+* DONE Implement snapshots of game state and function to reload it <2014-12-07 Sun>
+CLOSED: [2014-12-07 Sun 22:11]
+- Take a copy of game state every n seconds and stick in vector
+- Add an input control for a button to control stepping backward
+- Thumbnail???? Would be super cool to render a mini image
+* TODO Clean up tilemapping code
+- [ ] Add tests
+- [ ] Split up monster loops
+* TODO Fix collision detection <2014-12-07 Sun>
+It's not working due to broad collision detection not accounting for mass of entity and not factoring in intended movement
+
+* DONE Finish up selectors for events <2014-12-13 Sat>
+CLOSED: [2014-12-13 Sat 21:11]
+If there are keys instead of a seq then recursively concat all the messages down the tree
+* DONE Update subscription calls to filter out messages properly using the passed in boolean function for determining if an even should go into an inbox
+CLOSED: [2014-11-23 Sun 11:37]
+* DONE Behavior component (for demo) <2014-11-22 Sat>
+CLOSED: [2014-11-23 Sun 11:37]
+- Implement an AI behavior for entities with the :ai component
+- Chose to go towards the player on each turn
+
+* DONE Collision detection takes too much cpu time <2014-11-22 Sat>
+CLOSED: [2014-11-23 Sun 21:46]
+Profiling shows 70% of all cpu time each trip through the game loop
+- Alternatives
+  - Perform the lookup in one shot for all entities
+  - Sort by x, y, use x y to figure out which entities you should check against
+  - Spatial grid, divide up all the entities into a 2D grid once per frame, only compare entities in the same frame
+  - Cache the collision checks as you don't need to compare every entity in reverse A->B AND B->A
+* DONE Add spatial grid system <2014-11-23 Sun>
+CLOSED: [2014-11-23 Sun 21:46]
+
+* DONE Fan out messages takes too much cpu time <2014-11-22 Sat>
+CLOSED: [2014-11-28 Fri 19:32]
+Profiling shows 20% of cpu time each trip through the game loop
+- There was a message leak that was piling up in the queue
+- Make event subscriptions opt in not opt out
+- Subscribe to an event from someone to a specific ID
+- Make broadcast subscriptions optional?
+- Subscribe an entity to a specific event
+  Subscribe a component?
+  Subscribe an entity?
+  What does the entity get in their inbox? All messages?
+  When do you remove messages from inbox?
+  Need better parsing of event messages
+- Resulted in 2x framerate from 8-10 to 18-20
+  
+  Put the messages in a hashmap instead of a list
+  {:events {:subscriptions {}
+            :queue {:<event-id> 
+                     {:<source-id> [{:event-id :<event-id> :from :<from-entity> :msg <message>}]}}}}
+  Subscribing to broadcast events is the concatenation of all values of keys nested in the event id
+  A subscribed event is id -> from a specific entity
+
+  Don't do a fan out as part of each system only check the events queue and make a lazy sequence that gets included as the inbox argument
+  The event-system should clear out the event queue, handle new subscriptions/un-subscribes
+* TODO Tiles that are non-traversable <2014-11-30 Sun>
+Implement a tile map that checks for locations of entities that are collidable and sends an event if they are going to collide
+- [ ] Create a spatial grid based on the map location (offset based on the view port of the screen)
+- [ ] Put all tile collidable entities into their coordinates
+- [ ] Iterate over all occupied tiles
+- [ ] If they will be on a non-traversable tile, emit a tile collision event
+
+* DONE Tiled tile map support <2014-12-07 Sun>
+CLOSED: [2014-12-07 Sun 20:55]
+Create a system for using tilemaps defined by Tiled
+- [X] Load tile set image
+- [X] Load json
+- [X] Translate spec into tile set 
+  https://github.com/bjorn/tiled/wiki/TMX-Map-Format#tileset
+  - imageheight, imagewidth, tileheight, tilewidth, tileproperties
+  - The spec for the tiles is in data.layers[0].data and is a one dimensional array with numbers representing the tile to use
+  - To get the x, y of the tile
+    - number * tile width
+    - by the width of the image divided by 
+- [ ] Update tile system to display it
+  Needs to read the offsets of the tiles to shift the tileset image by x and y
+
+* DONE Update documentation about event system <2015-01-03 Sat>
+CLOSED: [2015-01-03 Sat 17:55]
+
+* TODO Optimizations <2014-11-29 Sat>
+- Systems iterate over all entities that have the component and then each component function
+- Try to batch all the changes to the game-state in one shot
+- Try using the reducers library for zero allocation collection operations
+- Update component state and emit events takes up a significant amount of time
+  number of hashmap ops = number of systems * number of entities with component * number of functions * number of events
+- Lots of analysis on clojurescript performance http://wagjo.github.io/benchmark-cljs/
+- [-] Use custom types using (.-a my-map) instead of keywords should be 3x faster <2014-11-30 Sun>
+  - What about a macro that replaces get-in, assoc-in, update-in?
+    Would need to always use our version of it which is dumb
+  - Implement protocols for the custom type so that all the clojure map functions work with it
+  - Underlying data structure will be a js array
+  - [ ] Remove usage of assoc-in
+    ./chocolatier/engine/ces.cljs:29:  (assoc-in state [:scenes uid] system-ids))
+    ./chocolatier/engine/ces.cljs:68:  (assoc-in state [:entities uid] component-ids))
+    ./chocolatier/engine/ces.cljs:86:  (assoc-in state [:state component-id entity-id] val))
+    ./chocolatier/engine/ces.cljs:173:    (assoc-in state [:components uid] {:fns wrapped-fns})))
+    ./chocolatier/engine/ces.cljs:211:    (assoc-in state [:systems uid] system-fn)))
+    ./chocolatier/engine/systems/collision.cljs:101:      (assoc-in state [:state :spatial-grid] grid))))
+    ./chocolatier/engine/systems/events.cljs:71:  (assoc-in state [:state :events :queue] {}))
+    ./chocolatier/engine/systems/events.cljs:76:  (assoc-in state [:state :events] {:queue {} :subscriptions {}}))
+    ./chocolatier/engine/systems/input.cljs:48:  (assoc-in state [:game :input] @KEYBOARD-INPUT))
+    ./chocolatier/engine/systems/tiles.cljs:42:    (assoc-in state [:state :tiles]
+    ./chocolatier/engine/systems/tiles.cljs:53:    (assoc-in state [:state :tiles] tiles)))
+    ./chocolatier/entities/enemy.cljs:28:        (assoc-in [:state :renderable uid] init-render-state)
+    ./chocolatier/entities/player.cljs:27:          (assoc-in [:state :renderable uid] init-render-state)
+  - [ ] Remove usage of get-in
+    ./chocolatier/engine/ces.cljs:81:  (or (get-in state [:state component-id entity-id]) {}))
+    ./chocolatier/engine/systems/events.cljs:36:  (let [subscriptions (get-in state [:state :events :subscriptions entity-id])
+    ./chocolatier/engine/systems/events.cljs:37:        events (get-in state [:state :events :queue])]
+    ./chocolatier/engine/systems/events.cljs:38:    (mapcat #(get-in events (if (seqable? %) % [%])) subscriptions)))  
+  - [ ] Remove usage of update-in
+    ./chocolatier/engine/systems/events.cljs:31:  (update-in state [:state :events :subscriptions entity-id] conj selectors))
+    ./chocolatier/engine/systems/events.cljs:61:    (update-in state (concat [:state :events :queue] selectors) conj event)))
+  - This did not end up working because of the semantics of property access ".-" makes it impossible to construct at compile time without evaling symbols which means they can not be dynamically evalualted by putting thename of the key in a var for instance.
+- [ ] Batch game state changes
+  - After every system take all of the changes from component entities and events and make the update in one shot
+  - Uses many assoc-in
+  - Should components operate on all entities at the same time? That would allow a single assoc-in to the game state from the accumulated component state that could be reduced in
+
+* TODO Use a context buffer instead of writing all to one canvas
+- This should speed up the rendering of lots of sprites
+- Example code
+        function onLoad() {        
+            // init stats
+            var stats = new Stats();
+            stats.getDomElement().style.position = 'absolute';
+            stats.getDomElement().style.left = '0px';
+            stats.getDomElement().style.top = '0px';
+            document.body.appendChild( stats.getDomElement() );
+            setInterval( function () { stats.update(); }, 1000 / 60 );
+            
+            // cache dom elements
+            canvas = document.getElementById('my_canvas');
+            context = canvas.getContext('2d');
+            width = canvas.width;
+            height = canvas.height;
+            shipImage = document.getElementById('ship');
+            
+            // create canvas buffer
+            canvasBuffer = document.createElement('canvas');
+            contextBuffer = canvasBuffer.getContext('2d');
+            canvasBuffer.width = 100;
+            canvasBuffer.height = 100;
+            contextBuffer.translate(50, 50); // so we can rotate about the center point
+            
+            // create lookup table for trig functions
+            angleIncrement = Math.PI / 12;
+            lookupTable = [];
+            for (var i = 0; i < 5000; i++) {
+                lookupTable[i] = {
+                    x: Math.cos(i) * width - 150,
+                    y: Math.sin(i) * height - 150
+                };
+            }
+            
+            // kick off the loop            
+            window.setInterval(update, 16);
+        }
+        
+        // this is called using a 16 ms interval
+        function update() {
+        
+            // draw transformed ship image to a canvas buffer
+            contextBuffer.clearRect(0, 0, 100, 100);
+            contextBuffer.rotate(angleIncrement);
+            contextBuffer.drawImage(shipImage, 0, 0, 50, 50);
+            
+            // draw 5,000 ships
+            for (var i = 0; i < 5000; i++) {
+                var lookup = lookupTable[i];
+                context.drawImage(canvasBuffer, lookup.x, lookup.y);   
+            }
+        }
+* TODO Use AABBTree (Axis aligned Bounding Box Tree) for collision detection
+* TODO Make the input system emit an event
+Currently it updates it's component state but that's it. SHould send an event to avoid other components querying it directly
+
+* DONE Change game loop to wrap state in an atom so it can be inspected <2014-11-15 Sat>
+CLOSED: [2014-11-15 Sat 17:34]
+* DONE Fix controls does not register up and down <2014-11-16 Sun>
+CLOSED: [2014-11-16 Sun 21:10]
+* TODO Change mk-component to also handle subscribing to events
+* TODO Change mk-system to also register it with a scene id
+* DONE Pixijs wrapper <2014-11-16 Sun>
+CLOSED: [2014-11-16 Sun 17:14]
+Hide all of the javascript interop to keep the api clean. Consider a polymorphic layer so that a different renderer can be swapped in.
+* DONE [#A] Port existing components and systems to new CES refactor <2014-09-21 Sun> :core:
+CLOSED: [2014-11-22 Sat 14:48]
+- core
+  - [X] game-loop
+- systems
+  - [X] render
+  - [X] input
+    Collects system input and stores it every loop
+  - [X] user control
+    Does something with the user input
+  - [X] tiling
+  - [X] movement
+    Should handle reconciling user input to changes not sure how this is different than user control
+    - It's different because without it you will not be able to check if you should make the next move resulting in a loop where you get stuck because you are always colliding
+    - Can the entity make it's next move?
+    - Should take a message from input about changes and move if there is not also a message for a collision
+  - [X] collision detection
+    Check against all entities to see if they are colliding
+  - [X] debug layer (draw circles around entities)
+    - Turn red when a message collision message is present in the inbox
+    - Not sure how to do this without coupling renderable, collidable, and debuggable
+    - Make the selector for entities check multiple component-ids to get entity ids
+    - Make custom component state parsing function
+  - [X] Repl changing of game state via state atom
+* TODO Query-like functionality for state                              :core:
+Send a query with what you want and a filter function
+Returns a sequence
+* TODO Reset the game height on screen resize                          :core:
+* DONE [#A] Cross system/component communication [7/7] <2014-10-12 Sun> :core:
+CLOSED: [2014-11-15 Sat 17:03]
+Need a way to share information between systems and components
+- [X] Component/Entity events mailbox
+  - Each component should get access to it by default (can be nil)
+  - Example (send-msg state :from-component-id :from-entity-id msg)
+  - Messages are async, no response is given, all info must be in the message
+- [X] Need a system to clear out messages
+- [X] Fan out messages to all subscriber inboxes
+- Read only component state if it is not yours
+- [X] Default component functions should also take in an inbox as an argument by default
+- [X] Provide a way of emitting event from any component by passing it in as an arg
+  - Currently, the component function returns a hashmap which will be merged in to the game state
+  - We also need to provide a way of conveying that an event(s) should be emitted
+  - Component functions can output 1 or 2 items 
+    - If it's 1 item then it's the component state
+    - If it's 2 items then it is component state and events
+    - You can never just return events
+- [X] Update game system fns now that component fns return updated game state rather than component state
+  No longer need to use deep-merge which is recursive and costly. Instead use iter-fns on the collection of component fns in a system
+- [X] Clear events inboxes after the system runs each component function
+* TODO Protection against overflowing messages
+  Throw an error if two many messages are generated. This will prevent avalanches and fail faster so it is easier to diagnose problems.
+  - [ ] Limit on number of messages in an inbox
+  - [ ] Limit on number of messages in the event queue
+
+* DONE mk-component-fn should allow custom argument parsing function AND output wrapper <2014-10-12 Sun>
+CLOSED: [2014-10-12 Sun 19:25]
+- Currently, passing in a args-fn to mk-component-fn DOES NOT wrap the output of the function into a mergeable hashmap. The caller must handle it in the function. This is confusing since it is handled automatically if you don't pass in an args-fn.
+- 9 times out of 10 you will want to automatically merge in component state
+- This will get even harder to manage yourself if we have to handle merging of events
+- Solution:
+  - Allow optional argument parsing functions
+    1. Calling the function with the desired arguments
+    2. Wrapping the output of the function into something mergeable
+* DONE [#A] Replace ces/deep-merge in systems with iter-fns since each component by default calls ces/update-component-state-and-events which returns an updated global state
+CLOSED: [2014-11-16 Sun 17:24]
+* DONE Make assertions in component functions to fail faster <2014-11-15 Sat>
+CLOSED: [2014-11-15 Sat 13:13]
+- [X] Throw an error if output is not a 2 item collection
+- [X] Throw an error if component state or inbox or event-fn etc are nil
+
+* TODO Change 'state' to 'game' everywhere it is passed in as an argument
+game -> :state is where the state lives, everything else is game related such as systems, components, platform, etc
+* DONE Change component state to not live in the component but under the :state key <2014-10-12 Sun>
+CLOSED: [2014-10-12 Sun 17:20]
+* TODO Tests [2/3] <2014-10-04 Sat>
+- [X] CES internals
+- [ ] Input system/components
+- [X] Event system
+
+* TODO Re-implement fixed timestep loop
+http://codeincomplete.com/posts/2013/12/4/javascript_game_foundations_the_game_loop/
+* TODO During movement change the players map position <2014-03-23 Sun>
+Branch: map-position
+Keep track of entities based on their map coordinates. Translate map coordinates into screen coordinates on render.
+This should help with the collision issues so that movement is decoupled from the :player entity
+- [ ] Add map-x and map-y to entities
+- [ ] Add offset x and y to background layer
+- [ ] On render apply offsets to the map and translate to screen changes
+  - [ ] Tiles
+  - [ ] Player
+  - [ ] Monster
+
+* TODO System for injecting adding/removing entities from the game state while game loop is running
+* TODO Function to translate screen coords to map coords
+
+* TODO Entity to Tile collision detection
+- [ ] Boundary collisions (is a tile passable)
+  - Check the players map position and find the nearest tile in the tile map
+  - If the tile is passable then do nothing
+  - If not then reset offset-x and offset-y to 0
+
+* TODO Background rendering jumps using fixed timestep gameloop [/] <2014-04-05 Sat>
+- Fix timestep loop causes rendering issues 
+  - When you put the render system in iter-systems the movement is correct
+  - When it's not you get inconsistencies in the rendering where certain parts are moved in weird ways like the background or monster
+because render gets called outside of the systems step loop
+- Tiles are moving but the Monster is 
+
+** TODO Re-implement fixed timestep loop where render is outside of the timestep loop
+Line 73 in engine.core
+
+** TODO Add a new system for writing changes to screen coords after all systems complete
+This way the render step is only for updating draw code and we don't have to be concerned with offsets
+* TODO Multiple hit boxes per entity
+- Entities should have body parts (multiple hit boxes)
+- Body parts have a hitbox and are checked during collision detection
+* TODO Test with simulation
+Makes a series of state changes to the game and returns the end state once all steps are completed
+Can be used for testing behavior visually and with real results
+- [ ] Record game state
+- [ ] Playback game state
+
+* TODO Sprite animation rendering
+- Fixed timestep animation?
+  Each frame ticks the next frame in an animation
+- Action list animation?
+  This would allow the cancellation of an animation easily. Say a player is attacking and then get's hit halfway through the animation, could cancel the animation and start the hit animation
+* TODO [#A] Sound system
+System that reads an entities action list and global action list and plays the sound
+* TODO Wrap pixi sprite calls into something more friendly
+* TODO Make game-loop a function that takes in args for frame rate and main function to call
+* TODO Draw ordering of entities to know which should be in front of what
+* TODO When moving, keep the player in the center unless the border is < 1/2 the distance to the player then allow the player to move towards it
+* TODO Action list
+* TODO Inspect protocol
+All game engine things must be inspectable, returning details about it's current state
+* TODO Entity message passing
+Pass a message from one entity to another and process the list of messages
+Processing the list of messages can result in generating actions on the action list
+
+* Macros
+** TODO defsystem
+Takes a scene state and handler fn and returns a function
+** TODO defgame
+Takes a collection of scenes where the default scene is the first one
+Implements a fixed time step game loop
+Loads the stage (rendering engine)
+What happens if there is more than one defgame?
+
+** TODO defscene
+A collection of systems and initial state for managing the systems. Returns an atom with a hashmap representing the scene state. Returns a hashmap of functions for managing the scene such as state resets
+** TODO defentity does not work due to issues with eval from another ns
+ - Metadata on def does not work in clojurescript
+ - Eval inside a macro resolving a symbol from another ns does not work
+ - Loading the caller's ns does not work https://github.com/teropa/hiccups/blob/master/src/clj/hiccups/runtime.clj
+ - [ ] Bind to another ns in the macro http://stackoverflow.com/questions/7684656/clojure-eval-code-in-different-namespace
+
+** TODO defaction
+Creates a vector of actions used by an action list
+** TODO deflevel
+Defines a new level for the game
+Takes a list of assets to load, which world map, game scripts to load etc
+
+* DONE Validate component functions exist when called
+CLOSED: [2014-10-04 Sat 22:46]
+* DONE Validate system functions exist when called
+CLOSED: [2014-10-04 Sat 22:46]
+* DONE Scenes
+CLOSED: [2014-09-21 Sun 16:23]
+A list of systems and a encapsulated state that defines a different element of a game such as a menu or mini game
+* DONE Polymorphic component functions
+CLOSED: [2014-10-03 Fri 22:27]
+- An entity should be able to implement it's own function to satisfy a component
+- Multimethod with a default should work perfectly here
+- Example
+  Dispatch on the entity-id
+  (defn default-update-sprite
+    "Update the entities sprite"
+    [component-state entity-id]
+    (let [sprite (:sprite component-state)]
+      ;; Mutate the x and y position
+      (set! (.-position.x sprite) (:pos-x component-state))
+      (set! (.-position.y sprite) (:pos-y component-state))
+      component-state))
+
+  (defmulti update-sprite
+    (fn [component-state entity-id] entity-id)
+
+  (defmethod update-sprite :default [component-state entity-id] default-update-sprite)
+* DONE CES refactor to make it more functional <2014-07-06 Sun>
+CLOSED: [2014-09-21 Sun 21:46]
+- [X] Refactor to use a state hashmap which gets passed to all systems
+- [X] Add tests for ces functions
+
+* DONE Require state dependencies 
+CLOSED: [2014-10-04 Sat 19:18]
+This is probably too restrictive. Instead allow an arguments function that parses state and is applied to the component function.
+- Specify your state dependencies in your component function
+- Call your component function with the state in the order specified
+- Return value must be a vector of all state to be merged in
+- Example:
+  (defcomponent stuff [input stage me]
+    (my-fn input stage me))
+  Calls a fn to get deps out of state
+  Takes the return result and makes it merg-able with global state
+* DONE Bring back dynamic eval of the game loop since it is no longer an atom
+CLOSED: [2014-10-04 Sat 00:39]
+Need a way to re-eval systems/components/etc in a repl and have the changes go
+defmulti seems to work for that
+Components using defmulti work with reload
+There was a bug that was causing the loop to exit early thus reload wasn't working
+* DONE Systems should be by ID reference to a scene not a direct reference <2014-09-21 Sun>
+CLOSED: [2014-09-21 Sun 17:21]
+When running a scene it should lookup by keyword the reference to the system fn
+* DONE defentity <2014-05-04 Sun>
+CLOSED: [2014-05-04 Sun 12:51]
+- Returns a defrecord with a hashmap of component Protocols and functions
+- Reads :fields metadata of protocol and creates a list of all fields that will be the record's state
+* DONE defcomponent <2014-05-04 Sun>
+CLOSED: [2014-05-04 Sun 12:51]
+- Creates a protocol
+- Takes a name, state (hashmap of fields), and methods
+- Returns a protocol with metadata about it's fields
+* DONE Move all state to it's own ns
+CLOSED: [2014-01-18 Sat 17:33] <2014-01-18 Sat>
+* DONE Implement systems that are run on every step through the game loop <2014-01-18 Sat>
+CLOSED: [2014-01-18 Sat 18:52]
+
+* DONE FIX have to manually evaluate the systems.core/render/tick, input <2014-01-18 Sat>
+CLOSED: [2014-01-19 Sun 16:36]
+This was due to issues with the move of all state to engine.state ns and not recompiling the js. The smoking gun was that `game` was defined in engine.core not `s/game`
+* DONE Basic keyboard WASD and directional arrow movement <2014-01-19 Sun>
+CLOSED: [2014-01-19 Sun 17:31]
+* DONE Implement fixed timestep gameploop <2014-01-20 Mon>
+CLOSED: [2014-01-20 Mon 00:08]
+http://codeincomplete.com/posts/2013/12/4/javascript_game_foundations_the_game_loop/
+- time between game loop calls
+* DONE Fix pausing game breaks the game loop <2014-01-20 Mon>
+CLOSED: [2014-01-20 Mon 00:22]
+- need to request the recur the loop
+* DONE Make render perform the position changes <2014-01-26 Sun>
+CLOSED: [2014-01-26 Sun 16:00]
+to the sprite based on the current values of the record
+* DONE Tiles 
+CLOSED: [2014-01-26 Sun 16:00]
+* DONE Tile maps <2014-01-26 Sun>
+CLOSED: [2014-01-26 Sun 21:41]
+- [X] Change state to tile-map which is a hashmap with meta about the map and a list of Tile objects
+* DONE Error thrown when resetting game
+CLOSED: [2014-02-10 Mon 02:17]
+Extra parenths in the callback would lead to a function call of the result of start-gamey
+Uncaught TypeError: Object #<HTMLBodyElement> has no method 'call' VM491:2
+(anonymous function) VM491:2
+(anonymous function) VM487:10
+cljs.core.Atom.cljs$core$IWatchable$_notify_watches$arity$3 core.cljs:7038
+cljs.core._notify_watches core.cljs:340
+cljs.core.reset_BANG_ core.cljs:7074
+d core.cljs:7088
+a core.cljs:7091
+game_loop VM484:16
+(anonymous function)
+* DONE Batch translate by offset for a collection of tiles
+CLOSED: [2014-02-10 Mon 02:02]
+* DONE FIX dynamic loading of entities doesn't take effect <2014-01-26 Sun>
+CLOSED: [2014-01-26 Sun 16:56]
+Now that we perform state changes that produce a new record each transaction, changes to underlying protocols or records takes place immediately!
+* DONE FIX multiple reset-games makes the input move double as fast each time until the canvas is removed <2014-01-26 Sun>
+CLOSED: [2014-01-26 Sun 21:36]
+Stop flag is not being caught in the game loop
+Add a watcher and callback to reset the game
+* DONE Move tiles based on the player's position <2014-02-07 Fri>
+CLOSED: [2014-02-16 Sun 22:27]
+- [X] Player needs to have a map position coordinate
+- [X] Create a new component BackgroundLayer which is used by Tilemap to adjust it's tiles based on players position
+- [X] UserInput should set the direction and the x y offset based on velocity
+* DONE FIX Error thrown by the callback watcher on reset-game! <2014-01-26 Sun>
+CLOSED: [2014-02-16 Sun 22:31]
+* DONE FIX initial reset-game! does not work <2014-02-16 Sun>
+CLOSED: [2014-03-02 Sun 15:07]
+- systems is not loaded on engine.core load
+  - This was due to compiled js being used instead
+- the first time and requires calling start-game! 
+- there is a race condition where the renderer starts before the window has a width or height causing an error when pixijs renderer is called
+- Need to load the asset for the tile background using an asset loader
+  loader = new PIXI.AssetLoader(["resources/bg-far.png","resources/bg-mid.png"]);
+  loader.onComplete = onAssetsLoaded
+  loader.load();
+  Then one can simply wrap the code into the onAssetsLoaded function
+* DONE Move tiles into the game engine <2014-01-26 Sun>
+CLOSED: [2014-03-02 Sun 15:19]
+* DONE Each entity that is collidable needs to have a hit box radius
+CLOSED: [2014-03-09 Sun 19:12]
+* DONE Fix directory structure for cljs is not conventional <2014-03-14 Fri>
+CLOSED: [2014-03-14 Fri 17:09]
+Need a chocolatier dir
+ 
+* DONE Debug layer needs to be moved to engine/state so that it can be coordinated during resets <2014-03-22 Sat>
+CLOSED: [2014-03-22 Sat 20:01]
+* DONE Add a watches namespace for tools to debug changes to state <2014-04-06 Sun>
+CLOSED: [2014-04-06 Sun 14:27]
+* DONE Collision detection for player causes the player to not be able to move (always colliding) <2014-03-14 Fri>
+CLOSED: [2014-04-12 Sat 20:32]
+- Prevent movement if the result of the move is a collision
+- The player is able to move such that the circles are overlapping
+  - Maybe the collision detection is wrong?
+    - The formula seems to work 
+    chocolatier.engine.systems.collision> (collision? 352 220 20 322 186 30)
+    true
+    chocolatier.engine.systems.collision> (collision? 352 220 20 320 184 30)
+    true
+    chocolatier.engine.systems.collision> (collision? 352 220 20 317 181 30)
+    false
+  - Maybe the addition of the offset x/y is not being checked properly?
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 306 206 VM8682:9
+    DEBUG: After offset 306 206 VM8682:9
+    # THIS STARTS THE MOVE TOWARDS COLLISION
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 356 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    # THIS SHOULD HAVE RELEASED IT
+    DEBUG: State changed :input-debug {:A "off"} VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 352 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    # Even after no offsets are being applied we still have a collision!
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 352 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206 VM8682:9
+    DEBUG: Collision detected between :player and :monster VM8682:9
+    DEBUG: Before offset 352 220 VM8682:9
+    DEBUG: After offset 352 220 VM8682:9
+    DEBUG: Before offset 310 206 VM8682:9
+    DEBUG: After offset 310 206
+  - Maybe the order of the systems is wrong?
+    - Moved movement phase to right before the collision detection
+    - Render phase now applies the offsets calculated and applies them to the sprite
+  - !!! Player has an offset even though it's screen position will not change
+    - Monster also has an offset based on the player's offset
+    - [X] Use a global screen offset when user input comes in to control
+    - [X] Other entities then use the screen offset for their own movement and screen position
+    - Movement stop on collision works when both entities have collision detection on and the player is passed in to the collision check without any offsets
+    - Tiling works correctly when offsetst are removed but the monster moves with the player equally
+  - Debug log 1:
+    DEBUG: State changed :input 
+        :W off -> on VM1052:9
+    DEBUG: State changed :global 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :monster 
+        :screen-y 328 -> 323
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :monster 
+        :screen-y 333 -> 328
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :monster 
+        :screen-y 338 -> 333
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :player 361 408 30 and :monster 365 343 40 VM1052:9
+    DEBUG: State changed :global 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :monster 365 343 40 and :player 361 408 30 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :player 
+
+     VM1052:9
+    DEBUG: State changed :monster 
+
+     VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :global 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :player 361 408 30 and :monster 365 343 40 VM1052:9
+    DEBUG: State changed :global 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :monster 365 343 40 and :player 361 408 30 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :player 
+
+     VM1052:9
+    DEBUG: State changed :monster 
+
+     VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :global 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :player 361 408 30 and :monster 365 343 40 VM1052:9
+    DEBUG: State changed :global 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :monster 365 343 40 and :player 361 408 30 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :player 
+
+     VM1052:9
+    DEBUG: State changed :monster 
+
+     VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :global 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :player 361 408 30 and :monster 365 343 40 VM1052:9
+    DEBUG: State changed :global 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :monster 365 343 40 and :player 361 408 30 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :player 
+
+     VM1052:9
+    DEBUG: State changed :monster 
+
+     VM1052:9
+    DEBUG: State changed :player 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :global 
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :monster 
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :player
+  - The input handler can be on constantly and the user input step takes the latest value of the atom during a run through the game loop
+  - Player was able to perform an illegal move 
+    From 
+    (collision? 361 250 30 288 250 40)
+    To
+    (collision? 361 250 30 292 250 40)
+    Even though they were colliding
+- Player and monster are sharing the same offset-x and why which will negate each other during collision detection because the detector applies the offsets before checking. This makes it impossible to move away from a collision
+- How movement works
+  1. User input
+  2. Player adds an offset based on user input
+  3. Monster adds an offset based on the players offset
+  4. Collision detection runs
+  5. Offsets are removed if there is a collision
+  6. Sprite positions updated based on applying offsets to screen position
+- FIXED by removing offset of the player!
+
+* DONE Entity to entity collision detection <2014-03-09 Sun>
+CLOSED: [2014-04-12 Sat 20:38]
+- [X] Collisions should be a core system run before movement
+- [X] Entity collisions
+  - Collision based on velocity and direction
+  - Compare all entities to each other
+- [X] Draw a circle for debugging in the render function
+  chocolatier.engine.systems.debug
+
+* DONE Change entities state to a hashmap instead of a vector <2014-04-06 Sun>
+CLOSED: [2014-04-12 Sat 20:44]
+
+* DONE Center hit zone to the middle of the player sprite <2014-04-12 Sat>
+CLOSED: [2014-04-12 Sat 21:01]
+* DONE Make entity height and width a value on Player and Monster <2014-04-12 Sat>
+CLOSED: [2014-04-12 Sat 21:42]
+- [X] Update entity-collision? fn to use that instead of getting a sprite attribute. This will make it easier to test just by using a hashmap instead of a hashmap with a sprite object
+* DONE Collision detection is for too far away <2014-04-12 Sat>
+CLOSED: [2014-04-12 Sat 21:46]
+After adding height and width to entities, the collision is detected too early
+Wrong value of radius being used in collision detection
