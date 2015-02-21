@@ -27,8 +27,8 @@ CLOSED: [2015-01-18 Sun 13:52]
 - [X] Replay game state (go back to old game state on the fly)
 - [X] Animations (sprites)
 
-* TODO Version 0.2.0 [0/3]
-- [ ] Update to version of clojurescipt and Austin plugin
+* TODO Version 0.2.0 [1/7]
+- [X] Update to version of clojurescipt and Austin plugin
 - [ ] Tile collision
 - [ ] Map to Screen coords
 - [ ] Text rendering component
@@ -42,6 +42,11 @@ CLOSED: [2015-01-18 Sun 13:52]
   - [ ] Initialize state
   - [ ] Initialize components
   - [ ] Subscribe events
+* DONE Update to latest version of austin and cljs <2015-02-21 Sat>
+CLOSED: [2015-02-21 Sat 11:19]
+- Austin 1.6 has issues so need to use version 1.7-SNAPSHOT or the repl doesn't work
+- Had to update lein cljsbuild because it was to old to work with later cljs
+- Now using the cljs required by core async latest
 * TODO Use transients for local mutability <2015-02-01 Sun>
 - [X] Figure out where we can use transients instead of normal hashmap operations
   - Systems?
