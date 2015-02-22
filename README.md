@@ -50,11 +50,11 @@ The following example implements a simple game loop, system, component, and enti
   "Test the entire CES implementation with a system that changes component state"
   []
   (-> {}
-      (ces/mk-scene :test-scene [:test-system])
-      (ces/mk-system :test-system test-system :testable)
-      (ces/mk-component :testable [test-component-fn])
-      (ces/mk-entity :player1 [:testable])
-      (ces/mk-entity :player2 [:testable])
+      (ces/mk-game-state [:scene :test-scene [:test-system]]
+                         [:system :test-system test-system :testable]
+                         [:component :testable [test-component-fn]]
+                         [:entity :player1 [:testable]]
+                         [:entity :player2 [:testable]])
       (game-loop :test-scene 0)))
 ```
 
