@@ -1,30 +1,9 @@
 (ns chocolatier.core
-  (:use [chocolatier.utils.logging :only [debug error]])
   (:require [dommy.core :as dom]
+            [chocolatier.utils.logging :refer [debug error]]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.input :refer [input-system]]
-            [chocolatier.engine.systems.user-input :refer [user-input-system]]
-            [chocolatier.engine.systems.render :refer [render-system]]
-            [chocolatier.engine.systems.animation :refer [animation-system]]
-            [chocolatier.engine.systems.collision :refer [broad-collision-system
-                                                          narrow-collision-system]]
-            [chocolatier.engine.systems.tiles :refer [tile-system load-tilemap mk-tiles-from-tilemap!]]
-            [chocolatier.engine.systems.events :refer [event-system
-                                                       init-events-system]]
-            [chocolatier.engine.systems.debug :refer [debug-collision-system]]
-            [chocolatier.engine.systems.movement :refer [movement-system]]
-            [chocolatier.engine.systems.ai :refer [ai-system]]
-            [chocolatier.engine.systems.replay :refer [replay-system]]
-            [chocolatier.engine.components.animateable :refer [animate]]
-            [chocolatier.engine.components.controllable :refer [react-to-input
-                                                                include-input-state]]
-            [chocolatier.engine.components.debuggable :refer [draw-collision-zone
-                                                              include-moveable-state-and-stage]]
-            [chocolatier.engine.components.moveable :refer [move]]
-            [chocolatier.engine.components.ai :refer [behavior
-                                                      include-player-and-moveable-state]]
-            [chocolatier.entities.player :refer [create-player!]]
-            [chocolatier.entities.enemy :refer [create-enemy!]])
+            [chocolatier.game :refer [init-state]]
+            [chocolatier.engine.systems.tiles :refer [load-tilemap]])
   (:use-macros [dommy.macros :only [node sel sel1]]
                [chocolatier.macros :only [forloop local >> <<]]))
 
@@ -74,83 +53,23 @@
   (.setInterval js/window f (/ 1000 n))
   #(.clearInterval f (/ 1000 n)))
 
-(defn -start-game! [tilemap]
+(defn -start-game!
+  "Starts the game loop. This should be called only once all assets are loaded"
+  [tilemap]
   (let [;; TODO reset the game height on screen resize
         width 800 ;; (aget js/window "innerWidth")
         height 600 ;; (aget js/window "innerHeight")
         frame-rate 60
-        _ (debug "Setting renderer to" width "x" height "frame-rate" frame-rate)
         stage (new js/PIXI.Stage)
         renderer (new js/PIXI.CanvasRenderer width height nil true)
         init-timestamp (timestamp)
         init-duration 0
         step (/ 1 frame-rate)
-        rendering-engine {:renderer renderer :stage stage}
-        mk-player-1 (create-player! stage :player1 20 20 0 0 20)
-        mk-tiles! (mk-tiles-from-tilemap! stage tilemap)
-        init-state (-> {:game {:rendering-engine rendering-engine}
-                        :state {:events {:queue {}}}}
-                       ;; A collection of keys representing systems
-                       ;; that will be called in sequential order
-                       (ces/mk-scene :default [:input
-                                               :user-input
-                                               :ai
-                                               :broad-collision
-                                               :narrow-collision
-                                               :collision-debug
-                                               :movement
-                                               :tiles
-                                               :replay
-                                               :animate
-                                               :render
-                                               :events])
-                       ;; Global event system broadcaster
-                       (init-events-system)
-                       (ces/mk-system :events event-system)
-                       ;; Updates the user input from keyboard,
-                       ;; standalone system with no components
-                       (ces/mk-system :input input-system)
-                       ;; React to user input
-                       (ces/mk-system :user-input user-input-system :controllable)
-                       (ces/mk-component :controllable
-                                         ;; Calls react-to-input
-                                         ;; with additional argument
-                                         ;; for the current input
-                                         ;; state 
-                                         [[react-to-input {:args-fn include-input-state}]])
-                       ;; Draw tile map in background
-                       (ces/mk-system :tiles tile-system)
-                       ;; Initial tile map
-                       (mk-tiles!)
-                       ;; Render system for drawing sprites
-                       (ces/mk-system :render render-system)
-                       ;; Animation system for animating sprites
-                       (ces/mk-system :animate animation-system :animateable)
-                       (ces/mk-component :animateable [animate])
-                       ;; Collision detection system
-                       (ces/mk-system :broad-collision (broad-collision-system (/ width 20)))
-                       (ces/mk-system :narrow-collision narrow-collision-system)
-                       (ces/mk-system :collision-debug debug-collision-system :collision-debuggable)
-                       (ces/mk-component :collision-debuggable [[draw-collision-zone
-                                                                 {:args-fn include-moveable-state-and-stage}]])
-                       (ces/mk-system :movement movement-system :moveable)
-                       (ces/mk-component :moveable [move])
-                       (ces/mk-system :ai ai-system :ai)
-                       (ces/mk-component :ai [[behavior
-                                               {:args-fn include-player-and-moveable-state}]])                       
-                       ;; Replay game state on user input
-                       (ces/mk-system :replay (replay-system 14 50))
-                       ;; Player 1 entity
-                       (mk-player-1)
-                       ;; Other entities
-                       (ces/iter-fns
-                        (vec
-                         (for [i (range 25)]
-                           #(create-enemy! % stage (keyword (gensym)) 20)))))]
-    ;; Append the canvas to the dom    
-    (dom/append! (sel1 :body) (.-view renderer))             
+        state (init-state renderer stage width height tilemap)]
+    ;; Append the canvas to the dom
+    (dom/append! (sel1 :body) (.-view renderer))
     ;; Start the game loop
-    (game-loop init-state :default)))
+    (game-loop state :default)))
 
 (defn start-game!
   "Load all assets and call the tilemap loader. This is some async wankery to

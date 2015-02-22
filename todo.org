@@ -27,8 +27,9 @@ CLOSED: [2015-01-18 Sun 13:52]
 - [X] Replay game state (go back to old game state on the fly)
 - [X] Animations (sprites)
 
-* TODO Version 0.2.0 [1/7]
+* TODO Version 0.2.0 [1/8]
 - [X] Update to version of clojurescipt and Austin plugin
+- [ ] Sound system 
 - [ ] Tile collision
 - [ ] Map to Screen coords
 - [ ] Text rendering component
@@ -38,10 +39,16 @@ CLOSED: [2015-01-18 Sun 13:52]
   - [ ] Reducers?
   - [ ] core.async to run systems async when marked as async-able
 - [ ] Game loop macro
-- [ ] Helper macros for entity creation
-  - [ ] Initialize state
+- [-] Helper macros/functions for declaring the game state
+  - [X] Initialize state
   - [ ] Initialize components
   - [ ] Subscribe events
+
+* TODO Game loop helpers <2015-02-22 Sun>
+Make it easier to set up a game loop and constructing inital state
+- [X] Game state helper
+  Declare the function for a system, components and it will auto call mk-system/mk-component on them
+- [ ] Game loop higher order function
 * DONE Update to latest version of austin and cljs <2015-02-21 Sat>
 CLOSED: [2015-02-21 Sat 11:19]
 - Austin 1.6 has issues so need to use version 1.7-SNAPSHOT or the repl doesn't work
@@ -54,11 +61,14 @@ CLOSED: [2015-02-21 Sat 11:19]
   - CES operations?
 - [X] Change all systems to use transients 
 - [ ] Change collision detection to use transients of js arrays to do collision detection
-* TODO "Threads" using core.async to run systems async based on deps
+* DONE "Threads" using core.async to run systems async based on deps <2015-02-21 Sat>
+CLOSED: [2015-02-22 Sun 15:50]
+- Branch: async-systems
 - Example: 
   - Given dependency tree [[a b] [a c] [c d]]
   - Run in this order where a vector denotes async operation [a, [b c], d]
 - Probably need to cache this when game loop is initialized and recalc anytime a new system is added/removed
+- Turned out to be much slower due to overhead of core.async since these are all cpu bound tasks there is no benefit to async'ing them
 
 * TODO input->interaction is non-deterministic
 FIX The output of the interaction hashmap is non-deterministic

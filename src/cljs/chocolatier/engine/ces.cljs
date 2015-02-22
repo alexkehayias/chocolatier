@@ -86,9 +86,11 @@
         (filter #(boolean (some (set component-ids) (second %))) entities)))
 
 (defn mk-entity
-  "Adds entity with uid that has component-ids into state"
-  [state uid component-ids]
-  (assoc-in state [:entities uid] component-ids))
+  "Adds entity with uid that has component-ids into state. Optionally pass
+   in init state and it will be merged in"
+  [state uid component-ids & [init-state]]
+  (deep-merge (assoc-in state [:entities uid] component-ids)
+              (or init-state {})))
 
 (defn get-component-fns
   [state component-id]
