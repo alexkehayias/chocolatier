@@ -53,8 +53,8 @@ The following example implements a simple game loop, system, component, and enti
       (ces/mk-game-state [:scene :test-scene [:test-system]]
                          [:system :test-system test-system :testable]
                          [:component :testable [test-component-fn]]
-                         [:entity :player1 :components [:testable {:x 0 :y 0}]]
-                         [:entity :player2 :components [:testable {:x 0 :y 0]])
+                         [:entity :player1 :components [[:testable {:x 0 :y 0}]]]
+                         [:entity :player2 :components [[:testable {:x 10 :y 10]])
       (game-loop :test-scene 0)))
 ```
 

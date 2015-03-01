@@ -47,7 +47,7 @@ CLOSED: [2015-01-18 Sun 13:52]
   - [X] Initialize entities
     - Subscribe events
     - Init component state
-
+* TODO FIX debuggable collision circle overlay is not centered correctly
 * TODO Game loop helpers <2015-02-22 Sun>
 Make it easier to set up a game loop and constructing inital state
 - [X] Game state helper
