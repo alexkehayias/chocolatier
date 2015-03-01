@@ -27,22 +27,26 @@ CLOSED: [2015-01-18 Sun 13:52]
 - [X] Replay game state (go back to old game state on the fly)
 - [X] Animations (sprites)
 
-* TODO Version 0.2.0 [1/8]
+* TODO Version 0.2.0 [2/8]
 - [X] Update to version of clojurescipt and Austin plugin
 - [ ] Sound system 
 - [ ] Tile collision
 - [ ] Map to Screen coords
 - [ ] Text rendering component
-- [ ] Optimization
+- [-] Optimization
   - [ ] Batch render sprites
     Move sprites to a new display object group and render all at once
   - [ ] Reducers?
-  - [ ] core.async to run systems async when marked as async-able
+    Investigate translating the game state transformations of systems and components as one giant reduction
+  - [X] core.async to run systems async when marked as async-able
+    - This turned out to be a very slow idea since just about everything so far is cpu bound
 - [ ] Game loop macro
-- [-] Helper macros/functions for declaring the game state
+- [X] Helper macros/functions for declaring the game state
   - [X] Initialize state
-  - [ ] Initialize components
-  - [ ] Subscribe events
+  - [X] Initialize components
+  - [X] Initialize entities
+    - Subscribe events
+    - Init component state
 
 * TODO Game loop helpers <2015-02-22 Sun>
 Make it easier to set up a game loop and constructing inital state

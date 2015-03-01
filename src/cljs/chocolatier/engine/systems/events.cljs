@@ -23,12 +23,28 @@
 (defn subscribe
   "Subscribe to the given event. 
 
-   TODO Optionally pass in a function that takes
-   an event and returns true or false to keep or discard it. Multiple subscribe
-   calls with the same event-id component-id entity-id will not duplicate
-   subscriptions."
+   Multiple subscribe calls with the same event-id component-id entity-id 
+   are idempotent.
+
+   Example:
+   Subscribe to the move change events of the entity :player1
+   (subscribe {} :player1 :move-change :player1)"
   [state entity-id & selectors]
   (update-in state [:state :events :subscriptions entity-id] conj selectors))
+
+(defn multi-subscribe
+  "Subscribe the entity to multiple events at once.
+
+   Example:
+   Subscribe to the move change and collision events of the entity :player1
+   (multi-subscribe {} :player1 [[:move-change :player1]
+                                 [:collision :player1]])"
+  [state entity-id selector-coll]
+  (if-let [selectors (first selector-coll)]
+    (recur (apply (partial subscribe state entity-id) selectors)
+           entity-id
+           (rest selector-coll))
+    state))
 
 (defn get-events
   "Returns a lazy sequence of events matching the selectors.

@@ -85,13 +85,6 @@
   (mapv first
         (filter #(boolean (some (set component-ids) (second %))) entities)))
 
-(defn mk-entity
-  "Adds entity with uid that has component-ids into state. Optionally pass
-   in init state and it will be merged in"
-  [state uid component-ids & [init-state]]
-  (deep-merge (assoc-in state [:entities uid] component-ids)
-              (or init-state {})))
-
 (defn get-component-fns
   [state component-id]
   (or (get-in state [:components component-id :fns])
@@ -237,3 +230,38 @@
                     (mk-system-fn f component-id)
                     (mk-system-fn f))]
     (assoc-in state [:systems uid] system-fn)))
+
+(defn mk-entity
+  "Adds entity with uid that has component-ids into state. Optionally pass
+   in init state and it will be merged in
+
+   Component specs:
+   A collection of component IDs and/or 2 item vectors of the component ID
+   and hashmap of component-state.
+   e.g [[:moveable {:x 0 :y 0}] :controllable]
+
+   Subscription specs:
+   A collection of event selectors. See systems.events.subscribe for more.
+   e.g [[:player :move :player2]]
+
+   Example:
+   Create an entity with id :player1 with components and subscriptions.
+   (mk-entity {} 
+              :player1
+              :components [:controllable
+                           [:collidable {:hit-radius 10}] 
+                           :collision-debuggable
+                           [:moveable {:x 0 :y 0}]]
+              :subscriptions [[:player1 :move-change :player1]
+                              [:player1 :collision :player1]
+                              [:player1 :move :player1]])"
+  [state uid & {:keys [components subscriptions]
+                :or {components [] subscriptions []}}]
+  (let [;; Add in all the components
+        state (reduce #(if (vector? %2)
+                         (-> (update-in %1 [:entities uid] conj (first %2))
+                             (mk-component-state (first %2) uid (second %2)))
+                         (update-in %1 [:entities uid] conj %2))
+                      state
+                      components)]
+    (ev/multi-subscribe state uid subscriptions)))

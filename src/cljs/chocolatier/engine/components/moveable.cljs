@@ -6,8 +6,8 @@
 (defn mk-moveable-state
   "Returns a hashmap of updated state with all required fields for the moveable
    component state"
-  [state entity-id pos-x pos-y]
-  (ces/mk-component-state state :moveable entity-id {:pos-x pos-x :pos-y pos-y}))
+  [pos-x pos-y]
+  {:pos-x pos-x :pos-y pos-y})
 
 (defn move
   "Check if there is an input-change, collision events, and calculates the
