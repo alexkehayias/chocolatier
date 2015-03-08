@@ -31,6 +31,7 @@
   [renderer stage width height tilemap]
   (mk-game-state
    {}
+   :default
    [:custom (fn [state]
               (assoc-in state [:game :rendering-engine]
                         {:renderer renderer :stage stage}))]

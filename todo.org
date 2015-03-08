@@ -48,16 +48,19 @@ CLOSED: [2015-01-18 Sun 13:52]
     - Subscribe events
     - Init component state
 * TODO FIX debuggable collision circle overlay is not centered correctly
-* TODO Game loop helpers <2015-02-22 Sun>
+* DONE Game loop helpers <2015-02-22 Sun>
+CLOSED: [2015-03-07 Sat 21:22]
 Make it easier to set up a game loop and constructing inital state
 - [X] Game state helper
   Declare the function for a system, components and it will auto call mk-system/mk-component on them
-- [ ] Game loop higher order function
+- [X] Game loop helper
 * DONE Update to latest version of austin and cljs <2015-02-21 Sat>
 CLOSED: [2015-02-21 Sat 11:19]
 - Austin 1.6 has issues so need to use version 1.7-SNAPSHOT or the repl doesn't work
 - Had to update lein cljsbuild because it was to old to work with later cljs
 - Now using the cljs required by core async latest
+* TODO Benchmark for game engine performance <2015-03-07 Sat>
+Use it to compare different implementations of the core game functions and optimize
 * TODO Use transients for local mutability <2015-02-01 Sun>
 - [X] Figure out where we can use transients instead of normal hashmap operations
   - Systems?

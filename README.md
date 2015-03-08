@@ -4,7 +4,7 @@ A work-in-progress web game engine for repl driven game development written in C
 
 ## Usage
 
-1. Load `chocolatier.server` to start the test server and call `(restart-server!)`
+1. Load `chocolatier.server` to start the test server and call `(restart-server!)`. NOTE: the latest version of clojurescript throws a ton of warnings now so ignore them for now.
 2. Once the browser repl loads, go to http://127.0.0.1:9000/app
 3. Load the namespace `chocolatier.core` and call `(restart-game!)`
 
@@ -14,9 +14,9 @@ The game engine implemented using a modified entity component system which organ
 
 Organization:
 
-1. Scene - collection of system functions called by the game loop (main menu, random encounter, world map, etc)
-2. System - functions that operates on a component and returns updated game state. Examples: input, rendering, collision detection
-3. Components - hold state and component functions relating to a certain aspect. Polymorphism can be used to dispatch on entity IDs (or however else you want) for finer control. Examples: moveable, user controllable, collidable, destructable
+1. Scene - collection of system labels to be looked up and called by the game loop (main menu, random encounter, world map, etc)
+2. System - functions that operates on a component (or not) and returns updated game state. Examples: input, rendering, collision detection
+3. Components - hold state and component functions relating to a certain aspect. Polymorphism can be used to dispatch on entity IDs (or however else you want) for finer control using multimethods. Examples: moveable, user controllable, collidable, destructable
 4. Entities - unique IDs that have a list of components to they participate in. Examples: `{:player1 [:controllable :moveable :destructable]}`
 
 ### Example
@@ -25,14 +25,15 @@ The following example implements a simple game loop, system, component, and enti
 
 ```clojure
 (ns my-ns
-  (:require [chocolatier.engine.ces :as ces]))
+  (:require [chocolatier.engine.ces :as ces])
 
 (defn game-loop
   "Simple game loop that runs 10 times and returns the state after 10 frames."
-  [state scene-id frame-count]
+  [state frame-count]
   (if (> frame-count 10)
     state
-    (let [fns (ces/get-system-fns state (-> state :scenes scene-id))
+    (let [scene-id (get-in state [:game :scene-id])
+          fns (ces/get-system-fns state (-> state :scenes scene-id))
           updated-state (ces/iter-fns state fns)]
       (recur updated-state scene-id (inc frame-count)))))
 
@@ -50,12 +51,17 @@ The following example implements a simple game loop, system, component, and enti
   "Test the entire CES implementation with a system that changes component state"
   []
   (-> {}
-      (ces/mk-game-state [:scene :test-scene [:test-system]]
+      (ces/mk-game-state :test-scene
+                         [:scene :test-scene [:test-system]]
                          [:system :test-system test-system :testable]
                          [:component :testable [test-component-fn]]
                          [:entity :player1 :components [[:testable {:x 0 :y 0}]]]
                          [:entity :player2 :components [[:testable {:x 10 :y 10]])
-      (game-loop :test-scene 0)))
+      (game-loop 0)))
+      
+;; This will run 10 times and return the final state
+(my-game)
+
 ```
 
 ## State
@@ -97,7 +103,7 @@ The subscribed component will receive the event in it's inbox (third arg to comp
 
 ### Hierarchical Events
 
-Events use selectors (a vector of keywords) to determine which events are returned. This allows specificity in messages returned. For example, an event emitted with selectors `:a :b :c` will be returned to all subscribers of `:b` and `:a`. This can be useful for aggregating messages for use with a debug system that will overlay information about all the intended movements of all entities.
+Events use selectors (a vector of keywords) to determine which events are returned. This allows specificity in messages returned. For example, an event emitted with selectors `:a :b :c` will be returned to all subscribers of `:b` and `:a`. 
 
 ## Tilemaps
 
@@ -108,6 +114,10 @@ Tilemaps require all assets to be loaded (tileset images) to prevent any race co
 ## Running Tests
 
 Currently does not support `lein-cljsbuild` tests. Instead, load a namespace in a brepl and use the `test-ns` macro to run the tests.
+
+## Performance
+
+Where appropriate, transient state should be used when operating on large collections and hashmaps. See `chocolatier.macros` in the `clj` source directory for helpers with transient state.
 
 ## License
 
