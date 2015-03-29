@@ -59,6 +59,9 @@ CLOSED: [2015-02-21 Sat 11:19]
 - Austin 1.6 has issues so need to use version 1.7-SNAPSHOT or the repl doesn't work
 - Had to update lein cljsbuild because it was to old to work with later cljs
 - Now using the cljs required by core async latest
+* TODO Live reloading during running game loop for any function change
+Looks like when the game loop is running the functions are immutable except in the case of multimethods so re evaluating a function does not guarantee that it will be used by the game engine.
+- Update the lookups of system/component fns inside the game loop to lookup by reference rather than by value??
 * TODO Benchmark for game engine performance <2015-03-07 Sat>
 Use it to compare different implementations of the core game functions and optimize
 * TODO Use transients for local mutability <2015-02-01 Sun>

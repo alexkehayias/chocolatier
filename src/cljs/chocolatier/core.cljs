@@ -4,7 +4,7 @@
             [chocolatier.game :refer [init-state]]
             [chocolatier.engine.systems.tiles :refer [load-tilemap]]
             [chocolatier.engine.core :refer [game-loop *running* *state*]])
-  (:use-macros [dommy.macros :only [node sel sel1]]))
+  (:use-macros [dommy.core :only [sel sel1]]))
 
 
 (defn -start-game!

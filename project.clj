@@ -11,9 +11,8 @@
                  [enlive "1.1.1"]
 
                  ;; cljs
-                 [org.clojure/clojurescript "0.0-2816"]
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]                 
-                 [prismatic/dommy "0.1.1"]
+                 [org.clojure/clojurescript "0.0-3126"]
+                 [prismatic/dommy "1.0.0"]
                  [com.cemerick/clojurescript.test "0.3.1"]]
   :profiles {:dev {:plugins [[com.cemerick/austin "0.1.7-SNAPSHOT"]
                              [lein-cljsbuild "1.0.6-SNAPSHOT"]]
