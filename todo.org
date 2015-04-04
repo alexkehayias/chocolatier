@@ -54,6 +54,12 @@ Use this to test any pervasive changes to the rest of the framework related to p
 - [X] Calculate the number of frames per second the engine can do
 - [X] Add best of calculation
 - [X] Add basic stats
+* DONE Remove use of filter to get a list of entities that have a component
+CLOSED: [2015-04-04 Sat 14:41]
+- Currently stored as :entitiy -> [:c1 :c2]
+- Reverse it so that when an entity is created it is indexed to a direct lookup path i.e :component [:e1 :e2]
+- Can use keys on :state -> :c1 to get all entities in one shot without a fitler then map
+
 * TODO FIX debuggable collision circle overlay is not centered correctly
 * DONE Game loop helpers <2015-02-22 Sun>
 CLOSED: [2015-03-07 Sat 21:22]

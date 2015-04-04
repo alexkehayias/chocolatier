@@ -75,13 +75,14 @@
 
 (defn entities-with-component
   "Takes a hashmap and returns all keys whose values contain component-id"
-  [entities component-id]
-  (mapv first
-        (filter #(boolean (some #{component-id} (second %))) entities)))
+  [state component-id]
+  (vec (keys (get-in state [:state component-id]))))
 
 (defn entities-with-multi-components
   "Takes a hashmap and returns all keys whose values has all component-ids"
   [entities component-ids]
+  ;; TODO replace with finding the union of sets from entities with
+  ;; all component ids
   (mapv first
         (filter #(boolean (some (set component-ids) (second %))) entities)))
 
@@ -210,7 +211,7 @@
      (f state)))
   ([f component-id]
    (fn [state]
-     (let [entities (entities-with-component (:entities state) component-id)
+     (let [entities (entities-with-component state component-id)
            component-fns (get-component-fns state component-id)]
        (f state component-fns entities))))
   ([f component-id & more-component-ids]
@@ -259,9 +260,16 @@
                 :or {components [] subscriptions []}}]
   (let [;; Add in all the components
         state (reduce #(if (vector? %2)
+                         ;; If there was a vector passed in then the
+                         ;; second item is the initial component state
                          (-> (update-in %1 [:entities uid] conj (first %2))
                              (mk-component-state (first %2) uid (second %2)))
-                         (update-in %1 [:entities uid] conj %2))
+                         ;; Always initialize component state with an
+                         ;; empty hashmap. If they do not have any
+                         ;; component state they will not be found by
+                         ;; ces/entities-with-component
+                         (-> (update-in %1 [:entities uid] conj %2)
+                             (mk-component-state %2 uid {})))
                       state
                       components)]
     (ev/multi-subscribe state uid subscriptions)))

@@ -13,11 +13,8 @@
   (let [;; TODO reset the game height on screen resize
         width 800 ;; (aget js/window "innerWidth")
         height 600 ;; (aget js/window "innerHeight")
-        frame-rate 60
         stage (new js/PIXI.Stage)
         renderer (new js/PIXI.CanvasRenderer width height nil true)
-        init-duration 0
-        step (/ 1 frame-rate)
         state (init-state renderer stage width height tilemap)]
     ;; Append the canvas to the dom
     (dom/append! (sel1 :body) (.-view renderer))
