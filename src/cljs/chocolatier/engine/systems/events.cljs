@@ -1,6 +1,5 @@
 (ns chocolatier.engine.systems.events
-  (:require [chocolatier.utils.logging :refer [debug]]
-            [chocolatier.engine.utils.watchers :refer [seq-watcher]]))
+  (:require [chocolatier.utils.logging :refer [debug]]))
 
 ;; Anyone can send a message to the event bus
 ;; The event system distributes the events to any subscribers into
