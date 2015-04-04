@@ -42,9 +42,12 @@
 
    Example usage:
    (mk-game-state {} :default
+                     [:scene :default [:s1]]
                      [:component :c1 [f1]]
-                     [:system :my-system f2 :c1]
-                     [:component :c2 [[f3 {:args-fn f4}] f5]])"
+                     [:system :s1 f2 :c1]
+                     [:component :c2 [[f3 {:args-fn f4}] f5]]
+                     [:entity :e1 :components [:c2] 
+                                  :subscriptions [[:e1 :ev1]]])"
   [state init-scene-id & specs]
   (reduce (fn [accum args] (mk-state accum args))
           (assoc-in state [:game :scene-id] init-scene-id)
