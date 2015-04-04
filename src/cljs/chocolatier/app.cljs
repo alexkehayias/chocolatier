@@ -1,6 +1,6 @@
 (ns chocolatier.app
   (:use [chocolatier.utils.logging :only [debug info warn error]])
-  (:use-macros [dommy.macros :only [node sel sel1]])
+  (:use-macros [dommy.core :only [sel sel1]])
   (:require [clojure.browser.repl :as repl]
             [dommy.core :as dom]
             [chocolatier.core :refer [restart-game!]]))

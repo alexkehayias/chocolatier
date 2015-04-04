@@ -47,6 +47,9 @@ CLOSED: [2015-01-18 Sun 13:52]
   - [X] Initialize entities
     - Subscribe events
     - Init component state
+* TODO Benchmarks for the engine <2015-04-04 Sat>
+Use this to test any pervasive changes to the rest of the framework related to performance
+- [ ] Calculate the number of frames per second the engine can do
 * TODO FIX debuggable collision circle overlay is not centered correctly
 * DONE Game loop helpers <2015-02-22 Sun>
 CLOSED: [2015-03-07 Sat 21:22]
@@ -59,6 +62,12 @@ CLOSED: [2015-02-21 Sat 11:19]
 - Austin 1.6 has issues so need to use version 1.7-SNAPSHOT or the repl doesn't work
 - Had to update lein cljsbuild because it was to old to work with later cljs
 - Now using the cljs required by core async latest
+* TODO Replace piggieback with built in browser repl <2015-03-29 Sun>
+Use the built in browser repl setup https://github.com/clojure/clojurescript/wiki/Quick-Start#browser-repl
+- [ ] Make sure it works with cider
+- [ ] Make sure it works with lein repl
+* TODO Add pixijs as a foreign dependency <2015-03-29 Sun>
+https://github.com/clojure/clojurescript/wiki/Foreign-Dependencies
 * TODO Live reloading during running game loop for any function change
 Looks like when the game loop is running the functions are immutable except in the case of multimethods so re evaluating a function does not guarantee that it will be used by the game engine.
 - Update the lookups of system/component fns inside the game loop to lookup by reference rather than by value??
