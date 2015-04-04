@@ -4,9 +4,22 @@ A work-in-progress web game engine for repl driven game development written in C
 
 ## Usage
 
-1. Load `chocolatier.server` to start the test server and call `(restart-server!)`. NOTE: the latest version of clojurescript throws a ton of warnings now so ignore them for now.
-2. Once the browser repl loads, go to http://127.0.0.1:9000/app
-3. Load the namespace `chocolatier.core` and call `(restart-game!)`
+```clojure
+lein repl
+;; Wait for the repl to start
+(in-ns 'chocolatier.server)
+(load-file "chocolatier.server")
+;; Start the development server
+(restart-server!)
+;; Wait for warnings to finish
+;; Hit enter/return
+;; Go to http://127.0.0.1:9000/app
+;; Once it finishes loading you have a browser connected repl
+;; Launch the demo:
+(in-ns 'chocolatier.core)
+(load-file "chocolatier.core")
+(restart-game!)
+```
 
 ## Entity Component System
 
@@ -117,7 +130,18 @@ Currently does not support `lein-cljsbuild` tests. Instead, load a namespace in 
 
 ## Performance
 
-Where appropriate, transient state should be used when operating on large collections and hashmaps. See `chocolatier.macros` in the `clj` source directory for helpers with transient state.
+Performance tuning is an ongoing process and the project has not been thoroughly optimized. ClojureScript presents challenges for optimization including garbage collection, persistent data structures, and functional paradigms that js engines have difficulty optimizing.
+
+Where appropriate, transient state should be used when operating on large collections and hashmaps for better performance. See `chocolatier.macros` in the `clj` source directory for helpers with transient state.
+
+Next steps:
+
+- Comprehensive benchmarking and profiling
+- Introduce macros to rewrite systems/component/event functions to work better with js engines without sacrificing composability
+
+## Benchmarks
+
+Naive frames per second benchmarks are available at `chocolatier.engine.benchmarks` for measuring the performance of the framework.
 
 ## License
 
