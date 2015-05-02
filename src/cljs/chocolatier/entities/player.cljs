@@ -14,7 +14,7 @@
   (fn [state]
     (info "Creating player" pos-x pos-y map-x map-y hit-radius)
     (let [animation-state (mk-animateable-state stage
-                                                "static/images/test_spritesheet.png"
+                                                "/img/test_spritesheet.png"
                                                 pos-x pos-y
                                                 :stand-down
                                                 [:stand-up 832 1344 64 64 8 0 1]

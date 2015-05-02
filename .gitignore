@@ -16,8 +16,8 @@ pom.xml.asc
 .nrepl-port
 .emacs.*
 /out
-/resources/public/scripts/app.js
-/resources/public/scripts/app.js.map
-/resources/public/scripts/*
+/resources/public/js/compiled/*
+/figwheel_server.log
 !pixi.dev.js
 /resources/assets
+/resources

@@ -1,10 +1,9 @@
-(ns chocolatier.core
-  (:require [dommy.core :as dom]
+(ns ^:figwheel-always chocolatier.core
+  (:require [dommy.core :as dom :refer-macros [sel sel1]]
             [chocolatier.utils.logging :refer [debug error]]
             [chocolatier.game :refer [init-state]]
             [chocolatier.engine.systems.tiles :refer [load-tilemap]]
-            [chocolatier.engine.core :refer [game-loop *running* *state*]])
-  (:use-macros [dommy.core :only [sel sel1]]))
+            [chocolatier.engine.core :refer [game-loop *running* *state*]]))
 
 
 (defn -start-game!
@@ -27,16 +26,16 @@
   []
   (reset! *running* true)
   (let [;; PIXI requires a js array not a persistent vector
-        assets (array "/static/images/bunny.png"
-                      "/static/images/monster.png"
-                      "/static/images/tile.png"
-                      "/static/images/snowtiles_1.gif"
-                      "static/images/test_spritesheet.png")
+        assets (array "/img/bunny.png"
+                      "/img/monster.png"
+                      "/img/tile.png"
+                      "/img/snowtiles_1.gif"
+                      "/img/test_spritesheet.png")
         ;; Async load all the assets and start the game on complete
         asset-loader (new js/PIXI.AssetLoader assets)]
     (aset asset-loader "onComplete"
           ;; Async load the tilemap, on callback start the game
-          #(load-tilemap "/static/tilemaps/snow_town_tile_map_v1.json"
+          #(load-tilemap "/tilemaps/snow_town_tile_map_v1.json"
                          -start-game!))
     (.load asset-loader)))
 

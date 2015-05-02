@@ -1,5 +1,6 @@
 (ns chocolatier.engine.systems.tiles
-  (:require [chocolatier.utils.logging :as log]
+  (:require [goog.net.XhrIo :as xhr]
+            [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.pixi :as pixi]))
 
@@ -146,9 +147,9 @@
   "Async load a json tilemap at the url. Calls callback function with the
    tilemap as a hashmap"
   [url callback]
-  (.send goog.net.XhrIo url
-         #(callback (js->clj (.getResponseJson (.-target %))
-                             :keywordize-keys true))))
+  (xhr/send url #(callback
+                  (js->clj (.getResponseJson (.-target %))
+                           :keywordize-keys true))))
 
 (defn tile-system
   "Update the tile map"

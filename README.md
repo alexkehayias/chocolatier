@@ -4,22 +4,11 @@ A work-in-progress web game engine for repl driven game development written in C
 
 ## Usage
 
-```clojure
-lein repl
-;; Wait for the repl to start
-(in-ns 'chocolatier.server)
-(load-file "chocolatier.server")
-;; Start the development server
-(restart-server!)
-;; Wait for warnings to finish
-;; Hit enter/return
-;; Go to http://127.0.0.1:9000/app
-;; Once it finishes loading you have a browser connected repl
-;; Launch the demo:
-(in-ns 'chocolatier.core)
-(load-file "chocolatier.core")
-(restart-game!)
-```
+The following instructions will start a browser connected repl and launch the demo game:
+
+1. Start the browser REPL server `lein figwheel`
+2. Navigate your browser to `http://127.0.0.1:3449` to connect to the REPL
+3. In the REPL, start the game `(in-ns 'chocolatier.core) (restart-game!)`
 
 ## Entity Component System
 

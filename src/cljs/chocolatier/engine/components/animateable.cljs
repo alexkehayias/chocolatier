@@ -84,7 +84,7 @@
 
    Example:
    (-mk-animation-state stage
-                        \"static/images/my-spritesheet.png\" 
+                        \"/img/my-spritesheet.png\" 
                         0 0
                         :walk
                         [:walk 10 10 2 2 0 0 5]

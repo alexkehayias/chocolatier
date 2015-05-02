@@ -6,7 +6,7 @@
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]))
 
-(def texture (js/PIXI.Texture.fromImage "static/images/bunny.png"))
+(def texture (js/PIXI.Texture.fromImage "/img/bunny.png"))
 
 (defn create-enemy!
   "Create a enemy by initializing some component state and adding the 
@@ -17,7 +17,7 @@
         pos-x (* 1000 (js/Math.random))
         pos-y (* 1000 (js/Math.random))
         animation-state (mk-animateable-state stage
-                                              "static/images/bunny.png"
+                                              "/img/bunny.png"
                                               pos-x pos-y
                                               :standing
                                               [:standing 26 37 26 37 0 0 1])
