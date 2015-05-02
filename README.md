@@ -8,7 +8,7 @@ The following instructions will start a browser connected repl and launch the de
 
 1. Start the browser REPL server `lein figwheel`
 2. Navigate your browser to `http://127.0.0.1:3449` to connect to the REPL
-3. In the REPL, start the game `(in-ns 'chocolatier.core) (restart-game!)`
+3. In the REPL, change namespaces `(in-ns 'chocolatier.core)` then start the game `(restart-game!)`
 
 ## Entity Component System
 

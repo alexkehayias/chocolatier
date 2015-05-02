@@ -18,6 +18,5 @@ pom.xml.asc
 /out
 /resources/public/js/compiled/*
 /figwheel_server.log
-!pixi.dev.js
 /resources/assets
-/resources
+!pixi.js
