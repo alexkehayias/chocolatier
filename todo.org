@@ -47,6 +47,7 @@ CLOSED: [2015-01-18 Sun 13:52]
   - [X] Initialize entities
     - Subscribe events
     - Init component state
+* TODO Audio component
 * DONE Benchmarks for the engine <2015-04-04 Sat>
 CLOSED: [2015-04-04 Sat 13:29]
 Use this to test any pervasive changes to the rest of the framework related to performance
