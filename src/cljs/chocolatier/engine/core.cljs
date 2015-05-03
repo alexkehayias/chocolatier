@@ -101,3 +101,20 @@
     (if @*running*
       (request-animation #(game-loop (<< state)))
       (println "Game stopped"))))
+
+(defn game-loop-with-stats
+  [game-state stats-obj]
+  ;; Uses transient state for efficiency
+  (.begin stats-obj)
+  (let [scene-id (get-in game-state [:game :scene-id])
+        systems (ces/get-system-fns game-state (-> game-state :scenes scene-id))
+        state (local game-state)]
+    (forloop [[i 0] (< i (count systems)) (inc i)]
+             (>> state ((systems i) (<< state))))
+    ;; Copy the state into an atom so we can inspect while running
+    (reset! *state* (<< state))
+    (.end stats-obj)
+    ;; Recur
+    (if @*running*
+      (request-animation #(game-loop-with-stats (<< state) stats-obj))
+      (println "Game stopped"))))

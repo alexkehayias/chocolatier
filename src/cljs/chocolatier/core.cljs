@@ -3,7 +3,7 @@
             [chocolatier.utils.logging :refer [debug warn error]]
             [chocolatier.game :refer [init-state]]
             [chocolatier.engine.systems.tiles :refer [load-tilemap]]
-            [chocolatier.engine.core :refer [game-loop *running* *state*]]))
+            [chocolatier.engine.core :refer [game-loop-with-stats *running* *state*]]))
 
 
 (defn -start-game!
@@ -15,11 +15,20 @@
         stage (new js/PIXI.Container)
         options (clj->js {"transparent" true})
         renderer (new js/PIXI.autoDetectRenderer width height options)
+        stats-obj (new js/Stats)
         state (init-state renderer stage width height tilemap)]
+    
     ;; Append the canvas to the dom
     (dom/append! (sel1 :#main) (.-view renderer))
+    
+    ;; Position the stats module and append to dom
+    (set! (.. stats-obj -domElement -style -position) "absolute")
+    (set! (.. stats-obj -domElement -style -top) "0px")
+    (set! (.. stats-obj -domElement -style -left) "0px")
+    (dom/append! (sel1 :body) (.-domElement stats-obj))
+    
     ;; Start the game loop
-    (game-loop state)))
+    (game-loop-with-stats state stats-obj)))
 
 (defn start-game!
   "Load all assets and call the tilemap loader. This is some async wankery to
@@ -47,6 +56,8 @@
 
 (defn cleanup! []
   (try (dom/remove! (sel1 :canvas))
+       (catch js/Object e (warn (str e))))
+    (try (dom/remove! (sel1 :#stats))
        (catch js/Object e (warn (str e)))))
 
 (defn stop-game! []
