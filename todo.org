@@ -61,13 +61,16 @@ CLOSED: [2015-04-04 Sat 14:41]
 - Can use keys on :state -> :c1 to get all entities in one shot without a fitler then map
 * DONE Update to latest pixijs <2015-05-03 Sun>
 CLOSED: [2015-05-03 Sun 11:50]
+- Update to v3
+- Add as a submodule
 * TODO Gameloop macro to inline the entire program into one function block
 - Read this somewhere that referencing a ton of functions all over the place is not good for performance or garbage collection 
 - Write a macro that explodes all code into one massive function
 * TODO Eliminate unoptimized function calls in v8 due to needing dynamic lookup
 - Profiler says all the inner functions can not be optimized because the require a dynamic lookup and therefore can not be inlined by v8
 - [ ] Use macros to define a new function for each system/component instead of anonymous functions
-* TODO FIX debuggable collision circle overlay is not centered correctly
+* DONE FIX debuggable collision circle overlay is not centered correctly
+CLOSED: [2015-05-03 Sun 12:38]
 * DONE Game loop helpers <2015-02-22 Sun>
 CLOSED: [2015-03-07 Sat 21:22]
 Make it easier to set up a game loop and constructing inital state

@@ -9,7 +9,7 @@ The following instructions will start a browser connected repl and launch the de
 0. Clone the project and all submodules `git clone --recursive https://github.com/alexkehayias/chocolatier`
 1. Start the browser REPL server `lein figwheel`
 2. Navigate your browser to `http://127.0.0.1:3449` to connect to the REPL
-3. In the REPL, change namespaces `(in-ns 'chocolatier.core)` then start the game `(restart-game!)`
+3. In the REPL, change namespaces `(in-ns 'chocolatier.core)` then start the game `(restart-game!)`. This may take a few seconds to load assets and init WebGL (if your browser supports it).
 
 ## Entity Component System
 
