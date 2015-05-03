@@ -59,6 +59,8 @@ CLOSED: [2015-04-04 Sat 14:41]
 - Currently stored as :entitiy -> [:c1 :c2]
 - Reverse it so that when an entity is created it is indexed to a direct lookup path i.e :component [:e1 :e2]
 - Can use keys on :state -> :c1 to get all entities in one shot without a fitler then map
+* DONE Update to latest pixijs <2015-05-03 Sun>
+CLOSED: [2015-05-03 Sun 11:50]
 * TODO Gameloop macro to inline the entire program into one function block
 - Read this somewhere that referencing a ton of functions all over the place is not good for performance or garbage collection 
 - Write a macro that explodes all code into one massive function
