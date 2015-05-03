@@ -63,6 +63,8 @@ CLOSED: [2015-04-04 Sat 14:41]
 CLOSED: [2015-05-03 Sun 11:50]
 - Update to v3
 - Add as a submodule
+* TODO Add stats.js to track frame rates
+https://github.com/mrdoob/stats.js
 * TODO Gameloop macro to inline the entire program into one function block
 - Read this somewhere that referencing a ton of functions all over the place is not good for performance or garbage collection 
 - Write a macro that explodes all code into one massive function
