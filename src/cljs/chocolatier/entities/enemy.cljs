@@ -6,13 +6,13 @@
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]))
 
-(def texture (js/PIXI.Texture.fromImage "/img/bunny.png"))
 
 (defn create-enemy!
   "Create a enemy by initializing some component state and adding the 
    entity to state. Returns a function that takes a state hashmap."
   [state stage uid hit-radius]
-  (let [sprite (js/PIXI.Sprite. texture)
+  (let [texture (js/PIXI.Texture.fromImage "/img/bunny.png")
+        sprite (js/PIXI.Sprite. texture)
         [h w] (map #(aget sprite %) ["height" "width"])
         pos-x (* 1000 (js/Math.random))
         pos-y (* 1000 (js/Math.random))

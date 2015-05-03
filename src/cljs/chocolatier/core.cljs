@@ -33,12 +33,10 @@
     
     ;; This will throw if there is already an entry for it so catch
     ;; any exceptions and then call the callback
-    (try (.add js/PIXI.loader
-               "/img/bunny.png"
-               "/img/monster.png"
-               "/img/tile.png"
-               "/img/snowtiles_1.gif"
-               "/img/test_spritesheet.png")
+    (try (doto js/PIXI.loader
+           (.add "bunny" "/img/bunny.png")
+           (.add "tiles" "/img/snowtiles_1.gif")
+           (.add "spritesheet" "/img/test_spritesheet.png"))
          (catch js/Object e (do (warn (str e))
                                 (callback))))
 

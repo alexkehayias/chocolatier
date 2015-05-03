@@ -116,8 +116,4 @@
   (let [texture (.generateTexture container renderer)
         sprite (new js/PIXI.Sprite texture)]
     ;; This is a side-effect with no return value
-    ;; FIX this throws an error in pixi v3
-    (add-child! stage sprite)
-
-    
-    ))
+    (add-child! stage sprite)))
