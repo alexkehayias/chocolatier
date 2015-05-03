@@ -19,8 +19,3 @@ pom.xml.asc
 /resources/public/js/compiled/*
 /figwheel_server.log
 /resources/assets
-/resources/public/vendor/js/howler.js/*
-!howler.min.js
-/resources/public/vendor/js/pixi.js/*
-/resources/public/vendor/js/pixi.js/bin/*
-!pixi.js
