@@ -22,13 +22,13 @@
     graphic))
 
 (defn mk-stage []
-  (new js/PIXI.Stage))
+  (new js/PIXI.Container))
 
 (defn mk-renderer [width height]
   (new js/PIXI.CanvasRenderer width height nil true))
 
 (defn mk-asset-loader [image-urls assets]
-  (new js/PIXI.AssetLoader (apply array assets)))
+  (new js/PIXI.loaders.AssetLoader (apply array assets)))
 
 (defn mk-texture [image-location]
   (js/PIXI.Texture.fromImage image-location))
@@ -43,7 +43,9 @@
   "Set the frame of the sprite's spritesheet coords and dimensions
    Returns the updated sprite."
   [sprite x y w h]
-  (.setFrame (.-texture sprite) (new js/PIXI.Rectangle x y w h))
+  (let [texture (.-texture sprite)
+        bounds (new js/PIXI.Rectangle x y w h)]
+    (set! (.-frame texture) bounds))
   sprite)
 
 (defn circle
@@ -66,10 +68,10 @@
       (#(alter-obj! sprite "mask" %))))
 
 (defn mk-tiling-sprite [texture width height]
-  (js/PIXI.TilingSprite. texture width height))
+  (js/PIXI.extras.TilingSprite. texture width height))
 
 (defn mk-display-object-container []
-  (new js/PIXI.DisplayObjectContainer))
+  (new js/PIXI.Container))
 
 (defn mk-render-texture [w h]
   (new js/PIXI.RenderTexture w h))
@@ -110,8 +112,12 @@
 
 (defn render-from-object-container
   "Creates a texture from the sprites in container and renders them to the stage."
-  [stage container w h]
-  (let [texture (mk-render-texture w h)]
+  [renderer stage container w h]
+  (let [texture (.generateTexture container renderer)
+        sprite (new js/PIXI.Sprite texture)]
     ;; This is a side-effect with no return value
-    (.render texture container)
-    (add-child! stage (new js/PIXI.Sprite texture))))
+    ;; FIX this throws an error in pixi v3
+    (add-child! stage sprite)
+
+    
+    ))

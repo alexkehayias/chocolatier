@@ -64,7 +64,7 @@
     - tileset-h: number of tiles high in the tileset
     - tileset-w: number of tiles wide in the tileset
     - map-spec: a one dimensional array of integers"
-  [stage tileset-texture
+  [renderer stage tileset-texture
    map-w map-h
    tileset-w tileset-h
    tile-px-w tile-px-h
@@ -105,7 +105,8 @@
             (pixi/add-child! container (:sprite tile))
             (recur (rest tile-specs) (conj tiles tile)))
           (recur (rest tile-specs) tiles))
-        (do (pixi/render-from-object-container stage
+        (do (pixi/render-from-object-container renderer
+                                               stage
                                                container
                                                width-px
                                                height-px)
@@ -116,7 +117,7 @@
    Args:
    - spec: a json encoded map exported from Tiled see
      http://www.mapeditor.org/"
-  [stage tilemap]
+  [renderer stage tilemap]
   (fn [state]
     (let [{:keys [width
                   height
@@ -135,7 +136,8 @@
                   (if-let [l (first layers)]
                     (recur (rest layers)
                            (conj tiles
-                                 (create-tiles-from-spec! stage
+                                 (create-tiles-from-spec! renderer
+                                                          stage
                                                           tileset-texture
                                                           width height
                                                           tileset-width tileset-height
@@ -155,5 +157,6 @@
   "Update the tile map"
   [state]
   ;; TODO do something with tiles beyond drawing them once
-  (let [tiles (-> state :state :tiles)]
-    (assoc-in state [:state :tiles] tiles)))
+  ;; (let [tiles (-> state :state :tiles)]
+  ;;   (assoc-in state [:state :tiles] tiles))
+  state)

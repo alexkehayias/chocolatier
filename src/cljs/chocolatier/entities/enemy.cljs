@@ -22,7 +22,7 @@
                                               :standing
                                               [:standing 26 37 26 37 0 0 1])
         move-state (mk-moveable-state pos-x pos-y)
-        collision-state (mk-collidable-state 64 64 hit-radius)]
+        collision-state (mk-collidable-state 26 37 hit-radius)]
     ;; Mutate the sprite and stage
     (.addChild stage sprite)
     (ces/mk-entity state

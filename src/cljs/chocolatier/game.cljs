@@ -37,7 +37,7 @@
                         {:renderer renderer :stage stage}))]
    [:custom init-events-system]
    ;; Initial tile map
-   [:custom (mk-tiles-from-tilemap! stage tilemap)]
+   [:custom (mk-tiles-from-tilemap! renderer stage tilemap)]
    ;; Player 1 entity
    [:custom (create-player! stage :player1 20 20 0 0 20)]
    ;; Enemies
