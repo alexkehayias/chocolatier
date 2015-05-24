@@ -47,6 +47,17 @@ CLOSED: [2015-01-18 Sun 13:52]
   - [X] Initialize entities
     - Subscribe events
     - Init component state
+* TODO Static lookups for component and system function calls
+- What if we just wrap all the higher order fns with defs?
+- What if at the time of wiring we def everything or stick them the game state in a deftype?
+  - engine.core/mk-game-state
+  - Maybe ces/mk-component should def the functions then return the fully qualified names in the state hashmap
+  - We already have a static number keys for the game state and should not allow anything else
+    - scenes
+    - game
+    - systems
+    - components
+    - entities
 * DONE Benchmarks for the engine <2015-04-04 Sat>
 CLOSED: [2015-04-04 Sat 13:29]
 Use this to test any pervasive changes to the rest of the framework related to performance

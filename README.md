@@ -53,13 +53,14 @@ The following example implements a simple game loop, system, component, and enti
 (defn my-game
   "Test the entire CES implementation with a system that changes component state"
   []
-  (-> {}
-      (ces/mk-game-state :test-scene
-                         [:scene :test-scene [:test-system]]
-                         [:system :test-system test-system :testable]
-                         [:component :testable [test-component-fn]]
-                         [:entity :player1 :components [[:testable {:x 0 :y 0}]]]
-                         [:entity :player2 :components [[:testable {:x 10 :y 10]])
+  (-> 
+    (ces/mk-game-state {}
+                       :test-scene
+                       [:scene :test-scene [:test-system]]
+                       [:system :test-system test-system :testable]
+                       [:component :testable [test-component-fn]]
+                       [:entity :player1 :components [[:testable {:x 0 :y 0}]]]
+                       [:entity :player2 :components [[:testable {:x 10 :y 10]])
       (game-loop 0)))
       
 ;; This will run 10 times and return the final state
@@ -73,9 +74,7 @@ The game is represented as a hashmap and a collection of functions that transfor
 
 ## Browser Connected Repl (Brepl)
 
-A browser repl is automatically available when the server is started. This allows you to dynamically re-evaluate the code running in the browser without a page refresh. Keep in mind that by refreshing the page, if you are using a compiled js file, you will need to re-evaluate any code that you have changed or recompile the project `lein cljsbuild once`.
-
-Any changes to a running browser game take effect immediately on the next frame. Just about everything can be re-evaluated on the fly. For example, changing the moving rate of the player and evaluating the code in the browser repl will show the change in movement rate right away!
+A browser repl is automatically available when the server is started when using `lein figwheel`. This allows you to dynamically re-evaluate the code running in the browser without a page refresh. Static files can also watched and reload the game when changed. See the `figwheel` documentation for more.
 
 ## Cross-component communication
 

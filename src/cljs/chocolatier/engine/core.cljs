@@ -3,7 +3,7 @@
   (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
 
 (defmulti mk-state
-  "Returns a hasmap representing game state. Dispatches based on the
+  "Returns a hashmap representing game state. Dispatches based on the
    keyword of the first item in an arguments vector.
 
    Example:
