@@ -16,7 +16,25 @@
   (.mute js/Howler false)
   nil)
 
-;; Samples
+;; TODO add panning support https://github.com/goldfire/howler.js#methods
+(defn howl
+  "Returns an instance of Howl"
+  [sources & {:keys [autoplay loop volume callback rate pool sprite]
+              :or {volume 1.0
+                   autoplay false
+                   loop false
+                   callback nil
+                   rate 1.0
+                   pool 5
+                   sprite {}}}]
+  (new js/Howl (clj->js {"urls" sources
+                         "autoplay" autoplay
+                         "loop" loop
+                         "volume" volume
+                         "onend" callback
+                         "rate" rate
+                         "pool" 5
+                         "sprite" sprite})))
 
 (defn play
   "Plays a Howl instance. Optionally pass in a key for which \"audio sprite\" to play
@@ -33,6 +51,21 @@
     (.play howl-obj key)
     (.play howl-obj)))
 
+(defn stop
+  "Stops a Howl instance. Optionally pass in a key for which \"audio sprite\" to play
+
+   Example:
+   ;; Stop the whole sample
+   (stop (howl [\"/audio/samples/drip.mp3\"]))
+   ;; Stop a section of the sample offset by 1s with duration of 1s
+   (stop (howl [\"/audio/bonfire.mp3\"] 
+               :sprite {\"crackle\" [1000 1000]}) 
+        \"crackle\")"
+  [howl-obj & [key]]
+  (if key
+    (.stop howl-obj key)
+    (.stop howl-obj)))
+
 (defn play-multi
   "Play multiple sounds at the same time.
 
@@ -45,21 +78,3 @@
   (doseq [[howl & [key]] howl-coll]
     (play howl key)))
 
-(defn howl
-  "Returns an instance of Howl"
-  [sources & {:keys [autoplay loop volume callback rate pool sprite]
-              :or {volume 1.0
-                   autoplay false
-                   loop false
-                   callback nil
-                   rate 1.0
-                   pool 5
-                   sprite {}}}]
-  (new js/Howl (clj->js {"src" sources
-                         "autoplay" autoplay
-                         "loop" loop
-                         "volume" volume
-                         "onend" callback
-                         "rate" rate
-                         "pool" 5
-                         "sprite" sprite})))

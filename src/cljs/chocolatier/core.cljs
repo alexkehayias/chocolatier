@@ -3,20 +3,21 @@
             [chocolatier.utils.logging :refer [debug warn error]]
             [chocolatier.game :refer [init-state]]
             [chocolatier.engine.systems.tiles :refer [load-tilemap]]
+            [chocolatier.engine.systems.audio :refer [load-samples]]
             [chocolatier.engine.core :refer [game-loop-with-stats *running* *state*]]))
 
 
 (defn -start-game!
   "Starts the game loop. This should be called only once all assets are loaded"
-  [tilemap]
+  [tilemap samples-library]
   (let [;; TODO reset the game height on screen resize
         width 800 ;; (aget js/window "innerWidth")
         height 600 ;; (aget js/window "innerHeight")
         stage (new js/PIXI.Container)
         options (clj->js {"transparent" true})
-        renderer (new js/PIXI.autoDetectRenderer width height options)
+        renderer (new js/PIXI.CanvasRenderer width height options)
         stats-obj (new js/Stats)
-        state (init-state renderer stage width height tilemap)]
+        state (init-state renderer stage width height tilemap samples-library)]
     
     ;; Append the canvas to the dom
     (dom/append! (sel1 :#main) (.-view renderer))
@@ -35,9 +36,12 @@
    start the game."
   []
   (reset! *running* true)
+  ;; TODO GET RID OF THESE MOTHERFUCKING CALLBACKS FOR LOADING ASSETS
   (let [;; Once the assets are loaded, load the tilemap
-        callback #(load-tilemap "/tilemaps/snow_town_tile_map_v1.json"
-                                -start-game!)]
+        audio-callback #(load-samples "/audio/samples" [:drip]
+                                      (partial -start-game! %))
+        tiles-callback #(load-tilemap "/tilemaps/snow_town_tile_map_v1.json"
+                                      audio-callback)]
     ;; Async load all the assets and start the game on complete
     
     ;; This will throw if there is already an entry for it so catch
@@ -47,11 +51,11 @@
            (.add "tiles" "/img/snowtiles_1.gif")
            (.add "spritesheet" "/img/test_spritesheet.png"))
          (catch js/Object e (do (warn (str e))
-                                (callback))))
+                                (tiles-callback))))
 
     ;; Force the loading of assets and call the next callback
     (doto js/PIXI.loader
-      (.once "complete" callback)
+      (.once "complete" tiles-callback)
       (.load))))
 
 (defn cleanup! []

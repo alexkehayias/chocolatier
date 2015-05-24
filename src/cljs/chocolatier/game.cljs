@@ -10,6 +10,7 @@
             [chocolatier.engine.systems.tiles :refer [tile-system load-tilemap mk-tiles-from-tilemap!]]
             [chocolatier.engine.systems.events :refer [event-system
                                                        init-events-system]]
+            [chocolatier.engine.systems.audio :refer [audio-system]]            
             [chocolatier.engine.systems.debug :refer [debug-collision-system]]
             [chocolatier.engine.systems.movement :refer [movement-system]]
             [chocolatier.engine.systems.ai :refer [ai-system]]
@@ -28,7 +29,7 @@
 
 (defn init-state
   "Returns a hashmap of the game state"
-  [renderer stage width height tilemap]
+  [renderer stage width height tilemap sample-library]
   (mk-game-state
    {}
    :default
@@ -59,6 +60,7 @@
                      :tiles
                      :replay
                      :animate
+                     :audio
                      :render
                      :events]]
    ;; Global event system broadcaster
@@ -78,6 +80,8 @@
    [:system :tiles tile-system]
    ;; Render system for drawing sprites
    [:system :render render-system]
+   ;; Audio system for playing sounds
+   [:system :audio (audio-system sample-library)]
    ;; Animation system for animating sprites
    [:system :animate animation-system :animateable]
    [:component :animateable [animate]]
