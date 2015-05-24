@@ -61,7 +61,9 @@ CLOSED: [2015-01-18 Sun 13:52]
 * DONE Audio component <2015-05-24 Sun>
 CLOSED: [2015-05-24 Sun 17:12]
 * TODO Assets pipeline for asynchronously loading sounds/tiles/sprites/etc
-Provide a nice abstraction for declaring pipeline of functions for loading assets asynchronously so that it doesn't look like spaghetti
+- Provide a nice abstraction for declaring pipeline of functions for loading assets asynchronously so that it doesn't look like spaghetti
+- Integrate that into the mk-game-state function to keep the whole thing declarative
+* TODO Add example of audio to the demo
 * DONE Benchmarks for the engine <2015-04-04 Sat>
 CLOSED: [2015-04-04 Sat 13:29]
 Use this to test any pervasive changes to the rest of the framework related to performance
