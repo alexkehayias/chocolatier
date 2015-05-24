@@ -4,12 +4,26 @@ A work-in-progress web game engine for repl driven game development written in C
 
 ## Usage
 
+### With `figwheel`
 The following instructions will start a browser connected repl and launch the demo game:
 
 0. Clone the project and all submodules `git clone --recursive https://github.com/alexkehayias/chocolatier`
 1. Start the browser REPL server `lein figwheel`
 2. Navigate your browser to `http://127.0.0.1:3449` to connect to the REPL
 3. In the REPL, change namespaces `(in-ns 'chocolatier.core)` then start the game `(restart-game!)`. This may take a few seconds to load assets and init WebGL (if your browser supports it).
+
+### With `figwheel` and emacs using `cider`
+
+The recommended setup is to connect to the `figwheel` REPL server from emacs `cider` so that you can integrate the text editor into the development workflow. This allows you to send code to the running repl for evaluation using emacs `cider-mode`.
+
+After completing step 2 from the `figwheel` instructions above, in emacs:
+
+1. Connect to the `figwheel` REPL `M-x cider-connect RET localhost RET 8999`
+2. Start ClojureScript REPL `(do (use 'figwheel-sidecar.repl-api) (cljs-repl))`
+3. Open the game file `C-x C-f RET /chocolatier/src/cljs/chocolatier/core.cljs`
+4. Change to the namespace in that file `C-c M-n`
+5. Evaluate the file `C-c M-k`
+6. Start the demo game `(restart-game!)`
 
 ## Entity Component System
 
@@ -53,13 +67,14 @@ The following example implements a simple game loop, system, component, and enti
 (defn my-game
   "Test the entire CES implementation with a system that changes component state"
   []
-  (-> {}
-      (ces/mk-game-state :test-scene
-                         [:scene :test-scene [:test-system]]
-                         [:system :test-system test-system :testable]
-                         [:component :testable [test-component-fn]]
-                         [:entity :player1 :components [[:testable {:x 0 :y 0}]]]
-                         [:entity :player2 :components [[:testable {:x 10 :y 10]])
+  (-> 
+    (ces/mk-game-state {}
+                       :test-scene
+                       [:scene :test-scene [:test-system]]
+                       [:system :test-system test-system :testable]
+                       [:component :testable [test-component-fn]]
+                       [:entity :player1 :components [[:testable {:x 0 :y 0}]]]
+                       [:entity :player2 :components [[:testable {:x 10 :y 10]])
       (game-loop 0)))
       
 ;; This will run 10 times and return the final state
@@ -73,9 +88,7 @@ The game is represented as a hashmap and a collection of functions that transfor
 
 ## Browser Connected Repl (Brepl)
 
-A browser repl is automatically available when the server is started. This allows you to dynamically re-evaluate the code running in the browser without a page refresh. Keep in mind that by refreshing the page, if you are using a compiled js file, you will need to re-evaluate any code that you have changed or recompile the project `lein cljsbuild once`.
-
-Any changes to a running browser game take effect immediately on the next frame. Just about everything can be re-evaluated on the fly. For example, changing the moving rate of the player and evaluating the code in the browser repl will show the change in movement rate right away!
+A browser repl is automatically available when the server is started when using `lein figwheel`. This allows you to dynamically re-evaluate the code running in the browser without a page refresh. Static files can also watched and reload the game when changed. See the `figwheel` documentation for more.
 
 ## Cross-component communication
 
