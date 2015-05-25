@@ -7,8 +7,8 @@
 (defn get-or-create-sample
   "Check if a sample exists in the library hashmap, if not create a howl instance"
   [audio-directory library sample-id]
-  (or (:sample-id library)
-      (sound/howl [(str audio-directory "/" (name sample-id) ".mp3")])))
+  (get sample-id library
+       (sound/howl [(str audio-directory "/" (name sample-id) ".mp3")])))
 
 ;; TODO use an audio sprite where the caller declares the name of the
 ;; source file and the start, end playheads to return minimum number

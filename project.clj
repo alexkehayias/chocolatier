@@ -25,7 +25,7 @@
                  [figwheel "0.2.7" :exclude [org.clojure/clojurescript]]]
 
   :plugins [[lein-cljsbuild "1.0.5"]
-            [lein-figwheel "0.2.7"]]
+            [lein-figwheel "0.2.7" :exclusions [cider/cider-nrepl]]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"]
 
