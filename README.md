@@ -25,6 +25,11 @@ After completing step 2 from the `figwheel` instructions above, in emacs:
 5. Evaluate the file `C-c M-k`
 6. Start the demo game `(restart-game!)`
 
+### Compiling with advanced optimizations
+
+1. `lein do clean, cljsbuild once min`
+2. Open `<project path>/resources/pubic/index.html` in a Chrome browser with local file access allowed i.e `"<path to chrome app>" --allow-file-access-from-files <project path>/resources/public/index.html`
+
 ## Entity Component System
 
 The game engine implemented using a modified entity component system which organizes aspects of a game modularly. Think about it less as a bunch of objects with their own state and methods and more like a database where you query for functionality, state, based on a certain aspect or entity.
@@ -58,7 +63,7 @@ The following example implements a simple game loop, system, component, and enti
   "Call all the component functions and return update game state"
   [state fns entity-ids]
   (ces/iter-entities state fns entity-ids)
-                            
+
 (defn test-component-fn
   "Increment the :x value by 1"
   [entity-id component-state inbox]
@@ -67,7 +72,7 @@ The following example implements a simple game loop, system, component, and enti
 (defn my-game
   "Test the entire CES implementation with a system that changes component state"
   []
-  (-> 
+  (->
     (ces/mk-game-state {}
                        :test-scene
                        [:scene :test-scene [:test-system]]
@@ -76,7 +81,7 @@ The following example implements a simple game loop, system, component, and enti
                        [:entity :player1 :components [[:testable {:x 0 :y 0}]]]
                        [:entity :player2 :components [[:testable {:x 10 :y 10]])
       (game-loop 0)))
-      
+
 ;; This will run 10 times and return the final state
 (my-game)
 
@@ -96,7 +101,7 @@ A global pub-sub event queue is available for any component enabling cross compo
 
 ### Events
 
-By default, component functions created with `ces/mk-component` can output a single value, representing component state, or two values, component state and a collection of events to emit. 
+By default, component functions created with `ces/mk-component` can output a single value, representing component state, or two values, component state and a collection of events to emit.
 
 For example, the following component will emit a single event called `:my-event` with the message `{:foo :bar}`:
 
@@ -119,7 +124,7 @@ The subscribed component will receive the event in it's inbox (third arg to comp
 
 ### Hierarchical Events
 
-Events use selectors (a vector of keywords) to determine which events are returned. This allows specificity in messages returned. For example, an event emitted with selectors `:a :b :c` will be returned to all subscribers of `:b` and `:a`. 
+Events use selectors (a vector of keywords) to determine which events are returned. This allows specificity in messages returned. For example, an event emitted with selectors `:a :b :c` will be returned to all subscribers of `:b` and `:a`.
 
 ## Tilemaps
 

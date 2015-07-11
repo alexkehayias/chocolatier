@@ -18,9 +18,10 @@
 (def keycode->interaction
   {:W {:action :walk :direction :up :offset-y (* 1 move-rate)}
    :S {:action :walk :direction :down :offset-y (* -1 move-rate)}
-   :A {:action :walk :direction :left :offset-x (* 1 move-rate)}   
+   :A {:action :walk :direction :left :offset-x (* 1 move-rate)}
    :D {:action :walk :direction :right :offset-x (* -1 move-rate)}
-   :¿ {:action :attack}
+   ;; TODO this causes a compiler error with optimizations advanced
+   ;; :¿ {:action :attack}
    :B {:action :replay}})
 
 ;; FIX The output of the interaction hashmap is non-deterministic
@@ -60,7 +61,7 @@
                 (conj (ev/mk-event {:replay? true} :replay))
                 (= action :attack)
                 (conj (ev/mk-event {:action action :direction direction}
-                                   :action entity-id))                
+                                   :action entity-id))
                 (= action :walk)
                 (concat [(ev/mk-event {:offset-x offset-x :offset-y offset-y}
                                       :move-change entity-id)

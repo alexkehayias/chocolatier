@@ -2,15 +2,15 @@
   :description "Chocolatier prototype"
   :source-paths ["src/clj"]
 
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 
+  :dependencies [[org.clojure/clojure "1.7.0"]
+
                  ;; Web server
                  [ring "1.2.0"]
                  [compojure "1.1.5"]
                  [enlive "1.1.1"]
 
                  ;; cljs
-                 [org.clojure/clojurescript "0.0-3165"]
+                 [org.clojure/clojurescript "0.0-3297"]
                  ;; DOM manipulation
                  [prismatic/dommy "1.1.0"
                   :exclude [org.clojure/clojurescript]]
@@ -20,35 +20,31 @@
                   :exclude [org.clojure/clojurescript]]
 
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"
-                  :exclude [org.clojure/clojurescript]]
-                 ;; Browser repl setup for cljs
-                 [figwheel "0.2.7" :exclude [org.clojure/clojurescript]]]
+                  :exclude [org.clojure/clojurescript]]]
 
   :plugins [[lein-cljsbuild "1.0.5"]
-            [lein-figwheel "0.2.7" :exclusions [cider/cider-nrepl]]]
+            [lein-figwheel "0.3.5"]]
 
-  :clean-targets ^{:protect false} ["resources/public/js/compiled"]
+  :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
-  :cljsbuild {
-    :builds [{:id "dev"
-              :source-paths ["src/cljs" "dev_src/cljs"]
-              :compiler {:output-to "resources/public/js/compiled/chocolatier.js"
-                         :output-dir "resources/public/js/compiled/out"
-                         :optimizations :none
-                         :main chocolatier.dev
-                         :asset-path "js/compiled/out"
-                         :source-map true
-                         :source-map-timestamp true
-                         :cache-analysis true }}
-             {:id "min"
-              :source-paths ["src/cljs"]
-              :compiler {:output-to "resources/public/js/compiled/chocolatier.js"
-                         :main chocolatier.core                         
-                         :optimizations :advanced
-                         :pretty-print false}}]}
+  :cljsbuild {:builds
+              [{:id "dev"
+                :source-paths ["src/cljs"]
+                :figwheel {:on-jsload "chocolatier.dev/on-js-reload"}
+                :compiler {:main chocolatier.dev
+                           :asset-path "js/compiled/out"
+                           :output-to "resources/public/js/compiled/chocolatier.js"
+                           :output-dir "resources/public/js/compiled/out"
+                           :source-map-timestamp true
+                           :pretty-print true}}
+               {:id "min"
+                :source-paths ["src/cljs"]
+                :compiler {:output-to "resources/public/js/compiled/chocolatier.js"
+                           :main chocolatier.core
+                           :optimizations :advanced}}]}
 
-  :figwheel {:http-server-root "public" ;; default and assumes "resources" 
-             :server-port 3449 ;; default
+  :figwheel {:http-server-root "public" ;; default and assumes "resources"
+             :server-port 3449          ;; default
              :css-dirs ["resources/public/css"] ;; watch and update CSS
 
              ;; Start an nREPL server into the running figwheel process
@@ -73,6 +69,6 @@
              ;; :repl false
 
              ;; to configure a different figwheel logfile path
-             ;; :server-logfile "tmp/logs/figwheel-logfile.log" 
+             ;; :server-logfile "tmp/logs/figwheel-logfile.log"
              }
   )

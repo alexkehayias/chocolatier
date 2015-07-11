@@ -8,13 +8,13 @@
 
 
 (defn create-player!
-  "Create a player by initializing some component state and adding the 
+  "Create a player by initializing some component state and adding the
    entity to state. Returns a function that takes a state hashmap."
   [stage uid pos-x pos-y map-x map-y hit-radius]
   (fn [state]
     (info "Creating player" pos-x pos-y map-x map-y hit-radius)
     (let [animation-state (mk-animateable-state stage
-                                                "/img/test_spritesheet.png"
+                                                "img/test_spritesheet.png"
                                                 pos-x pos-y
                                                 :stand-down
                                                 [:stand-up 832 1344 64 64 8 0 1]
@@ -33,9 +33,9 @@
           collision-state (mk-collidable-state 64 64 hit-radius)]
       (ces/mk-entity state
                      uid
-                     :components [[:animateable animation-state] 
+                     :components [[:animateable animation-state]
                                   :controllable
-                                  [:collidable collision-state] 
+                                  [:collidable collision-state]
                                   :collision-debuggable
                                   [:moveable move-state]]
                      :subscriptions [[:move-change uid]

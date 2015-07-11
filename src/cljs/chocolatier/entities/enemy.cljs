@@ -8,16 +8,16 @@
 
 
 (defn create-enemy!
-  "Create a enemy by initializing some component state and adding the 
+  "Create a enemy by initializing some component state and adding the
    entity to state. Returns a function that takes a state hashmap."
   [state stage uid hit-radius]
-  (let [texture (js/PIXI.Texture.fromImage "/img/bunny.png")
+  (let [texture (js/PIXI.Texture.fromImage "img/bunny.png")
         sprite (js/PIXI.Sprite. texture)
         [h w] (map #(aget sprite %) ["height" "width"])
         pos-x (* 1000 (js/Math.random))
         pos-y (* 1000 (js/Math.random))
         animation-state (mk-animateable-state stage
-                                              "/img/bunny.png"
+                                              "img/bunny.png"
                                               pos-x pos-y
                                               :standing
                                               [:standing 26 37 26 37 0 0 1])
@@ -28,8 +28,8 @@
     (ces/mk-entity state
                    uid
                    :components [[:moveable move-state]
-                                [:animateable animation-state] 
-                                [:collidable collision-state] 
+                                [:animateable animation-state]
+                                [:collidable collision-state]
                                 :collision-debuggable
                                 :ai]
                    :subscriptions [[:move-change uid]
