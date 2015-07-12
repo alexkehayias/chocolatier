@@ -29,7 +29,7 @@ CLOSED: [2015-01-18 Sun 13:52]
 
 * TODO Version 0.2.0 [2/8]
 - [X] Update to version of clojurescipt and Austin plugin
-- [ ] Sound system 
+- [ ] Sound system
 - [ ] Tile collision
 - [ ] Map to Screen coords
 - [ ] Text rendering component
@@ -47,7 +47,8 @@ CLOSED: [2015-01-18 Sun 13:52]
   - [X] Initialize entities
     - Subscribe events
     - Init component state
-* TODO Static lookups for component and system function calls
+* DONE Static lookups for component and system function calls
+CLOSED: [2015-07-11 Sat 21:37]
 - What if we just wrap all the higher order fns with defs?
 - What if at the time of wiring we def everything or stick them the game state in a deftype?
   - engine.core/mk-game-state
@@ -58,6 +59,7 @@ CLOSED: [2015-01-18 Sun 13:52]
     - systems
     - components
     - entities
+- This didn't end up helping since I found that these issues only show up when dynamically loading things from the repl
 * DONE Audio component <2015-05-24 Sun>
 CLOSED: [2015-05-24 Sun 17:12]
 * TODO Assets pipeline for asynchronously loading sounds/tiles/sprites/etc
@@ -84,11 +86,13 @@ CLOSED: [2015-05-03 Sun 11:50]
 CLOSED: [2015-05-03 Sun 17:08]
 https://github.com/mrdoob/stats.js
 * TODO Gameloop macro to inline the entire program into one function block
-- Read this somewhere that referencing a ton of functions all over the place is not good for performance or garbage collection 
+- Read this somewhere that referencing a ton of functions all over the place is not good for performance or garbage collection
 - Write a macro that explodes all code into one massive function
-* TODO Eliminate unoptimized function calls in v8 due to needing dynamic lookup
+* DONE Eliminate unoptimized function calls in v8 due to needing dynamic lookup
+CLOSED: [2015-07-11 Sat 21:38]
 - Profiler says all the inner functions can not be optimized because the require a dynamic lookup and therefore can not be inlined by v8
-- [ ] Use macros to define a new function for each system/component instead of anonymous functions
+- [X] Use macros to define a new function for each system/component instead of anonymous functions
+- See branch defcomponent, didn't pan out as this isn't actually an issue on the first run
 * DONE FIX debuggable collision circle overlay is not centered correctly
 CLOSED: [2015-05-03 Sun 12:38]
 * DONE Game loop helpers <2015-02-22 Sun>
@@ -118,12 +122,12 @@ Use it to compare different implementations of the core game functions and optim
   - Systems?
   - Components?
   - CES operations?
-- [X] Change all systems to use transients 
+- [X] Change all systems to use transients
 - [ ] Change collision detection to use transients of js arrays to do collision detection
 * DONE "Threads" using core.async to run systems async based on deps <2015-02-21 Sat>
 CLOSED: [2015-02-22 Sun 15:50]
 - Branch: async-systems
-- Example: 
+- Example:
   - Given dependency tree [[a b] [a c] [c d]]
   - Run in this order where a vector denotes async operation [a, [b c], d]
 - Probably need to cache this when game loop is initialized and recalc anytime a new system is added/removed
@@ -186,7 +190,7 @@ CLOSED: [2015-01-03 Sat 17:41]
 - Looks like new events evaluation causes replay to not work
 - One of the systems is clearing out messages before it can make it to the replay system
 - Systems were seqing over a hashmap which is not guaranteed to have order
-* TODO Use transients for things that are going to be iterated over and only need a local mutable value. 
+* TODO Use transients for things that are going to be iterated over and only need a local mutable value.
 Could work well for systems when iterating over them
 * DONE Implement snapshots of game state and function to reload it <2014-12-07 Sun>
 CLOSED: [2014-12-07 Sun 22:11]
@@ -234,10 +238,10 @@ Profiling shows 20% of cpu time each trip through the game loop
   When do you remove messages from inbox?
   Need better parsing of event messages
 - Resulted in 2x framerate from 8-10 to 18-20
-  
+
   Put the messages in a hashmap instead of a list
   {:events {:subscriptions {}
-            :queue {:<event-id> 
+            :queue {:<event-id>
                      {:<source-id> [{:event-id :<event-id> :from :<from-entity> :msg <message>}]}}}}
   Subscribing to broadcast events is the concatenation of all values of keys nested in the event id
   A subscribed event is id -> from a specific entity
@@ -256,13 +260,13 @@ CLOSED: [2014-12-07 Sun 20:55]
 Create a system for using tilemaps defined by Tiled
 - [X] Load tile set image
 - [X] Load json
-- [X] Translate spec into tile set 
+- [X] Translate spec into tile set
   https://github.com/bjorn/tiled/wiki/TMX-Map-Format#tileset
   - imageheight, imagewidth, tileheight, tilewidth, tileproperties
   - The spec for the tiles is in data.layers[0].data and is a one dimensional array with numbers representing the tile to use
   - To get the x, y of the tile
     - number * tile width
-    - by the width of the image divided by 
+    - by the width of the image divided by
 - [ ] Update tile system to display it
   Needs to read the offsets of the tiles to shift the tileset image by x and y
 
@@ -299,7 +303,7 @@ CLOSED: [2015-01-03 Sat 17:55]
     ./chocolatier/engine/ces.cljs:81:  (or (get-in state [:state component-id entity-id]) {}))
     ./chocolatier/engine/systems/events.cljs:36:  (let [subscriptions (get-in state [:state :events :subscriptions entity-id])
     ./chocolatier/engine/systems/events.cljs:37:        events (get-in state [:state :events :queue])]
-    ./chocolatier/engine/systems/events.cljs:38:    (mapcat #(get-in events (if (seqable? %) % [%])) subscriptions)))  
+    ./chocolatier/engine/systems/events.cljs:38:    (mapcat #(get-in events (if (seqable? %) % [%])) subscriptions)))
   - [ ] Remove usage of update-in
     ./chocolatier/engine/systems/events.cljs:31:  (update-in state [:state :events :subscriptions entity-id] conj selectors))
     ./chocolatier/engine/systems/events.cljs:61:    (update-in state (concat [:state :events :queue] selectors) conj event)))
@@ -312,7 +316,7 @@ CLOSED: [2015-01-03 Sat 17:55]
 * TODO Use a context buffer instead of writing all to one canvas
 - This should speed up the rendering of lots of sprites
 - Example code
-        function onLoad() {        
+        function onLoad() {
             // init stats
             var stats = new Stats();
             stats.getDomElement().style.position = 'absolute';
@@ -320,21 +324,21 @@ CLOSED: [2015-01-03 Sat 17:55]
             stats.getDomElement().style.top = '0px';
             document.body.appendChild( stats.getDomElement() );
             setInterval( function () { stats.update(); }, 1000 / 60 );
-            
+
             // cache dom elements
             canvas = document.getElementById('my_canvas');
             context = canvas.getContext('2d');
             width = canvas.width;
             height = canvas.height;
             shipImage = document.getElementById('ship');
-            
+
             // create canvas buffer
             canvasBuffer = document.createElement('canvas');
             contextBuffer = canvasBuffer.getContext('2d');
             canvasBuffer.width = 100;
             canvasBuffer.height = 100;
             contextBuffer.translate(50, 50); // so we can rotate about the center point
-            
+
             // create lookup table for trig functions
             angleIncrement = Math.PI / 12;
             lookupTable = [];
@@ -344,23 +348,23 @@ CLOSED: [2015-01-03 Sat 17:55]
                     y: Math.sin(i) * height - 150
                 };
             }
-            
-            // kick off the loop            
+
+            // kick off the loop
             window.setInterval(update, 16);
         }
-        
+
         // this is called using a 16 ms interval
         function update() {
-        
+
             // draw transformed ship image to a canvas buffer
             contextBuffer.clearRect(0, 0, 100, 100);
             contextBuffer.rotate(angleIncrement);
             contextBuffer.drawImage(shipImage, 0, 0, 50, 50);
-            
+
             // draw 5,000 ships
             for (var i = 0; i < 5000; i++) {
                 var lookup = lookupTable[i];
-                context.drawImage(canvasBuffer, lookup.x, lookup.y);   
+                context.drawImage(canvasBuffer, lookup.x, lookup.y);
             }
         }
 * TODO Use AABBTree (Axis aligned Bounding Box Tree) for collision detection
@@ -418,7 +422,7 @@ Need a way to share information between systems and components
 - [X] Provide a way of emitting event from any component by passing it in as an arg
   - Currently, the component function returns a hashmap which will be merged in to the game state
   - We also need to provide a way of conveying that an event(s) should be emitted
-  - Component functions can output 1 or 2 items 
+  - Component functions can output 1 or 2 items
     - If it's 1 item then it's the component state
     - If it's 2 items then it is component state and events
     - You can never just return events
@@ -478,11 +482,11 @@ This should help with the collision issues so that movement is decoupled from th
   - If not then reset offset-x and offset-y to 0
 
 * TODO Background rendering jumps using fixed timestep gameloop [/] <2014-04-05 Sat>
-- Fix timestep loop causes rendering issues 
+- Fix timestep loop causes rendering issues
   - When you put the render system in iter-systems the movement is correct
   - When it's not you get inconsistencies in the rendering where certain parts are moved in weird ways like the background or monster
 because render gets called outside of the systems step loop
-- Tiles are moving but the Monster is 
+- Tiles are moving but the Monster is
 
 ** TODO Re-implement fixed timestep loop where render is outside of the timestep loop
 Line 73 in engine.core
@@ -570,7 +574,7 @@ CLOSED: [2014-09-21 Sun 21:46]
 - [X] Refactor to use a state hashmap which gets passed to all systems
 - [X] Add tests for ces functions
 
-* DONE Require state dependencies 
+* DONE Require state dependencies
 CLOSED: [2014-10-04 Sat 19:18]
 This is probably too restrictive. Instead allow an arguments function that parses state and is applied to the component function.
 - Specify your state dependencies in your component function
@@ -619,7 +623,7 @@ CLOSED: [2014-01-20 Mon 00:22]
 * DONE Make render perform the position changes <2014-01-26 Sun>
 CLOSED: [2014-01-26 Sun 16:00]
 to the sprite based on the current values of the record
-* DONE Tiles 
+* DONE Tiles
 CLOSED: [2014-01-26 Sun 16:00]
 * DONE Tile maps <2014-01-26 Sun>
 CLOSED: [2014-01-26 Sun 21:41]
@@ -657,7 +661,7 @@ CLOSED: [2014-02-16 Sun 22:31]
 CLOSED: [2014-03-02 Sun 15:07]
 - systems is not loaded on engine.core load
   - This was due to compiled js being used instead
-- the first time and requires calling start-game! 
+- the first time and requires calling start-game!
 - there is a race condition where the renderer starts before the window has a width or height causing an error when pixijs renderer is called
 - Need to load the asset for the tile background using an asset loader
   loader = new PIXI.AssetLoader(["resources/bg-far.png","resources/bg-mid.png"]);
@@ -671,7 +675,7 @@ CLOSED: [2014-03-09 Sun 19:12]
 * DONE Fix directory structure for cljs is not conventional <2014-03-14 Fri>
 CLOSED: [2014-03-14 Fri 17:09]
 Need a chocolatier dir
- 
+
 * DONE Debug layer needs to be moved to engine/state so that it can be coordinated during resets <2014-03-22 Sat>
 CLOSED: [2014-03-22 Sat 20:01]
 * DONE Add a watches namespace for tools to debug changes to state <2014-04-06 Sun>
@@ -681,7 +685,7 @@ CLOSED: [2014-04-12 Sat 20:32]
 - Prevent movement if the result of the move is a collision
 - The player is able to move such that the circles are overlapping
   - Maybe the collision detection is wrong?
-    - The formula seems to work 
+    - The formula seems to work
     chocolatier.engine.systems.collision> (collision? 352 220 20 322 186 30)
     true
     chocolatier.engine.systems.collision> (collision? 352 220 20 320 184 30)
@@ -816,123 +820,123 @@ CLOSED: [2014-04-12 Sat 20:32]
     - Movement stop on collision works when both entities have collision detection on and the player is passed in to the collision check without any offsets
     - Tiling works correctly when offsetst are removed but the monster moves with the player equally
   - Debug log 1:
-    DEBUG: State changed :input 
+    DEBUG: State changed :input
         :W off -> on VM1052:9
-    DEBUG: State changed :global 
+    DEBUG: State changed :global
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :screen-y 328 -> 323
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :screen-y 333 -> 328
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :screen-y 338 -> 333
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :player 
-        :offset-y 5 -> 0 VM1052:9
-    DEBUG: Collision detected between :player 361 408 30 and :monster 365 343 40 VM1052:9
-    DEBUG: State changed :global 
-        :offset-y 5 -> 0 VM1052:9
-    DEBUG: Collision detected between :monster 365 343 40 and :player 361 408 30 VM1052:9
-    DEBUG: State changed :monster 
-        :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :player 
-
-     VM1052:9
-    DEBUG: State changed :monster 
-
-     VM1052:9
-    DEBUG: State changed :player 
-        :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :global 
-        :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :monster 
-        :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 5 -> 0 VM1052:9
     DEBUG: Collision detected between :player 361 408 30 and :monster 365 343 40 VM1052:9
-    DEBUG: State changed :global 
+    DEBUG: State changed :global
         :offset-y 5 -> 0 VM1052:9
     DEBUG: Collision detected between :monster 365 343 40 and :player 361 408 30 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
 
      VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
 
      VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :global 
+    DEBUG: State changed :global
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 5 -> 0 VM1052:9
     DEBUG: Collision detected between :player 361 408 30 and :monster 365 343 40 VM1052:9
-    DEBUG: State changed :global 
+    DEBUG: State changed :global
         :offset-y 5 -> 0 VM1052:9
     DEBUG: Collision detected between :monster 365 343 40 and :player 361 408 30 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
 
      VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
 
      VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :global 
+    DEBUG: State changed :global
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :offset-y 5 -> 0 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 5 -> 0 VM1052:9
     DEBUG: Collision detected between :player 361 408 30 and :monster 365 343 40 VM1052:9
-    DEBUG: State changed :global 
+    DEBUG: State changed :global
         :offset-y 5 -> 0 VM1052:9
     DEBUG: Collision detected between :monster 365 343 40 and :player 361 408 30 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
 
      VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
 
      VM1052:9
-    DEBUG: State changed :player 
+    DEBUG: State changed :player
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :global 
+    DEBUG: State changed :global
         :offset-y 0 -> 5 VM1052:9
-    DEBUG: State changed :monster 
+    DEBUG: State changed :monster
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: State changed :player
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :player 361 408 30 and :monster 365 343 40 VM1052:9
+    DEBUG: State changed :global
+        :offset-y 5 -> 0 VM1052:9
+    DEBUG: Collision detected between :monster 365 343 40 and :player 361 408 30 VM1052:9
+    DEBUG: State changed :monster
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :player
+
+     VM1052:9
+    DEBUG: State changed :monster
+
+     VM1052:9
+    DEBUG: State changed :player
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :global
+        :offset-y 0 -> 5 VM1052:9
+    DEBUG: State changed :monster
         :offset-y 5 -> 0 VM1052:9
     DEBUG: State changed :player
   - The input handler can be on constantly and the user input step takes the latest value of the atom during a run through the game loop
-  - Player was able to perform an illegal move 
-    From 
+  - Player was able to perform an illegal move
+    From
     (collision? 361 250 30 288 250 40)
     To
     (collision? 361 250 30 292 250 40)

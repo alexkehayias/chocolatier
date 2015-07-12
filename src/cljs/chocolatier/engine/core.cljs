@@ -46,7 +46,7 @@
                      [:component :c1 [f1]]
                      [:system :s1 f2 :c1]
                      [:component :c2 [[f3 {:args-fn f4}] f5]]
-                     [:entity :e1 :components [:c2] 
+                     [:entity :e1 :components [:c2]
                                   :subscriptions [[:e1 :ev1]]])"
   [state init-scene-id & specs]
   (reduce (fn [accum args] (mk-state accum args))
@@ -54,7 +54,7 @@
           specs))
 
 (defn timestamp
-  "Get the current timestamp using performance.now. 
+  "Get the current timestamp using performance.now.
    Fall back to Date.getTime for older browsers"
   []
   (if (and (exists? (aget js/window "performance"))
@@ -82,9 +82,9 @@
 (def *running* (atom true))
 
 (defn game-loop
-  "Returns a game loop using requestAnimation to optimize frame rate. 
-   Temporarily stop the game by resetting the *running* atom. State is 
-   copied into the *state* atom to allow for inspection whilethe loop 
+  "Returns a game loop using requestAnimation to optimize frame rate.
+   Temporarily stop the game by resetting the *running* atom. State is
+   copied into the *state* atom to allow for inspection whilethe loop
    is running.
 
    Args:
@@ -108,13 +108,21 @@
   (.begin stats-obj)
   (let [scene-id (get-in game-state [:game :scene-id])
         systems (ces/get-system-fns game-state (-> game-state :scenes scene-id))
-        state (local game-state)]
-    (forloop [[i 0] (< i (count systems)) (inc i)]
-             (>> state ((systems i) (<< state))))
-    ;; Copy the state into an atom so we can inspect while running
-    (reset! *state* (<< state))
-    (.end stats-obj)
-    ;; Recur
-    (if @*running*
-      (request-animation #(game-loop-with-stats (<< state) stats-obj))
-      (println "Game stopped"))))
+        system-count (count systems)
+        state (local game-state)
+        loop-count (local 0)]
+    ;; Mutate local state by running the game loop
+    (forloop [[i loop-count] (< (<< i) system-count) i]
+             ;; Mutate state
+             (>> state ((systems i) (<< state)))
+             ;; Iterate loop count
+             (>> i (+ (<< i) 1)))
+
+    (let [next-state (<< state)]
+      ;; Copy the state into an atom so we can inspect while running
+      (reset! *state* next-state)
+      (.end stats-obj)
+      ;; Recur
+      (if @*running*
+        (request-animation #(game-loop-with-stats (<< state) stats-obj))
+        (println "Game stopped")))))
