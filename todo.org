@@ -66,6 +66,23 @@ CLOSED: [2015-05-24 Sun 17:12]
 - Provide a nice abstraction for declaring pipeline of functions for loading assets asynchronously so that it doesn't look like spaghetti
 - Integrate that into the mk-game-state function to keep the whole thing declarative
 * TODO Add example of audio to the demo
+* TODO Optimize the ces framework
+- When you double the number of entities the framerate drops nearly in half
+- AI system/component showcases this the best, removing it increases the framerate a ton
+- How can we reduce the number of changes to the global state?
+- Size of the state hashmap is not the problem
+  Adding initial state of (reduce into {} (map hash-map (range 10000) (range 10000))) has no slow down even with 10000 additional keys
+- Event messages the biggest issue?
+  - Every time a system runs it can generate up to n number of state changes where n is the number of events emitted
+  - Make the event queue a mutable object
+    - Was super slow, see mutable-queue branch
+  - Every time an event is emitted, mutate the queue instead of rewriting the state hashmap
+  - Make the queue a hashmap instead of a hashmap and an array
+    - Each message has it's own unique ID
+    - To get all messages at a selector, iterate through all keys at that point
+    - Only once per game loop will we need to return a new game state for the sake of events (when the queues are cleared)
+  - Flatten the keys for events and
+  - Batch all the events in one shot at the end of the system call
 * DONE Benchmarks for the engine <2015-04-04 Sat>
 CLOSED: [2015-04-04 Sat 13:29]
 Use this to test any pervasive changes to the rest of the framework related to performance
