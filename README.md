@@ -107,7 +107,7 @@ For example, the following component will emit a single event called `:my-event`
 
 ```clojure
 (defn component-a [entity-id component-state inbox]
-  [component-state [(ev/mk-event {:foo :bar} :my-event entity-id)]]])
+  [component-state [(ev/mk-event {:foo :bar} [:my-event entity-id])]]])
 ```
 
 ### Subscriptions
