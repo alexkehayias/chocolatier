@@ -20,9 +20,9 @@
 
 
 (defn subscribe
-  "Subscribe to the given event. 
+  "Subscribe to the given event.
 
-   Multiple subscribe calls with the same event-id component-id entity-id 
+   Multiple subscribe calls with the same event-id component-id entity-id
    are idempotent.
 
    Example:
@@ -54,7 +54,7 @@
    - [:s1] matches all results in the :s2 and :s3 key"
   [state selectors]
   (when (seq selectors)
-    (let [result (get-in state (concat [:state :events :queue] selectors))]
+    (let [result (get-in state (into [:state :events :queue] selectors))]
       (if (map? result)
         (mapcat #(get-events state (conj selectors %)) (keys result))
         result))))
@@ -86,7 +86,7 @@
   [state msg & selectors]
   (let [event (apply mk-event msg selectors)]
     (valid-event? event)
-    (update-in state (concat [:state :events :queue] selectors) conj event)))
+    (update-in state (into [:state :events :queue] selectors) conj event)))
 
 (defn emit-events
   "Emits a collection of events at the same time. Returns update game state."
