@@ -4,7 +4,7 @@
             [chocolatier.game :refer [init-state]]
             [chocolatier.engine.systems.tiles :refer [load-tilemap]]
             [chocolatier.engine.systems.audio :refer [load-samples]]
-            [chocolatier.engine.core :refer [game-loop-with-stats *running* *state*]]))
+            [chocolatier.engine.core :refer [request-animation game-loop-with-stats *running* *state*]]))
 
 
 (defn -start-game!
@@ -29,7 +29,7 @@
     (dom/append! (sel1 :body) (.-domElement stats-obj))
 
     ;; Start the game loop
-    (game-loop-with-stats state stats-obj)))
+    (request-animation #(game-loop-with-stats state stats-obj))))
 
 (defn start-game!
   "Load all assets and call the tilemap loader. This is some async wankery to
