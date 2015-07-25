@@ -93,9 +93,15 @@ CLOSED: [2015-05-24 Sun 17:12]
   - mk-spatial-grid is 52% of time, looks like the group-by is inefficient
 - Narrow collision system
   - Pretty small amount of time spent there
--
-* TODO Clean up usage of apply in mk-component-fn
-* TODO mk-event should take a vector of selectors instead of varargs
+* Profiling <2015-07-25 Sat>
+- narrow-collision detection takes 25%
+  - check-collsions appears to be the culprit with 20% time spent there
+- get-subscribed-events takes 22% of the overall profiled time
+  - usage of mapcat appears to be the culprit with 20% time spent there
+* DONE Clean up usage of apply in mk-component-fn <2015-07-25 Sat>
+CLOSED: [2015-07-25 Sat 19:37]
+* DONE mk-event should take a vector of selectors instead of varargs <2015-07-25 Sat>
+CLOSED: [2015-07-25 Sat 19:37]
 * DONE Benchmarks for the engine <2015-04-04 Sat>
 CLOSED: [2015-04-04 Sat 13:29]
 Use this to test any pervasive changes to the rest of the framework related to performance
