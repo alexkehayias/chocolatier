@@ -56,20 +56,20 @@
         ;; Default to prev direction
         direction (if-not direction prev-direction direction)
         events (cond->
-                []
-                (= action :replay)
-                (conj (ev/mk-event {:replay? true} :replay))
-                (= action :attack)
-                (conj (ev/mk-event {:action action :direction direction}
-                                   :action entity-id))
-                (= action :walk)
-                (concat [(ev/mk-event {:offset-x offset-x :offset-y offset-y}
-                                      :move-change entity-id)
-                         (ev/mk-event {:action action :direction direction}
-                                      :action entity-id)])
-                (= action :stand)
-                (conj (ev/mk-event {:action action :direction direction}
-                                   :action entity-id)))
+                   []
+                 (= action :replay)
+                 (conj (ev/mk-event {:replay? true} :replay))
+                 (= action :attack)
+                 (conj (ev/mk-event {:action action :direction direction}
+                                    :action entity-id))
+                 (= action :walk)
+                 (into [(ev/mk-event {:offset-x offset-x :offset-y offset-y}
+                                     :move-change entity-id)
+                        (ev/mk-event {:action action :direction direction}
+                                     :action entity-id)])
+                 (= action :stand)
+                 (conj (ev/mk-event {:action action :direction direction}
+                                    :action entity-id)))
         updated-state (assoc component-state :action action :direction direction)]
     (if (empty? events)
       updated-state

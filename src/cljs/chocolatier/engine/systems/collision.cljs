@@ -16,17 +16,17 @@
   (/ n 2))
 
 (defn circle-collision?
-  "Basic circle collision detection. Returns true if x and y 
+  "Basic circle collision detection. Returns true if x and y
    are colliding.
 
-   Two circles are colliding if distance between the center 
+   Two circles are colliding if distance between the center
    points is less than the sum of the radii."
   [x1 y1 r1 x2 y2 r2]
   (<= (+ (exp (- x2 x1) 2) (exp (- y2 y1) 2))
       (exp (+ r1 r2) 2)))
 
 (defn collision?
-  "Compare two entities future position to see if they are colliding. 
+  "Compare two entities future position to see if they are colliding.
    Returns a boolean of whether the two entities are colliding."
   [e1 e2]
   (if (and (seq e1) (seq e2))
@@ -57,24 +57,24 @@
       accum
       (recur
        (rest entities)
-       (apply concat accum
-              (for [other-entity entities
-                    :let [entity (first entities)]
-                    :when (and (not= entity other-entity)
-                               (collision? entity other-entity))]
-                ;; Emit a message for both entities that collided
-                [(ev/mk-event {:colliding? true} :collision (:id entity))
-                 (ev/mk-event {:colliding? true} :collision (:id other-entity))]))))))
+       (reduce into accum
+               (for [other-entity entities
+                     :let [entity (first entities)]
+                     :when (and (not= entity other-entity)
+                                (collision? entity other-entity))]
+                 ;; Emit a message for both entities that collided
+                 [(ev/mk-event {:colliding? true} :collision (:id entity))
+                  (ev/mk-event {:colliding? true} :collision (:id other-entity))]))))))
 
 (defn narrow-collision-system
-  "Performs narrow collision detection between entities in each cell of the spatial 
+  "Performs narrow collision detection between entities in each cell of the spatial
    grid where there are more than one entities."
   [state]
   (let [events (for [[coords entities] (-> state :state :spatial-grid)
                      :let [collisions (check-collisions entities)]
                      :when (seq collisions)]
                  collisions)]
-    (ev/emit-events state (reduce concat events))))
+    (ev/emit-events state (reduce into [] events))))
 
 (defn mk-spatial-grid
   "Returns a hashmap representing a spatial grid"
@@ -94,10 +94,10 @@
    (fn [id]
      (into {:id id} (map #(ces/get-component-state state % id) component-ids)))
    entity-ids))
-  
+
 
 (defn broad-collision-system
-  "Returns a function that divides entities into a spatial grid based on their screen 
+  "Returns a function that divides entities into a spatial grid based on their screen
    position. Takes the screen height width and dimension of cells."
   [cell-size]
   (fn [state]
