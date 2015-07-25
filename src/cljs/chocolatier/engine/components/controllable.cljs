@@ -58,18 +58,18 @@
         events (cond->
                 []
                 (= action :replay)
-                (conj (ev/mk-event {:replay? true} :replay))
+                (conj (ev/mk-event {:replay? true} [:replay]))
                 (= action :attack)
                 (conj (ev/mk-event {:action action :direction direction}
-                                   :action entity-id))
+                                   [:action entity-id]))
                 (= action :walk)
                 (concat [(ev/mk-event {:offset-x offset-x :offset-y offset-y}
-                                      :move-change entity-id)
+                                      [:move-change entity-id])
                          (ev/mk-event {:action action :direction direction}
-                                      :action entity-id)])
+                                      [:action entity-id])])
                 (= action :stand)
                 (conj (ev/mk-event {:action action :direction direction}
-                                   :action entity-id)))
+                                   [:action entity-id])))
         updated-state (assoc component-state :action action :direction direction)]
     (if (empty? events)
       updated-state

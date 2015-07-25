@@ -15,7 +15,7 @@
   [entity-id component-state inbox]
   (let [{:keys [pos-x pos-y]} component-state
         collision? (seq (filter #(= (:event-id %) :collision) inbox))
-        move-change (first (filter #(= (:event-id %) :move-change) inbox)) 
+        move-change (first (filter #(= (:event-id %) :move-change) inbox))
         {:keys [offset-x offset-y] :or {offset-x 0 offset-y 0}} (:msg move-change)
         new-pos-x (- pos-x offset-x)
         new-pos-y (- pos-y offset-y)
@@ -26,5 +26,5 @@
       component-state
       (if move-change
         [updated-state
-         [(ev/mk-event {:pos-x new-pos-x :pos-y new-pos-y} :move entity-id)]]
+         [(ev/mk-event {:pos-x new-pos-x :pos-y new-pos-y} [:move entity-id])]]
         component-state))))

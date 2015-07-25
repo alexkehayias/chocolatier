@@ -10,7 +10,7 @@
             [chocolatier.engine.systems.tiles :refer [tile-system load-tilemap mk-tiles-from-tilemap!]]
             [chocolatier.engine.systems.events :refer [event-system
                                                        init-events-system]]
-            [chocolatier.engine.systems.audio :refer [audio-system]]            
+            [chocolatier.engine.systems.audio :refer [audio-system]]
             [chocolatier.engine.systems.debug :refer [debug-collision-system]]
             [chocolatier.engine.systems.movement :refer [movement-system]]
             [chocolatier.engine.systems.ai :refer [ai-system]]
@@ -74,7 +74,7 @@
     ;; Calls react-to-input
     ;; with additional argument
     ;; for the current input
-    ;; state 
+    ;; state
     [[react-to-input {:args-fn include-input-state}]]]
    ;; Draw tile map in background
    [:system :tiles tile-system]

@@ -20,9 +20,9 @@
 
 
 (defn subscribe
-  "Subscribe to the given event. 
+  "Subscribe to the given event.
 
-   Multiple subscribe calls with the same event-id component-id entity-id 
+   Multiple subscribe calls with the same event-id component-id entity-id
    are idempotent.
 
    Example:
@@ -78,21 +78,21 @@
 (defn mk-event
   "Takes message and selectors and formats them for the event representation.
    The first selector, by convention, is called the event-d. Returns a hashmap."
-  [msg & selectors]
+  [msg selectors]
   {:event-id (first selectors) :selectors selectors :msg msg})
 
 (defn emit-event
   "Enqueues an event onto the queue"
-  [state msg & selectors]
-  (let [event (apply mk-event msg selectors)]
+  [state msg selectors]
+  (let [event (mk-event msg selectors)]
     (valid-event? event)
-    (update-in state (concat [:state :events :queue] selectors) conj event)))
+    (update-in state (into [:state :events :queue] selectors) conj event)))
 
 (defn emit-events
   "Emits a collection of events at the same time. Returns update game state."
   [state events]
   (if (seq events)
-    (reduce #(apply emit-event %1 (:msg %2) (:selectors %2)) state events)
+    (reduce #(emit-event %1 (:msg %2) (:selectors %2)) state events)
     state))
 
 (defn clear-events-queue

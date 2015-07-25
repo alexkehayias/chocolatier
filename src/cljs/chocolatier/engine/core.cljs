@@ -114,7 +114,12 @@
     ;; Mutate local state by running the game loop
     (forloop [[i loop-count] (< (<< i) system-count) i]
              ;; Mutate state
-             (>> state ((systems i) (<< state)))
+             (>> state
+                 (do ;; (.profile js/console (str "system:" (<< i)))
+                     (let [f (systems i)
+                           out (f (<< state))]
+                       ;; (.profileEnd js/console)
+                       out)))
              ;; Iterate loop count
              (>> i (+ (<< i) 1)))
 
@@ -123,6 +128,7 @@
       (reset! *state* next-state)
       (.end stats-obj)
       ;; Recur
+      ;; (throw (js/Error. "STOP!"))
       (if @*running*
         (request-animation #(game-loop-with-stats (<< state) stats-obj))
         (println "Game stopped")))))

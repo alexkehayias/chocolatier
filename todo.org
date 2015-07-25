@@ -83,6 +83,19 @@ CLOSED: [2015-05-24 Sun 17:12]
     - Only once per game loop will we need to return a new game state for the sake of events (when the queues are cleared)
   - Flatten the keys for events and
   - Batch all the events in one shot at the end of the system call
+* Profiling <2015-07-19 Sun>
+- AI system profile
+  - apply is 45% of the time spent
+  - update-component-state-and-events 35%
+    - Looks like emit events is the culprite with update-in happening many times
+- Broad collision system
+  - entities-with-multi-components 40% of time
+  - mk-spatial-grid is 52% of time, looks like the group-by is inefficient
+- Narrow collision system
+  - Pretty small amount of time spent there
+-
+* TODO Clean up usage of apply in mk-component-fn
+* TODO mk-event should take a vector of selectors instead of varargs
 * DONE Benchmarks for the engine <2015-04-04 Sat>
 CLOSED: [2015-04-04 Sat 13:29]
 Use this to test any pervasive changes to the rest of the framework related to performance
