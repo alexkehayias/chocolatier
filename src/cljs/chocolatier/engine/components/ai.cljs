@@ -16,6 +16,6 @@
         {:keys [pos-x pos-y]} moveable-state
         msg {:offset-x (if (< player-pos-x pos-x) 1 -1)
              :offset-y (if (< player-pos-y pos-y) 1 -1)}
-        event (ev/mk-event msg :move-change entity-id)]
+        event (ev/mk-event msg [:move-change entity-id])]
     ;; Go towards the x,y of the player
     [component-state [event]]))
