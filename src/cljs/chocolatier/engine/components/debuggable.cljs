@@ -51,9 +51,9 @@
         ;; Try to get the sprite for collision zone or create a new one
         graphic (or (:graphic component-state) (pixi/mk-graphic! stage))]
     ;; If there is a collision going on change set the color to red
-    (if (empty? (seq (filter #(= (:event-id %) :collision) inbox)))
-      (-> graphic (pixi/clear) (base-style!) (pixi/circle x y hit-radius))
-      (-> graphic (pixi/clear) (collision-style!) (pixi/circle x y hit-radius)))
+    (if (seq (filter #(= (:event-id %) :collision) inbox))
+      (-> graphic (pixi/clear) (collision-style!) (pixi/circle x y hit-radius))
+      (-> graphic (pixi/clear) (base-style!) (pixi/circle x y hit-radius)))
     ;; If the sprite does not exist it will add it to component state
     (assoc component-state :graphic graphic)))
 
@@ -69,8 +69,8 @@
         ;; Try to get the sprite for collision zone or create a new one
         graphic (or (:graphic component-state) (pixi/mk-graphic! stage))]
     ;; If there is a collision going on change set the color to red
-    (if (empty? (seq (filter #(= (:event-id %) :collision) inbox)))
-      (-> graphic (pixi/clear) (player-style!) (pixi/circle x y hit-radius))
-      (-> graphic (pixi/clear) (collision-style!) (pixi/circle x y hit-radius)))
+    (if (seq (filter #(= (:event-id %) :collision) inbox))
+      (-> graphic (pixi/clear) (collision-style!) (pixi/circle x y hit-radius))
+      (-> graphic (pixi/clear) (player-style!) (pixi/circle x y hit-radius)))
     ;; If the sprite does not exist it will add it to component state
     (assoc component-state :graphic graphic)))

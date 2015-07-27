@@ -115,7 +115,7 @@
 (defn all-not-nil?
   "Returns false if any of the items in coll are nil"
   [coll]
-  (empty? (filter nil? coll)))
+  (every? identity coll))
 
 (defn- component-fn-body
   "Use mk-component-fn to construct a component function body"
@@ -140,7 +140,7 @@
         ;; Make sure the results are not more than 2 items and not
         ;; an empty vector
         (assert (and (<= (count result) 2)
-                     (not (empty? result))
+                     (seq result)
                      ;; Make sure the items in the list are not nil
                      (all-not-nil? result)))
         (output-fn state component-id entity-id component-state events))

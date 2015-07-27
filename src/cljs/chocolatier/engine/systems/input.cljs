@@ -16,8 +16,8 @@
     (swap! *keyboard-input assoc (keyword key) "off")))
 
 (defn init-input!
-  "Adds event listener to input events. Assoc's a removal function to 
-   the *keyboard-input"  
+  "Adds event listener to input events. Assoc's a removal function to
+   the *keyboard-input"
   []
   ;; Add js events for keyup and keydown
   (.addEventListener js/document "keydown" keydown)
@@ -32,7 +32,7 @@
 
 (defn reset-input! []
   (debug "Resetting input")
-  (when-not (empty? @*keyboard-input)
+  (when (seq @*keyboard-input)
     (debug "Removing input listeners")
     (doseq [k [:keydown :keyup]]
       (let [f (k @*keyboard-input)]

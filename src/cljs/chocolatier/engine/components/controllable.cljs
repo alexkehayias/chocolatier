@@ -37,14 +37,14 @@
    - action: the action based on the input"
   [input-state]
   (loop [out {}, input-seq (seq input-state)]
-    (if (empty? input-seq)
-      out
+    (if (seq input-seq)
       (let [[k v] (first input-seq)
             out (if (= v "on")
                   (if-let [interaction (k keycode->interaction)]
                     (into out interaction) out)
                   out)]
-        (recur out (rest input-seq))))))
+        (recur out (rest input-seq)))
+      out)))
 
 (defn react-to-input
   [input-state component-state component-id entity-id]
@@ -70,6 +70,6 @@
                 (conj (ev/mk-event {:action action :direction direction}
                                    [:action entity-id])))
         updated-state (assoc component-state :action action :direction direction)]
-    (if (empty? events)
-      updated-state
-      [updated-state events])))
+    (if (seq events)
+      [updated-state events]
+      updated-state)))

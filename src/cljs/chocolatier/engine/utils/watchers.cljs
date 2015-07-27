@@ -42,7 +42,7 @@
   [key state old-val new-val]
   (when (not= old-val new-val)
     (let [diff (map-difference new-val old-val)]
-      (when-not (empty? diff)
+      (when (seq diff)
         (debug "State changed" key (diff->str diff old-val))))))
 
 (defn seq-watcher
