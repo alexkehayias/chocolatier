@@ -2,6 +2,10 @@
   (:require [chocolatier.engine.ces :as ces])
   (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
 
+
+(def scene-id-path
+  [:game :scene-id])
+
 (defmulti mk-state
   "Returns a hashmap representing game state. Dispatches based on the
    keyword of the first item in an arguments vector.
@@ -50,7 +54,7 @@
                                   :subscriptions [[:e1 :ev1]]])"
   [state init-scene-id & specs]
   (reduce (fn [accum args] (mk-state accum args))
-          (assoc-in state [:game :scene-id] init-scene-id)
+          (assoc-in state scene-id-path init-scene-id)
           specs))
 
 (defn timestamp
@@ -90,9 +94,8 @@
    Args:
    - state: the game state hash map"
   [game-state]
-  ;; Uses transient state for efficiency
-  (let [scene-id (get-in game-state [:game :scene-id])
-        systems (ces/get-system-fns game-state (-> game-state :scenes scene-id))
+  (let [scene-id (get-in game-state scene-id-path)
+        systems (ces/get-system-fns game-state (get-in game-state [:scenes scene-id]))
         state (local game-state)]
     (forloop [[i 0] (< i (count systems)) (inc i)]
              (>> state ((systems i) (<< state))))
@@ -104,10 +107,9 @@
 
 (defn game-loop-with-stats
   [game-state stats-obj]
-  ;; Uses transient state for efficiency
   (.begin stats-obj)
-  (let [scene-id (get-in game-state [:game :scene-id])
-        systems (ces/get-system-fns game-state (-> game-state :scenes scene-id))
+  (let [scene-id (get-in game-state scene-id-path)
+        systems (ces/get-system-fns game-state (get-in game-state [:scenes scene-id]))
         system-count (count systems)
         state (local game-state)
         loop-count (local 0)]

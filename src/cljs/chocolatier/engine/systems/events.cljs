@@ -19,6 +19,9 @@
 ;; event/entity/component id
 
 
+(def queue-path
+  [:state :events :queue])
+
 (defn subscribe
   "Subscribe to the given event.
 
@@ -53,17 +56,22 @@
    - [:s1 :s2 :s3] matches all events with all 3 selectors
    - [:s1] matches all results in the :s2 and :s3 key"
   [state selectors]
-  (when (seq selectors)
-    (let [result (get-in state (into [:state :events :queue] selectors))]
-      (if (map? result)
-        (mapcat #(get-events state (conj selectors %)) (keys result))
-        result))))
+  (let [result (get-in state (into queue-path selectors))]
+    (if (map? result)
+      (mapcat #(get-events state (conj selectors %)) (keys result))
+      result)))
 
 (defn get-subscribed-events
   "Returns a lazy seq of events for entity-id based on their subscriptions"
   [state entity-id]
-  (mapcat #(get-events state %)
-          (get-in state [:state :events :subscriptions entity-id])))
+  (loop [s (get-in state [:state :events :subscriptions entity-id])
+         accum (transient [])]
+    (if-let [[selectors & more] s]
+      (do
+        (doseq [e (get-events state selectors)]
+          (conj! accum e))
+        (recur more accum))
+      (persistent! accum))))
 
 (defn valid-event?
   "Asserts the validity of an event. A properly formed event has the
@@ -84,9 +92,11 @@
 (defn emit-event
   "Enqueues an event onto the queue"
   [state msg selectors]
-  (let [event (mk-event msg selectors)]
-    (valid-event? event)
-    (update-in state (into [:state :events :queue] selectors) conj event)))
+  (let [event (mk-event msg selectors)
+        path (into queue-path selectors)]
+    ;; TODO only include this if we are in dev mode
+    ;; (valid-event? event)
+    (update-in state path conj event)))
 
 (defn emit-events
   "Emits a collection of events at the same time. Returns update game state."
@@ -98,7 +108,7 @@
 (defn clear-events-queue
   "Resets event queue to an empty vector. Returns updates state."
   [state]
-  (assoc-in state [:state :events :queue] {}))
+  (assoc-in state queue-path {}))
 
 (defn init-events-system
   "Adds an :events entry to the state hashmap."

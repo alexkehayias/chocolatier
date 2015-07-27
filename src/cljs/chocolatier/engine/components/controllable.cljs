@@ -9,9 +9,8 @@
    component-id and entity-id"
   [state component-id entity-id]
   (let [input-state (-> state :game :input)
-        component-state (ces/get-component-state state component-id entity-id)
-        inbox (ev/get-subscribed-events state entity-id)]
-    [input-state component-state component-id entity-id inbox]))
+        component-state (ces/get-component-state state component-id entity-id)]
+    [input-state component-state component-id entity-id]))
 
 (def move-rate 4)
 
@@ -48,7 +47,7 @@
         (recur out (rest input-seq))))))
 
 (defn react-to-input
-  [input-state component-state component-id entity-id inbox]
+  [input-state component-state component-id entity-id]
   (let [prev-direction (or (:direction component-state) :down)
         {:keys [action direction offset-x offset-y]} (input->interaction input-state)
         ;; Default to standing

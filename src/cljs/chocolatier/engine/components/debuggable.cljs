@@ -12,7 +12,7 @@
         collidable-state (ces/get-component-state state :collidable entity-id)
         component-state (ces/get-component-state state component-id entity-id)
         inbox (ev/get-subscribed-events state entity-id)
-        stage (-> state :game :rendering-engine :stage)]
+        stage (get-in state [:game :rendering-engine :stage])]
     [entity-id stage component-state moveable-state collidable-state inbox]))
 
 (defn base-style!
@@ -44,8 +44,8 @@
   (let [{:keys [pos-x pos-y hit-radius height width]} moveable-state
         {:keys [hit-radius height width]} collidable-state
         ;; Center hitzone on middle of entity
-        half-height (/ height 2) 
-        half-width (/ width 2) 
+        half-height (/ height 2)
+        half-width (/ width 2)
         x (+ pos-x half-width)
         y (+ pos-y half-height)
         ;; Try to get the sprite for collision zone or create a new one
@@ -62,8 +62,8 @@
   (let [{:keys [pos-x pos-y]} moveable-state
         {:keys [hit-radius height width]} collidable-state
         ;; Center hitzone on middle of entity
-        half-height (/ height 2) 
-        half-width (/ width 2) 
+        half-height (/ height 2)
+        half-width (/ width 2)
         x (+ pos-x half-width)
         y (+ pos-y half-height)
         ;; Try to get the sprite for collision zone or create a new one

@@ -117,6 +117,38 @@
   [coll]
   (empty? (filter nil? coll)))
 
+(defn- component-fn-body
+  "Use mk-component-fn to construct a component function body"
+  [f args-fn format-fn sys-kwargs state component-id entity-id]
+  (let [args (if args-fn
+               (args-fn state component-id entity-id)
+               ;; Default args to the component function
+               [entity-id
+                (get-component-state state component-id entity-id)
+                (ev/get-subscribed-events state entity-id)])
+        ;; If sys kwargs were passed in then include that as the
+        ;; last argument to the component fn
+        args (if sys-kwargs
+               (conj args sys-kwargs)
+               args)
+        ;; Pass args and system argument to the component function
+        result (apply f args)
+        output-fn (or format-fn update-component-state-and-events)]
+    ;; Handle if the result is going to include events or not
+    (if (vector? result)
+      (let [[component-state events] result]
+        ;; Make sure the results are not more than 2 items and not
+        ;; an empty vector
+        (assert (and (<= (count result) 2)
+                     (not (empty? result))
+                     ;; Make sure the items in the list are not nil
+                     (all-not-nil? result)))
+        (output-fn state component-id entity-id component-state events))
+      (do
+        ;; Make sure the result is a hashmap (updated state)
+        (assert (map? result))
+        (output-fn state component-id entity-id result)))))
+
 (defn mk-component-fn
   "Returns a function that is called with game state and the entity id.
 
@@ -148,36 +180,14 @@
        NOTE: must return a collection of arguments to be applied to f
      - format-fn: called with component-id, entity-id and the result of f,
        must return a mergeable hashmap"
-  [component-id f & [{:keys [args-fn format-fn]} options]]
-  (fn [state entity-id & [sys-kwargs]]
-    (let [args (if args-fn
-                 (args-fn state component-id entity-id)
-                 ;; Default args to the component function
-                 [entity-id
-                  (get-component-state state component-id entity-id)
-                  (ev/get-subscribed-events state entity-id)])
-          ;; If sys kwargs were passed in then include that as the
-          ;; last argument to the component fn
-          args (if sys-kwargs
-                 (conj args sys-kwargs)
-                 args)
-          ;; Pass args and system argument to the component function
-          result (apply f args)
-          output-fn (or format-fn update-component-state-and-events)]
-      ;; Handle if the result is going to include events or not
-      (if (vector? result)
-        (let [[component-state events] result]
-          ;; Make sure the results are not more than 2 items and not
-          ;; an empty vector
-          (assert (and (<= (count result) 2)
-                       (not (empty? result))
-                       ;; Make sure the items in the list are not nil
-                       (all-not-nil? result)))
-          (output-fn state component-id entity-id component-state events))
-        (do
-          ;; Make sure the result is a hashmap (updated state)
-          (assert (map? result))
-          (output-fn state component-id entity-id result))))))
+  [component-id f & [{:keys [args-fn format-fn]}]]
+  ;; Using multiple arrities as an optimization for dynamic
+  ;; dispatching of optional args in the fn signature
+  (fn
+    ([state entity-id]
+     (component-fn-body f args-fn format-fn nil state component-id entity-id))
+    ([state entity-id sys-kwargs]
+     (component-fn-body f args-fn format-fn sys-kwargs state component-id entity-id))))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.

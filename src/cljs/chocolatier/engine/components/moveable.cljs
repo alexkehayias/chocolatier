@@ -9,13 +9,19 @@
   [pos-x pos-y]
   {:pos-x pos-x :pos-y pos-y})
 
+(defn collision-event? [inbox]
+  (first (filter #(= (:event-id %) :collision) inbox)))
+
+(defn get-move-change-event [inbox]
+  (first (filter #(= (:event-id %) :move-change) inbox)))
+
 (defn move
   "Check if there is an input-change, collision events, and calculates the
    new position of the entity on the screen."
   [entity-id component-state inbox]
   (let [{:keys [pos-x pos-y]} component-state
-        collision? (seq (filter #(= (:event-id %) :collision) inbox))
-        move-change (first (filter #(= (:event-id %) :move-change) inbox))
+        collision? (collision-event? inbox)
+        move-change (get-move-change-event inbox)
         {:keys [offset-x offset-y] :or {offset-x 0 offset-y 0}} (:msg move-change)
         new-pos-x (- pos-x offset-x)
         new-pos-y (- pos-y offset-y)
