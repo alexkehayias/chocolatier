@@ -108,11 +108,13 @@
 
 (defn update-component-state-and-events
   "Update a components state. If there are events then also add those to
-   game state."
-  [state component-id entity-id val & [events]]
-  (-> state
-      (mk-component-state component-id entity-id val)
-      (ev/emit-events events)))
+  game state."
+  ([state component-id entity-id val]
+   (mk-component-state state component-id entity-id val))
+  ([state component-id entity-id val events]
+   (-> state
+       (mk-component-state component-id entity-id val)
+       (ev/emit-events events))))
 
 (defn all-not-nil?
   "Returns false if any of the items in coll are nil"
@@ -159,12 +161,10 @@
    format-fn or update-component-state-and-events which returns an updated
    game state.
 
-   The component function must take & args or & {:as sys-kwargs} so that
-   a system may pass in keyword arguments directly to the the component
-   function. System keyword arguments will be at the end of the argument
-   list even if an :args-fn is specified. This is useful for optimizations
-   where each entity would otherwise perform the same operation multiple
-   times.
+   To have the component function take an argument passed in by the system
+   function, the component function must take it as the last argument even
+   if a :args-fn is specified. This is useful for optimizations where each
+   entity would otherwise perform the same operation multiple times.
 
    The component function can return 1 result or 2. If 1 result then the
    output is treated as the component state. If it is 2 then the second
