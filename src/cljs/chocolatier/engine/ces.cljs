@@ -52,18 +52,20 @@
 (defn iter-entities
   "Iterate over a collection of entity-ids with component functions.
    Optionally pass in additional opts hashmap that will be passed to
-   each component function"
-  [state fns entity-ids & [opts]]
-  (let [local-state (local state)
-        len-fns (count fns)
-        len-ents (count entity-ids)]
-    (forloop [[i 0] (< i len-fns) (inc i)]
-      (forloop [[j 0] (< j len-ents) (inc j)]
-               (>> local-state
-                   (if opts
-                     ((fns i) (<< local-state) (entity-ids j) opts)
-                     ((fns i) (<< local-state) (entity-ids j))))))
-    (<< local-state)))
+   each component function as the last argument"
+  ([state fns entity-ids]
+   (iter-entities state fns entity-ids nil))
+  ([state fns entity-ids opts]
+   (let [local-state (local state)
+         len-fns (count fns)
+         len-ents (count entity-ids)]
+     (forloop [[i 0] (< i len-fns) (inc i)]
+              (forloop [[j 0] (< j len-ents) (inc j)]
+                       (>> local-state
+                           (if opts
+                             ((fns i) (<< local-state) (entity-ids j) opts)
+                             ((fns i) (<< local-state) (entity-ids j))))))
+     (<< local-state))))
 
 (defn deep-merge
   "Recursively merges maps. If vals are not maps, the last value wins.
