@@ -62,6 +62,20 @@ CLOSED: [2015-07-11 Sat 21:37]
 - This didn't end up helping since I found that these issues only show up when dynamically loading things from the repl
 * DONE Audio component <2015-05-24 Sun>
 CLOSED: [2015-05-24 Sun 17:12]
+* TODO Add static fn analysis and pseudo name optimization for min build <2015-08-01 Sat>
+- As per this blog post http://swannodette.github.io/2015/03/16/optimizing-clojurescript-function-invocation/ we can get better call site optimization
+- Need extern file to work with advanced Google Closure optimization i.e https://github.com/cljsjs/packages/blob/master/d3/resources/cljsjs/d3/common/d3.ext.js
+- Alternatively, refer to external libs by string name only
+  (let [yay ((goog.object.get js/window "yayQuery"))]
+    ((goog.object.get yay "sayHello") ((goog.object.get yay "getMessage"))))
+- [ ] Extern file for pixijs
+- [ ] Extern file for howlerjs
+- [ ] Update project.clj under cljsbuild profile "min" build
+  ;; Statically analyze function arrities
+  :static true
+  ;; Flatten namespace conventions into
+  ;; names instead of nested objects
+  :pseudo-names true
 * TODO Assets pipeline for asynchronously loading sounds/tiles/sprites/etc
 - Provide a nice abstraction for declaring pipeline of functions for loading assets asynchronously so that it doesn't look like spaghetti
 - Integrate that into the mk-game-state function to keep the whole thing declarative
@@ -82,8 +96,12 @@ CLOSED: [2015-05-24 Sun 17:12]
     - To get all messages at a selector, iterate through all keys at that point
     - Only once per game loop will we need to return a new game state for the sake of events (when the queues are cleared)
   - Flatten the keys for events and
-  - Batch all the events in one shot at the end of the system call
-* Profiling <2015-07-19 Sun>
+  - Batch all the events in one shot at the end of the system call\
+* Profiling notes
+- In the chrome js console profiler:
+  - "self" is how much time was spent doing work directly in that function.
+  - "total" is how much time was spent in that function, and in the functions it called.
+** Profiling <2015-07-19 Sun>
 - AI system profile
   - apply is 45% of the time spent
   - update-component-state-and-events 35%
@@ -93,11 +111,15 @@ CLOSED: [2015-05-24 Sun 17:12]
   - mk-spatial-grid is 52% of time, looks like the group-by is inefficient
 - Narrow collision system
   - Pretty small amount of time spent there
-* Profiling <2015-07-25 Sat>
+** Profiling <2015-07-25 Sat>
 - narrow-collision detection takes 25%
   - check-collsions appears to be the culprit with 20% time spent there
 - get-subscribed-events takes 22% of the overall profiled time
   - usage of mapcat appears to be the culprit with 20% time spent there
+* TODO Fix V8 optimization bailout in ces/iter-entities <2015-07-26 Sun>
+- Error is "bad value context for arguments value"
+- https://github.com/bevry/taskgroup/issues/12#issue-23512231
+- https://code.google.com/p/v8/issues/detail?id=3037
 * DONE Clean up usage of apply in mk-component-fn <2015-07-25 Sat>
 CLOSED: [2015-07-25 Sat 19:37]
 * DONE mk-event should take a vector of selectors instead of varargs <2015-07-25 Sat>

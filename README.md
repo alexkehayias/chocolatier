@@ -27,8 +27,7 @@ After completing step 2 from the `figwheel` instructions above, in emacs:
 
 ### Compiling with advanced optimizations
 
-1. `lein do clean, cljsbuild once min`
-2. Open `<project path>/resources/pubic/index.html` in a Chrome browser with local file access allowed i.e `"<path to chrome app>" --allow-file-access-from-files <project path>/resources/public/index.html`
+Currently not supported due to external library dependencies which will require an externs file or a rewrite of how external objects are called.
 
 ## Entity Component System
 
