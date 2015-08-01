@@ -46,16 +46,16 @@
               (ces/iter-fns
                state
                (vec
-                (for [i (range 25)]
+                (for [i (range 100)]
                   #(create-enemy! % stage (keyword (gensym)) 20)))))]
    ;; A scene is collection of keys representing systems
    ;; that will be called in sequential order
    [:scene :default [:input
                      :user-input
                      :ai
-                     :broad-collision
-                     :narrow-collision
-                     :collision-debug
+                     ;; :broad-collision
+                     ;; :narrow-collision
+                     ;; :collision-debug
                      :movement
                      :tiles
                      :replay

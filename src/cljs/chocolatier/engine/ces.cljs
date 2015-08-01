@@ -67,14 +67,6 @@
                              ((fns i) (<< local-state) (entity-ids j))))))
      (<< local-state))))
 
-(defn deep-merge
-  "Recursively merges maps. If vals are not maps, the last value wins.
-   via https://groups.google.com/forum/#!topic/clojure/UdFLYjLvNRs"
-  [& vals]
-  (if (every? map? vals)
-    (apply merge-with deep-merge vals)
-    (last vals)))
-
 (defn entities-with-component
   "Takes a hashmap and returns all keys whose values contain component-id"
   [state component-id]

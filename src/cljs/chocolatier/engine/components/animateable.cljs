@@ -79,12 +79,12 @@
   (apply merge (map #(apply mk-animation %) animation-specs)))
 
 (defn mk-animateable-state
-  "Helper function for constructing state for animating sprites based 
+  "Helper function for constructing state for animating sprites based
    on a spritesheet.
 
    Example:
    (-mk-animation-state stage
-                        \"/img/my-spritesheet.png\" 
+                        \"/img/my-spritesheet.png\"
                         0 0
                         :walk
                         [:walk 10 10 2 2 0 0 5]
@@ -100,9 +100,9 @@
                    ;; the animation specs to set it correctly
                    (pixi/set-sprite-frame! 0 0 0 0))
         animations (apply mk-animations-map animation-specs)]
-    ;; Set the initial sprite position    
+    ;; Set the initial sprite position
     (set! (.-position.x sprite) screen-x)
-    (set! (.-position.y sprite) screen-y)    
+    (set! (.-position.y sprite) screen-y)
     {:animation-stack (list default-animation-kw)
      :sprite sprite
      :animations animations
@@ -112,7 +112,7 @@
   "Increments the frame of a sprite's spritesheet. If the animation sequence is
    at the end, starts from the beginning. Returns a pair; updated sprite and frame."
   [sprite animation-fn frame-n]
-  (if-let [updated-sprite (animation-fn sprite (inc frame-n))] 
+  (if-let [updated-sprite (animation-fn sprite (inc frame-n))]
     [updated-sprite (inc frame-n)]
     [(animation-fn sprite 0) 0]))
 
@@ -122,7 +122,7 @@
   (:msg (first (filter #(= (:event-id %) :move) inbox))))
 
 (defn get-action
-  "Returns a keyword of the first action event from the inbox and appends 
+  "Returns a keyword of the first action event from the inbox and appends
    the direction"
   [inbox]
   (when-let [event (first (filter #(= (:event-id %) :action) inbox))]
@@ -142,8 +142,8 @@
 
 ;; WARNING: Assumes a single spritesheet and a single sprite
 (defn animate
-  "When an action event is in the inbox changes the state and switches 
-   animations. Otherwise, the animation frame is incremented to the next 
+  "When an action event is in the inbox changes the state and switches
+   animations. Otherwise, the animation frame is incremented to the next
    frame as specified by the animation spec.
 
    NOTE: The animation-stack must be a list not a vec so conj works as expected"
@@ -163,11 +163,9 @@
                            (incr-frame animation-fn frame-n))]
     ;; Sticking this in a conditional to avoid doing extra work if
     ;; there wasn't an animation change
-    (if-not animation-change?
-      (assoc component-state :frame frame :sprite sprite)
+    (if animation-change?
       (assoc component-state
-        :animation-stack (if animation-change?
-                           (if new-action
+        :animation-stack (if new-action
                              (conj (drop 1 animation-stack) new-action)
                              ;; There always needs to be an animation
                              ;; so if the stack has only 1 item in it
@@ -175,6 +173,6 @@
                              (if (> (count animation-stack) 1)
                                (drop 1 animation-stack)
                                animation-stack))
-                           animation-stack)
         :frame frame
-        :sprite sprite))))
+        :sprite sprite)
+      (assoc component-state :frame frame :sprite sprite))))

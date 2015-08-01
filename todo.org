@@ -116,10 +116,12 @@ CLOSED: [2015-05-24 Sun 17:12]
   - check-collsions appears to be the culprit with 20% time spent there
 - get-subscribed-events takes 22% of the overall profiled time
   - usage of mapcat appears to be the culprit with 20% time spent there
-* TODO Fix V8 optimization bailout in ces/iter-entities <2015-07-26 Sun>
+* DONE Fix V8 optimization bailout in ces/iter-entities <2015-07-26 Sun>
+CLOSED: [2015-08-01 Sat 11:56]
 - Error is "bad value context for arguments value"
 - https://github.com/bevry/taskgroup/issues/12#issue-23512231
 - https://code.google.com/p/v8/issues/detail?id=3037
+- Fixed by making it a two arrity function
 * DONE Clean up usage of apply in mk-component-fn <2015-07-25 Sat>
 CLOSED: [2015-07-25 Sat 19:37]
 * DONE mk-event should take a vector of selectors instead of varargs <2015-07-25 Sat>
@@ -164,10 +166,6 @@ CLOSED: [2015-02-21 Sat 11:19]
 - Austin 1.6 has issues so need to use version 1.7-SNAPSHOT or the repl doesn't work
 - Had to update lein cljsbuild because it was to old to work with later cljs
 - Now using the cljs required by core async latest
-* TODO Replace piggieback with built in browser repl <2015-03-29 Sun>
-Use the built in browser repl setup https://github.com/clojure/clojurescript/wiki/Quick-Start#browser-repl
-- [ ] Make sure it works with cider
-- [ ] Make sure it works with lein repl
 * TODO Add pixijs as a foreign dependency <2015-03-29 Sun>
 https://github.com/clojure/clojurescript/wiki/Foreign-Dependencies
 * TODO Live reloading during running game loop for any function change
