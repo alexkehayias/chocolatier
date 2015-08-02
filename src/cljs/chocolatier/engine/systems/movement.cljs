@@ -4,5 +4,5 @@
 
 
 (defn movement-system
-  [state fns entity-ids]
-  (ces/iter-entities state fns entity-ids))
+  [state f entity-ids]
+  (reduce f state entity-ids))

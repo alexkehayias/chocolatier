@@ -37,7 +37,7 @@ Organization:
 
 1. Scene - collection of system labels to be looked up and called by the game loop (main menu, random encounter, world map, etc)
 2. System - functions that operates on a component (or not) and returns updated game state. Examples: input, rendering, collision detection
-3. Components - hold state and component functions relating to a certain aspect. Polymorphism can be used to dispatch on entity IDs (or however else you want) for finer control using multimethods. Examples: moveable, user controllable, collidable, destructable
+3. Components - hold state and component function relating to a certain aspect. Polymorphism can be used to dispatch on entity IDs (or however else you want) for finer control using multimethods. Examples: moveable, user controllable, collidable, destructable
 4. Entities - unique IDs that have a list of components to they participate in. Examples: `{:player1 [:controllable :moveable :destructable]}`
 
 ### Example
@@ -60,8 +60,8 @@ The following example implements a simple game loop, system, component, and enti
 
 (defn test-system
   "Call all the component functions and return update game state"
-  [state fns entity-ids]
-  (ces/iter-entities state fns entity-ids)
+  [state component-f entity-ids]
+  (reduce component-f state entity-ids))
 
 (defn test-component-fn
   "Increment the :x value by 1"
@@ -76,7 +76,7 @@ The following example implements a simple game loop, system, component, and enti
                        :test-scene
                        [:scene :test-scene [:test-system]]
                        [:system :test-system test-system :testable]
-                       [:component :testable [test-component-fn]]
+                       [:component :testable test-component-fn]
                        [:entity :player1 :components [[:testable {:x 0 :y 0}]]]
                        [:entity :player2 :components [[:testable {:x 10 :y 10]])
       (game-loop 0)))

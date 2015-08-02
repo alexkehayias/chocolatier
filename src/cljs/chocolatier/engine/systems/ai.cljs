@@ -5,7 +5,7 @@
 
 
 (defn ai-system
-  [state fns entity-ids]
+  [state f entity-ids]
   (let [player (ces/get-component-state state :moveable :player1)
         player-state {:player-state player}]
-    (ces/iter-entities state fns entity-ids player-state)))
+    (reduce #(f %1 %2 player-state) state entity-ids)))

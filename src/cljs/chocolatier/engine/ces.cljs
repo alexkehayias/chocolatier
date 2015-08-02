@@ -80,11 +80,10 @@
   (mapv first
         (filter #(boolean (some (set component-ids) (second %))) entities)))
 
-(defn get-component-fns
+(defn get-component-fn
   [state component-id]
-  (or (get-in state [:components component-id :fns])
-      (throw (js/Error. (str "No component functions found for " component-id
-                             " in" (-> state :components))))))
+  (or (get-in state [:components component-id])
+      (throw (js/Error. (str "No component function found for " component-id)))))
 
 (defn get-component-state
   "Returns a hashmap of state associated with the component for the given
@@ -191,17 +190,12 @@
    - uid: unique identifier for this component
    - fns: a vector of functions. Optionally these can be a pair of
      component fn and an args fn"
-  [state uid fn-specs]
-  ;; Force the functions into a vector rather than a lazy seq
-  (let [wrapped-fns (mapv
-                     #(if (seqable? %)
-                        (do (log/debug "mk-component: found options" %)
-                            (apply mk-component-fn uid %))
-                        (mk-component-fn uid %))
-                     fn-specs)]
-    ;; Add the component to state map
-    ;; TODO do we need a :fns keyword? there's no other data stored here
-    (assoc-in state [:components uid] {:fns wrapped-fns})))
+  [state uid fn-spec]
+  (let [wrapped-fn (if (seqable? fn-spec)
+                     (do (log/debug "mk-component: found options" fn-spec)
+                         (apply mk-component-fn uid fn-spec))
+                     (mk-component-fn uid fn-spec))]
+    (assoc-in state [:components uid] wrapped-fn)))
 
 (defn mk-system-fn
   "Returns a function representing a system.
@@ -222,14 +216,14 @@
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component state component-id)
-           component-fns (get-component-fns state component-id)]
-       (f state component-fns entities))))
+           component-fn (get-component-fn state component-id)]
+       (f state component-fn entities))))
   ([f component-id & more-component-ids]
    (fn [state]
      (let [ids (conj more-component-ids component-id)
            entities (entities-with-multi-components (:entities state) ids)
-           component-fns (get-component-fns state component-id)]
-       (f state component-fns entities)))))
+           component-fn (get-component-fn state component-id)]
+       (f state component-fn entities)))))
 
 (defn mk-system
   "Add the system function to the state. Wraps the system function using
