@@ -51,19 +51,14 @@
 (defn get-events
   "Returns a collecition of events or nil"
   [state selectors]
-  (get-in state (into queue-path selectors)))
+  (get-in state (concat queue-path selectors)))
 
 (defn get-subscribed-events
-  "Returns a lazy seq of events for entity-id based on their subscriptions"
-  [state entity-id]
-  (loop [subscriptions (get-in state [:state :events :subscriptions entity-id])
-         accum (transient [])]
-    (if-let [selectors (first subscriptions)]
-      (do
-        (doseq [e (get-events state selectors)]
-          (conj! accum e))
-        (recur (rest subscriptions) accum))
-      (persistent! accum))))
+  "Returns a colleciton of events that matches the collection of subscriptions
+   or nil if the subscriptions is empty"
+  [state selector-coll]
+  (when (seq selector-coll)
+    (reduce into (map #(get-events state %) selector-coll))))
 
 (defn valid-event?
   "Asserts the validity of an event. A properly formed event has the

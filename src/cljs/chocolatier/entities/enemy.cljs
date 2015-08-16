@@ -27,11 +27,8 @@
     (.addChild stage sprite)
     (ces/mk-entity state
                    uid
-                   :components [[:moveable move-state]
-                                [:animateable animation-state]
-                                [:collidable collision-state]
-                                :collision-debuggable
-                                :ai]
-                   :subscriptions [[:move-change uid]
-                                   [:collision uid]
-                                   [:move uid]])))
+                   [[:moveable move-state]
+                    [:animateable animation-state]
+                    [:collidable collision-state]
+                    :collision-debuggable
+                    :ai])))

@@ -47,16 +47,16 @@
               (ces/iter-fns
                state
                (vec
-                (for [i (range 50)]
+                (for [i (range 100)]
                   #(create-enemy! % stage (keyword (gensym)) 20)))))]
    ;; A scene is collection of keys representing systems
    ;; that will be called in sequential order
    [:scene :default [:input
                      :user-input
                      :ai
-                     :broad-collision
-                     :narrow-collision
-                     :collision-debug
+                     ;; :broad-collision
+                     ;; :narrow-collision
+                     ;; :collision-debug
                      :movement
                      :tiles
                      :replay
@@ -86,7 +86,8 @@
    ;; Animation system for animating sprites
    [:system :animate animation-system :animateable]
    [:component :animateable
-    [animate {:args-fn include-moveable-state}]]
+    [animate {:args-fn include-moveable-state
+              :subscriptions [:action]}]]
    ;; Collision detection system
    [:system :broad-collision (broad-collision-system (/ width 20))]
    [:system :narrow-collision narrow-collision-system]
@@ -94,7 +95,8 @@
    [:component :collision-debuggable
     [draw-collision-zone {:args-fn include-moveable-state-and-stage}]]
    [:system :movement movement-system :moveable]
-   [:component :moveable move]
+   ;; TODO figure out how to subscribe per entity implicitely!
+   [:component :moveable [move {:subscriptions [:move-change :collision]}]]
    [:system :ai ai-system :ai]
    [:component :ai
     [behavior {:args-fn include-player-and-moveable-state}]]

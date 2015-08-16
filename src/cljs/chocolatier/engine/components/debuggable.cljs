@@ -11,7 +11,7 @@
   (let [moveable-state (ces/get-component-state state :moveable entity-id)
         collidable-state (ces/get-component-state state :collidable entity-id)
         component-state (ces/get-component-state state component-id entity-id)
-        inbox (ev/get-subscribed-events state entity-id)
+        inbox (ev/get-subscribed-events state [[:collision entity-id]])
         stage (get-in state [:game :rendering-engine :stage])]
     [entity-id stage component-state moveable-state collidable-state inbox]))
 

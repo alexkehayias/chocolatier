@@ -114,13 +114,18 @@
 
 (defn- component-fn-body
   "Use mk-component-fn to construct a component function body"
-  [f args-fn format-fn sys-kwargs state component-id entity-id]
+  [f args-fn format-fn subscriptions sys-kwargs state component-id entity-id]
   (let [args (if args-fn
                (args-fn state component-id entity-id)
+               ;; TODO maybe all args should be a hashmap so that this
+               ;; can be more dynamic? Can add or remove new
+               ;; functionality easily
                ;; Default args to the component function
                [entity-id
                 (get-component-state state component-id entity-id)
-                (ev/get-subscribed-events state entity-id)])
+                ;; TODO include other selected component state??
+                ;; (map #(get-component-state state % entity-id) component-states)
+                (ev/get-subscribed-events state subscriptions)])
         ;; If sys kwargs were passed in then include that as the
         ;; last argument to the component fn
         args (if sys-kwargs
@@ -172,15 +177,33 @@
        allows custom arguments to get access to any state in the game.
        NOTE: must return a collection of arguments to be applied to f
      - format-fn: called with component-id, entity-id and the result of f,
-       must return a mergeable hashmap"
-  [component-id f & [{:keys [args-fn format-fn]}]]
+       must return a mergeable hashmap
+     - subscriptions: a collection of vectors of selectors of events to be
+       included in the inbox argument of the component-fn. Implicitely adds
+       the entity-id as the last selector so that component subscriptions
+       are always per entity."
+  [component-id component-fn & [{:keys [args-fn format-fn subscriptions]}]]
   ;; Using multiple arrities as an optimization for dynamic
   ;; dispatching of optional args in the fn signature
   (fn
     ([state entity-id]
-     (component-fn-body f args-fn format-fn nil state component-id entity-id))
+     (component-fn-body component-fn
+                        args-fn
+                        format-fn
+                        (map #(vector % entity-id) subscriptions)
+                        nil
+                        state
+                        component-id
+                        entity-id))
     ([state entity-id sys-kwargs]
-     (component-fn-body f args-fn format-fn sys-kwargs state component-id entity-id))))
+     (component-fn-body component-fn
+                        args-fn
+                        format-fn
+                        (map #(vector % entity-id) subscriptions)
+                        sys-kwargs
+                        state
+                        component-id
+                        entity-id))))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.
@@ -256,24 +279,18 @@
               :components [:controllable
                            [:collidable {:hit-radius 10}]
                            :collision-debuggable
-                           [:moveable {:x 0 :y 0}]]
-              :subscriptions [[:player1 :move-change :player1]
-                              [:player1 :collision :player1]
-                              [:player1 :move :player1]])"
-  [state uid & {:keys [components subscriptions]
-                :or {components [] subscriptions []}}]
-  (let [;; Add in all the components
-        state (reduce #(if (vector? %2)
-                         ;; If there was a vector passed in then the
-                         ;; second item is the initial component state
-                         (-> (update-in %1 [:entities uid] conj (first %2))
-                             (mk-component-state (first %2) uid (second %2)))
-                         ;; Always initialize component state with an
-                         ;; empty hashmap. If they do not have any
-                         ;; component state they will not be found by
-                         ;; ces/entities-with-component
-                         (-> (update-in %1 [:entities uid] conj %2)
-                             (mk-component-state %2 uid {})))
-                      state
-                      components)]
-    (ev/multi-subscribe state uid subscriptions)))
+                           [:moveable {:x 0 :y 0}]])"
+  [state uid components]
+  (reduce #(if (vector? %2)
+             ;; If there was a vector passed in then the
+             ;; second item is the initial component state
+             (-> (update-in %1 [:entities uid] conj (first %2))
+                 (mk-component-state (first %2) uid (second %2)))
+             ;; Always initialize component state with an
+             ;; empty hashmap. If they do not have any
+             ;; component state they will not be found by
+             ;; ces/entities-with-component
+             (-> (update-in %1 [:entities uid] conj %2)
+                 (mk-component-state %2 uid {})))
+          state
+          components))

@@ -10,7 +10,7 @@
   [state component-id entity-id]
   (let [component-state (ces/get-component-state state component-id entity-id)
         moveable-state (ces/get-component-state state :moveable entity-id)
-        inbox (ev/get-subscribed-events state entity-id)]
+        inbox (ev/get-subscribed-events state [[:action entity-id]])]
     [entity-id component-state moveable-state inbox]))
 
 (defn get-sprite-coords

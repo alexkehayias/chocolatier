@@ -33,11 +33,8 @@
           collision-state (mk-collidable-state 64 64 hit-radius)]
       (ces/mk-entity state
                      uid
-                     :components [[:animateable animation-state]
-                                  :controllable
-                                  [:collidable collision-state]
-                                  :collision-debuggable
-                                  [:moveable move-state]]
-                     :subscriptions [[:move-change uid]
-                                     [:action uid]
-                                     [:collision uid]]))))
+                     [[:animateable animation-state]
+                      :controllable
+                      [:collidable collision-state]
+                      :collision-debuggable
+                      [:moveable move-state]]))))
