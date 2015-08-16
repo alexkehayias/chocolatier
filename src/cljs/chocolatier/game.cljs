@@ -15,7 +15,8 @@
             [chocolatier.engine.systems.movement :refer [movement-system]]
             [chocolatier.engine.systems.ai :refer [ai-system]]
             [chocolatier.engine.systems.replay :refer [replay-system]]
-            [chocolatier.engine.components.animateable :refer [animate]]
+            [chocolatier.engine.components.animateable :refer [animate
+                                                               include-moveable-state]]
             [chocolatier.engine.components.controllable :refer [react-to-input
                                                                 include-input-state]]
             [chocolatier.engine.components.debuggable :refer [draw-collision-zone
@@ -46,7 +47,7 @@
               (ces/iter-fns
                state
                (vec
-                (for [i (range 25)]
+                (for [i (range 50)]
                   #(create-enemy! % stage (keyword (gensym)) 20)))))]
    ;; A scene is collection of keys representing systems
    ;; that will be called in sequential order
@@ -84,7 +85,8 @@
    [:system :audio (audio-system sample-library)]
    ;; Animation system for animating sprites
    [:system :animate animation-system :animateable]
-   [:component :animateable animate]
+   [:component :animateable
+    [animate {:args-fn include-moveable-state}]]
    ;; Collision detection system
    [:system :broad-collision (broad-collision-system (/ width 20))]
    [:system :narrow-collision narrow-collision-system]

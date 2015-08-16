@@ -61,6 +61,13 @@ CLOSED: [2015-07-11 Sat 21:37]
 - This didn't end up helping since I found that these issues only show up when dynamically loading things from the repl
 * DONE Audio component <2015-05-24 Sun>
 CLOSED: [2015-05-24 Sun 17:12]
+* TODO Talk for LispNYC <2015-08-16 Sun>
+DEADLINE: <2015-09-08 Tue>
+- Topics
+  - Profiling
+  - Functional game engine design
+  - Performance optimization of ClojureScript
+  - Embedded repl as a game mechanic
 * TODO Add static fn analysis and pseudo name optimization for min build <2015-08-01 Sat>
 - As per this blog post http://swannodette.github.io/2015/03/16/optimizing-clojurescript-function-invocation/ we can get better call site optimization
 - Need extern file to work with advanced Google Closure optimization i.e https://github.com/cljsjs/packages/blob/master/d3/resources/cljsjs/d3/common/d3.ext.js
@@ -140,6 +147,27 @@ CLOSED: [2015-05-24 Sun 17:12]
     - If you have direct access to objects then they can be mutated by something other than the component that owns the state
     - Components shouldn't have access to game meta state only component state
 
+- [ ] Reduce the usage of events
+  - Movement/collision/animation is the challenging part to decouple
+    :player1
+    controllable -- moveable -- collision -- position -- animation
+
+    :enemy1
+    ai -- moveable -- collision -- position -- animation
+
+  - [ ] Make a new component called position which is based on the movement and collision component states
+    - [ ] Player1 movement component should query the input state and set the desired movement
+    - [ ] Position component
+    - [ ] For enemies, position component to set the offsets
+    - [ ] Animateable queries position and action component state
+
+  - [ ] Use state machines instead of requiring a message to be present
+    Example: Only send an event if something has changed instead of requiring a message every frame
+    - [ ] Update controllable/react-to-input to only emit an event if the state has changed
+    - [ ] Update moveable to only emit when movement has changed
+
+
+* TODO Systems can run on more than one Component state
 * TODO demo and deck for LispNYC september
 - Embedded repl?
 * DONE Fix V8 optimization bailout in ces/iter-entities <2015-07-26 Sun>

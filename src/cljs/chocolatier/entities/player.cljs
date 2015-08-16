@@ -40,5 +40,4 @@
                                   [:moveable move-state]]
                      :subscriptions [[:move-change uid]
                                      [:action uid]
-                                     [:collision uid]
-                                     [:move uid]]))))
+                                     [:collision uid]]))))

@@ -1,7 +1,17 @@
 (ns chocolatier.engine.components.animateable
   (:require [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.systems.events :as ev]
             [chocolatier.engine.pixi :as pixi]))
 
+
+(defn include-moveable-state
+  "State parsing function. Returns a vector of component-state, moveable-state,
+   component-id and entity-id"
+  [state component-id entity-id]
+  (let [component-state (ces/get-component-state state component-id entity-id)
+        moveable-state (ces/get-component-state state :moveable entity-id)
+        inbox (ev/get-subscribed-events state entity-id)]
+    [entity-id component-state moveable-state inbox]))
 
 (defn get-sprite-coords
   "Returns a pair of values for the x and y position of a sprite at frame-n"
@@ -116,24 +126,20 @@
     [updated-sprite (inc frame-n)]
     [(animation-fn sprite 0) 0]))
 
-(defn get-move
-  "Returns a collection of :move events from an inbox."
-  [inbox]
-  (:msg (first (filter #(= (:event-id %) :move) inbox))))
-
 (defn get-action
   "Returns a keyword of the first action event from the inbox and appends
    the direction"
-  [inbox]
-  (when-let [event (first (filter #(= (:event-id %) :action) inbox))]
+  [inbox last-action]
+  (if-let [event (first (filter #(= (:event-id %) :action) inbox))]
     (let [{:keys [action direction]} (:msg event)]
-      (keyword (str (name action) "-" (name direction))))))
+      [true (keyword (str (name action) "-" (name direction)))])
+    [false last-action]))
 
 (defn update-coords
   "Update the screen x, y position of the sprite based on any move events
    from a component inbox. Returns the updated sprite."
-  [sprite inbox]
-  (when-let [{:keys [pos-x pos-y]} (get-move inbox)]
+  [sprite moveable-state]
+  (let [{:keys [pos-x pos-y]} moveable-state]
     ;; Mutate the x and y position of the sprite if there was any
     ;; move changes
     (set! (.-position.x sprite) pos-x)
@@ -147,26 +153,25 @@
    frame as specified by the animation spec.
 
    NOTE: The animation-stack must be a list not a vec so conj works as expected"
-  [entity-id component-state inbox]
+  [entity-id component-state moveable-state inbox]
   (let [{:keys [animation-stack sprite frame animations]} component-state
         current-animation-name (first animation-stack)
-        new-action (get-action inbox)
-        animation-change? (not= new-action current-animation-name)
+        [animation-change? next-action] (get-action inbox current-animation-name)
         frame-n (if animation-change? 0 frame)
-        animation-name (or new-action current-animation-name)
+        animation-name (or next-action current-animation-name)
         animation-fn (animation-name animations)
         _ (assert animation-fn (str "Animation " animation-name " not found"))
         [sprite frame] (-> sprite
                            ;; Apply screen changes due to movement
-                           (update-coords inbox)
+                           (update-coords moveable-state)
                            ;; Update the animation to next frame
                            (incr-frame animation-fn frame-n))]
     ;; Sticking this in a conditional to avoid doing extra work if
     ;; there wasn't an animation change
     (if animation-change?
       (assoc component-state
-        :animation-stack (if new-action
-                             (conj (drop 1 animation-stack) new-action)
+        :animation-stack (if next-action
+                             (conj (drop 1 animation-stack) next-action)
                              ;; There always needs to be an animation
                              ;; so if the stack has only 1 item in it
                              ;; then do not drop any items

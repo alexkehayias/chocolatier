@@ -79,7 +79,7 @@
   "Takes message and selectors and formats them for the event representation.
    The first selector, by convention, is called the event-d. Returns a hashmap."
   [msg selectors]
-  {:event-id (first selectors) :selectors selectors :msg msg})
+  {:event-id (selectors 0) :selectors selectors :msg msg})
 
 (defn emit-event
   "Enqueues an event onto the queue"

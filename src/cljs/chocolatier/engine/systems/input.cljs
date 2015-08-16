@@ -8,12 +8,12 @@
 (defn keydown [e]
   (.preventDefault e)
   (let [key (String.fromCharCode (aget e "keyCode"))]
-    (swap! *keyboard-input assoc (keyword key) "on")))
+    (swap! *keyboard-input assoc (keyword key) :on)))
 
 (defn keyup [e]
   (.preventDefault e)
   (let [key (String.fromCharCode (aget e "keyCode"))]
-    (swap! *keyboard-input assoc (keyword key) "off")))
+    (swap! *keyboard-input dissoc (keyword key))))
 
 (defn init-input!
   "Adds event listener to input events. Assoc's a removal function to
