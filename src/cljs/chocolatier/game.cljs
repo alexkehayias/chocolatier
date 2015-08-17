@@ -23,7 +23,7 @@
                                                               include-moveable-state-and-stage]]
             [chocolatier.engine.components.moveable :refer [move]]
             [chocolatier.engine.components.ai :refer [behavior
-                                                      include-player-and-moveable-state]]
+                                                      include-player-state]]
             [chocolatier.entities.player :refer [create-player!]]
             [chocolatier.entities.enemy :refer [create-enemy!]]))
 
@@ -47,15 +47,15 @@
               (ces/iter-fns
                state
                (vec
-                (for [i (range 100)]
+                (for [i (range 50)]
                   #(create-enemy! % stage (keyword (gensym)) 20)))))]
    ;; A scene is collection of keys representing systems
    ;; that will be called in sequential order
    [:scene :default [:input
                      :user-input
                      :ai
-                     ;; :broad-collision
-                     ;; :narrow-collision
+                     :broad-collision
+                     :narrow-collision
                      ;; :collision-debug
                      :movement
                      :tiles
@@ -95,10 +95,10 @@
    [:component :collision-debuggable
     [draw-collision-zone {:args-fn include-moveable-state-and-stage}]]
    [:system :movement movement-system :moveable]
-   ;; TODO figure out how to subscribe per entity implicitely!
-   [:component :moveable [move {:subscriptions [:move-change :collision]}]]
+   [:component :moveable
+    [move {:subscriptions [:move-change :collision]}]]
    [:system :ai ai-system :ai]
    [:component :ai
-    [behavior {:args-fn include-player-and-moveable-state}]]
+    [behavior {:args-fn include-player-state}]]
    ;; Replay game state on user input
    [:system :replay (replay-system 14 50)]))

@@ -130,7 +130,8 @@ DEADLINE: <2015-09-08 Tue>
   - get-events spends all it's time with get-in
 * TODO Systems should only be running one component function instead of a collection <2015-08-02 Sun>
 
-* TODO Refactor events <2015-08-02 Sun>
+* DONE Refactor events <2015-08-02 Sun>
+CLOSED: [2015-08-16 Sun 18:23]
 - Too slow
   Profiler shows bottleneck in emit-events and get-events
 - Currently implemented as a nested hashmap of sequences of event hashmaps
@@ -147,7 +148,7 @@ DEADLINE: <2015-09-08 Tue>
     - If you have direct access to objects then they can be mutated by something other than the component that owns the state
     - Components shouldn't have access to game meta state only component state
 
-- [ ] Reduce the usage of events
+- [-] Reduce the usage of events
   - Movement/collision/animation is the challenging part to decouple
     :player1
     controllable -- moveable -- collision -- position -- animation
@@ -161,15 +162,15 @@ DEADLINE: <2015-09-08 Tue>
     - [ ] For enemies, position component to set the offsets
     - [ ] Animateable queries position and action component state
 
-  - [ ] Use state machines instead of requiring a message to be present
+  - [X] Use state machines instead of requiring a message to be present
     Example: Only send an event if something has changed instead of requiring a message every frame
-    - [ ] Update controllable/react-to-input to only emit an event if the state has changed
-    - [ ] Update moveable to only emit when movement has changed
+    - [X] Update controllable/react-to-input to only emit an event if the state has changed
+    - [X] Update moveable to only emit when movement has changed
 
-
-* TODO Systems can run on more than one Component state
-* TODO demo and deck for LispNYC september
-- Embedded repl?
+* TODO Refactor component function args to all be a map instead of positional args <2015-08-16 Sun>
+- It would be hard to had additional functionality to component functions if we have to worry about breaking call signature changes
+- [X] Change args to all component functions to be a single hashmap
+- [ ] Rename :args-fn to something more appropriate
 * DONE Fix V8 optimization bailout in ces/iter-entities <2015-07-26 Sun>
 CLOSED: [2015-08-01 Sat 11:56]
 - Error is "bad value context for arguments value"

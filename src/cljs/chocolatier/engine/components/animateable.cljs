@@ -8,10 +8,7 @@
   "State parsing function. Returns a vector of component-state, moveable-state,
    component-id and entity-id"
   [state component-id entity-id]
-  (let [component-state (ces/get-component-state state component-id entity-id)
-        moveable-state (ces/get-component-state state :moveable entity-id)
-        inbox (ev/get-subscribed-events state [[:action entity-id]])]
-    [entity-id component-state moveable-state inbox]))
+  {:moveable-state (ces/get-component-state state :moveable entity-id)})
 
 (defn get-sprite-coords
   "Returns a pair of values for the x and y position of a sprite at frame-n"
@@ -153,7 +150,7 @@
    frame as specified by the animation spec.
 
    NOTE: The animation-stack must be a list not a vec so conj works as expected"
-  [entity-id component-state moveable-state inbox]
+  [entity-id component-state {:keys [moveable-state inbox]}]
   (let [{:keys [animation-stack sprite frame animations]} component-state
         current-animation-name (first animation-stack)
         [animation-change? next-action] (get-action inbox current-animation-name)

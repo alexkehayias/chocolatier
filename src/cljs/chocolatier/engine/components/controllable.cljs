@@ -8,9 +8,7 @@
   "State parsing function. Returns a vector of input-state, component-state
    component-id and entity-id"
   [state component-id entity-id]
-  (let [input-state (-> state :game :input)
-        component-state (ces/get-component-state state component-id entity-id)]
-    [input-state component-state component-id entity-id]))
+  {:input-state (get-in state [:game :input])})
 
 (def move-rate 4)
 
@@ -46,14 +44,11 @@
       out)))
 
 (defn react-to-input
-  [input-state component-state component-id entity-id]
+  [entity-id component-state {:keys [input-state]}]
   (let [interaction-state (input->interaction input-state)]
     ;; If the old interaction state is the same as the new
     ;; interaction or there is no interaction then no need to do
     ;; anything
-
-    ;; FIX this needs to also tell us when if a key is no longer being
-    ;; pressed that way we can stop the movement
     (if (= component-state interaction-state)
       component-state
       (let [{:keys [action direction offset-x offset-y]} interaction-state

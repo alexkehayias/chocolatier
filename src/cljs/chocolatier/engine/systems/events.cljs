@@ -56,9 +56,15 @@
 (defn get-subscribed-events
   "Returns a colleciton of events that matches the collection of subscriptions
    or nil if the subscriptions is empty"
-  [state selector-coll]
-  (when (seq selector-coll)
-    (reduce into (map #(get-events state %) selector-coll))))
+  [state subscriptions]
+  (loop [s subscriptions
+         accum (transient [])]
+    (if-let [[selectors & more] s]
+      (do
+        (doseq [e (get-events state selectors)]
+          (conj! accum e))
+        (recur more accum))
+      (persistent! accum))))
 
 (defn valid-event?
   "Asserts the validity of an event. A properly formed event has the

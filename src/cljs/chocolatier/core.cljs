@@ -7,6 +7,8 @@
             [chocolatier.engine.core :refer [request-animation game-loop-with-stats *running* *state*]]))
 
 
+(enable-console-print!)
+
 (defn -start-game!
   "Starts the game loop. This should be called only once all assets are loaded"
   [tilemap samples-library]
@@ -75,5 +77,10 @@
   (js/setTimeout start-game! 1000)
   nil)
 
+(defn on-js-reload
+  "When figwheel reloads, this function gets called."
+  [& args]
+  (restart-game!))
+
 ;; Start the game on page load
-(set! (.-onload js/window) restart-game!)
+(set! (.-onload js/window) on-js-reload )

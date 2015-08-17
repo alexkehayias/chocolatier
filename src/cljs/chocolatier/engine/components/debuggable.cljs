@@ -10,10 +10,8 @@
   [state component-id entity-id]
   (let [moveable-state (ces/get-component-state state :moveable entity-id)
         collidable-state (ces/get-component-state state :collidable entity-id)
-        component-state (ces/get-component-state state component-id entity-id)
-        inbox (ev/get-subscribed-events state [[:collision entity-id]])
         stage (get-in state [:game :rendering-engine :stage])]
-    [entity-id stage component-state moveable-state collidable-state inbox]))
+    {:moveable-state moveable-state :collidable-state collidable-state :stage stage}))
 
 (defn base-style!
   "Applies styles to the graphic."
@@ -36,11 +34,11 @@
       (pixi/fill 0xFF0000 0.3)))
 
 (defmulti draw-collision-zone
-  (fn [entity-id stage component-state moveable-state collidable-state inbox]
+  (fn [entity-id component-state opts]
     entity-id))
 
 (defmethod draw-collision-zone :default
-  [_ stage component-state moveable-state collidable-state inbox]
+  [_ component-state {:keys [stage moveable-state collidable-state inbox]}]
   (let [{:keys [pos-x pos-y hit-radius height width]} moveable-state
         {:keys [hit-radius height width]} collidable-state
         ;; Center hitzone on middle of entity
@@ -58,7 +56,7 @@
     (assoc component-state :graphic graphic)))
 
 (defmethod draw-collision-zone :player1
-  [_ stage component-state moveable-state collidable-state entity-id inbox]
+  [_ component-state {:keys [stage moveable-state collidable-state inbox]}]
   (let [{:keys [pos-x pos-y]} moveable-state
         {:keys [hit-radius height width]} collidable-state
         ;; Center hitzone on middle of entity

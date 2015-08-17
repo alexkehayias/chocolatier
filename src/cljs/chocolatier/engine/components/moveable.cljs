@@ -35,7 +35,7 @@
 (defn move
   "Check if there is an input-change, collision events, and calculates the
    new position of the entity on the screen."
-  [entity-id component-state inbox]
+  [entity-id component-state {:keys [inbox]}]
   (let [{:keys [pos-x pos-y offset-x offset-y]} component-state
         movement-event (get-move-change-event inbox)
         collision? (collision-event? inbox)]

@@ -114,25 +114,23 @@
 
 (defn- component-fn-body
   "Use mk-component-fn to construct a component function body"
-  [f args-fn format-fn subscriptions sys-kwargs state component-id entity-id]
-  (let [args (if args-fn
-               (args-fn state component-id entity-id)
-               ;; TODO maybe all args should be a hashmap so that this
-               ;; can be more dynamic? Can add or remove new
-               ;; functionality easily
-               ;; Default args to the component function
-               [entity-id
-                (get-component-state state component-id entity-id)
-                ;; TODO include other selected component state??
-                ;; (map #(get-component-state state % entity-id) component-states)
-                (ev/get-subscribed-events state subscriptions)])
-        ;; If sys kwargs were passed in then include that as the
-        ;; last argument to the component fn
-        args (if sys-kwargs
-               (conj args sys-kwargs)
-               args)
+  [f state component-id entity-id
+   {:keys [args-fn format-fn subscriptions component-states]}
+   sys-opts]
+  (let [ ;; Implicitely add the entity ID to the end of the selectors,
+        ;; this ensures messages are per entity
+        subscriptions (map #(vector % entity-id) subscriptions)
+        opts (cond-> (if args-fn
+                       (args-fn state component-id entity-id)
+                       {})
+               component-states (assoc :component-states
+                                       (map #(get-component-state state % entity-id)
+                                            component-states))
+               subscriptions (assoc :inbox (ev/get-subscribed-events state subscriptions))
+               sys-opts (merge sys-opts))
+        component-state (get-component-state state component-id entity-id)
         ;; Pass args and system argument to the component function
-        result (apply f args)
+        result (f entity-id component-state opts)
         output-fn (or format-fn update-component-state-and-events)]
     ;; Handle if the result is going to include events or not
     (if (vector? result)
@@ -182,28 +180,24 @@
        included in the inbox argument of the component-fn. Implicitely adds
        the entity-id as the last selector so that component subscriptions
        are always per entity."
-  [component-id component-fn & [{:keys [args-fn format-fn subscriptions]}]]
+  [component-id component-fn & [opts]]
   ;; Using multiple arrities as an optimization for dynamic
   ;; dispatching of optional args in the fn signature
   (fn
     ([state entity-id]
      (component-fn-body component-fn
-                        args-fn
-                        format-fn
-                        (map #(vector % entity-id) subscriptions)
-                        nil
                         state
                         component-id
-                        entity-id))
-    ([state entity-id sys-kwargs]
+                        entity-id
+                        opts
+                        nil))
+    ([state entity-id sys-opts]
      (component-fn-body component-fn
-                        args-fn
-                        format-fn
-                        (map #(vector % entity-id) subscriptions)
-                        sys-kwargs
                         state
                         component-id
-                        entity-id))))
+                        entity-id
+                        opts
+                        sys-opts))))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.
@@ -211,11 +205,11 @@
 
    - state: global state hashmap
    - uid: unique identifier for this component
-   - fns: a vector of functions. Optionally these can be a pair of
-     component fn and an args fn"
+   - fn-spec: [f {<opts>}]"
   [state uid fn-spec]
   (let [wrapped-fn (if (seqable? fn-spec)
-                     (do (log/debug "mk-component: found options" fn-spec)
+                     (do (log/debug "mk-component: found options for"
+                                    uid (keys (second fn-spec)))
                          (apply mk-component-fn uid fn-spec))
                      (mk-component-fn uid fn-spec))]
     (assoc-in state [:components uid] wrapped-fn)))

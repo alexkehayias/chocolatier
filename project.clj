@@ -30,7 +30,7 @@
   :cljsbuild {:builds
               [{:id "dev"
                 :source-paths ["src/cljs"]
-                :figwheel {:on-jsload "chocolatier.dev/on-js-reload"}
+                :figwheel {:on-jsload "chocolatier.core/on-js-reload"}
                 :compiler {:main chocolatier.dev
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/chocolatier.js"

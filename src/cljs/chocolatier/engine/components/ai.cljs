@@ -3,15 +3,17 @@
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]))
 
-(defn include-player-and-moveable-state
+
+(defn include-player-state
   "Include the moveable component state for :player1"
   [state component-id entity-id]
-  (let [moveable-state (ces/get-component-state state :moveable entity-id)
-        component-state (ces/get-component-state state component-id entity-id)]
-    [entity-id component-state moveable-state]))
+  {:moveable-state (ces/get-component-state state :moveable entity-id)})
 
 (defn behavior
-  [entity-id component-state moveable-state {:keys [player-state]}]
+  [entity-id component-state
+   {:keys [moveable-state
+           player-state                 ; passed in from system
+           ]}]
   (let [{:keys [last-player-pos-x last-player-pos-y]} component-state
         {player-pos-x :pos-x player-pos-y :pos-y} player-state]
     (if (and (= player-pos-x last-player-pos-x)

@@ -43,5 +43,6 @@
   "Update current user input"
   [state]
   ;; Make sure the keyboard listener is hooked up
-  (when-not @*keyboard-input (init-input!))
-  (assoc-in state [:game :input] @*keyboard-input))
+  (if-let [in @*keyboard-input]
+    (assoc-in state [:game :input] in)
+    (do (init-input!) state)))
