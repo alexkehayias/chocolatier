@@ -111,19 +111,13 @@ For example, the following component will emit a single event called `:my-event`
 
 ### Subscriptions
 
-Any component can subscribe to it by calling `events/subscribe` on the game state. For example, subscribing `:component-b` to the `:my-event` event:
+Any component can subscribe to events by creating a component with a `:subscriptions` key in the options hashmap where each subscription is a vector of selectors:
 
 ```clojure
-(subscribe my-game-state :my-event :component-b)
+(mk-component state :player1 [component-f {:subscriptions [[:e1] [:e2]]}])
 ```
 
-Note: this is an idempotent operation and you can not subscribe more than once.
-
-The subscribed component will receive the event in it's inbox (third arg to component functions by default) as soon as the component function is called next. This allows for events to be sent and received within the same frame.
-
-### Hierarchical Events
-
-Events use selectors (a vector of keywords) to determine which events are returned. This allows specificity in messages returned. For example, an event emitted with selectors `:a :b :c` will be returned to all subscribers of `:b` and `:a`.
+The subscribed component will receive the event in a hashmap in the `:inbox` key passed in as the third argument to the component function. Messages that are sent are available immediately to the subscriber which allows for events to be sent and received within the same frame and are therefore order dependent.
 
 ## Tilemaps
 
@@ -152,7 +146,7 @@ Naive frames per second benchmarks are available at `chocolatier.engine.benchmar
 
 ## License
 
-Copyright © 2014 Alex Kehayias
+Copyright © 2015 Alex Kehayias
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.

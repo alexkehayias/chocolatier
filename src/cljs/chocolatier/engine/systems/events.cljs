@@ -22,40 +22,14 @@
 (def queue-path
   [:state :events :queue])
 
-(defn subscribe
-  "Subscribe to the given event.
-
-   Multiple subscribe calls with the same event-id component-id entity-id
-   are idempotent.
-
-   Example:
-   Subscribe to the move change events of the entity :player1
-   (subscribe {} :player1 :move-change :player1)"
-  [state entity-id & selectors]
-  (update-in state [:state :events :subscriptions entity-id] conj selectors))
-
-(defn multi-subscribe
-  "Subscribe the entity to multiple events at once.
-
-   Example:
-   Subscribe to the move change and collision events of the entity :player1
-   (multi-subscribe {} :player1 [[:move-change :player1]
-                                 [:collision :player1]])"
-  [state entity-id selector-coll]
-  (if-let [selectors (first selector-coll)]
-    (recur (apply (partial subscribe state entity-id) selectors)
-           entity-id
-           (rest selector-coll))
-    state))
-
 (defn get-events
   "Returns a collecition of events or nil"
   [state selectors]
   (get-in state (concat queue-path selectors)))
 
 (defn get-subscribed-events
-  "Returns a colleciton of events that matches the collection of subscriptions
-   or nil if the subscriptions is empty"
+  "Returns a collection of events that matches the collection of subscriptions
+   or nil if the subscriptions are empty"
   [state subscriptions]
   (loop [s subscriptions
          accum (transient [])]

@@ -262,10 +262,6 @@
    and hashmap of component-state.
    e.g [[:moveable {:x 0 :y 0}] :controllable]
 
-   Subscription specs:
-   A collection of event selectors. See systems.events.subscribe for more.
-   e.g [[:player :move :player2]]
-
    Example:
    Create an entity with id :player1 with components and subscriptions.
    (mk-entity {}
