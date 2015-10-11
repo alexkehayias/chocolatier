@@ -61,8 +61,8 @@ CLOSED: [2015-07-11 Sat 21:37]
 - This didn't end up helping since I found that these issues only show up when dynamically loading things from the repl
 * DONE Audio component <2015-05-24 Sun>
 CLOSED: [2015-05-24 Sun 17:12]
-* TODO Talk for LispNYC <2015-08-16 Sun>
-DEADLINE: <2015-09-08 Tue>
+* DONE Talk for LispNYC <2015-08-16 Sun>
+CLOSED: [2015-09-25 Fri 10:28] DEADLINE: <2015-09-08 Tue>
 - Topics
   - Profiling
   - Functional game engine design

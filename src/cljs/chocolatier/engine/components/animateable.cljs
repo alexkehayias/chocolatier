@@ -90,12 +90,12 @@
    on a spritesheet.
 
    Example:
-   (-mk-animation-state stage
-                        \"/img/my-spritesheet.png\"
-                        0 0
-                        :walk
-                        [:walk 10 10 2 2 0 0 5]
-                        [:run 10 10 2 2 1 0 5])"
+   (mk-animateable-state stage
+                         \"/img/my-spritesheet.png\"
+                         0 0
+                         :walk
+                         [:walk 10 10 2 2 0 0 5]
+                         [:run 10 10 2 2 1 0 5])"
   [stage
    image-location
    screen-x screen-y
@@ -107,9 +107,6 @@
                    ;; the animation specs to set it correctly
                    (pixi/set-sprite-frame! 0 0 0 0))
         animations (apply mk-animations-map animation-specs)]
-    ;; Set the initial sprite position
-    (set! (.-position.x sprite) screen-x)
-    (set! (.-position.y sprite) screen-y)
     {:animation-stack (list default-animation-kw)
      :sprite sprite
      :animations animations
