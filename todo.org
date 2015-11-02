@@ -68,7 +68,8 @@ CLOSED: [2015-09-25 Fri 10:28] DEADLINE: <2015-09-08 Tue>
   - Functional game engine design
   - Performance optimization of ClojureScript
   - Embedded repl as a game mechanic
-* TODO Add static fn analysis and pseudo name optimization for min build <2015-08-01 Sat>
+* DONE Add static fn analysis and pseudo name optimization for min build <2015-08-01 Sat>
+CLOSED: [2015-11-01 Sun 19:32]
 - As per this blog post http://swannodette.github.io/2015/03/16/optimizing-clojurescript-function-invocation/ we can get better call site optimization
 - Need extern file to work with advanced Google Closure optimization i.e https://github.com/cljsjs/packages/blob/master/d3/resources/cljsjs/d3/common/d3.ext.js
 - Alternatively, refer to external libs by string name only
