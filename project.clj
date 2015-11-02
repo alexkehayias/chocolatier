@@ -39,9 +39,14 @@
                            :pretty-print true}}
                {:id "min"
                 :source-paths ["src/cljs"]
-                :compiler {:output-to "resources/public/js/compiled/chocolatier.js"
-                           :main chocolatier.core
-                           :optimizations :advanced}}]}
+                :compiler {:main chocolatier.dev
+                           :output-to "resources/public/js/compiled/chocolatier-min.js"
+                           :externs ["resources/public/js/externs/pixi.js"
+                                     "resources/public/js/externs/howler.js"
+                                     "resources/public/js/externs/stats.js"]
+                           :optimizations :advanced
+                           :verbose true
+                           :pseudo-names true}}]}
 
   :figwheel {:http-server-root "public" ;; default and assumes "resources"
              :server-port 3449          ;; default
