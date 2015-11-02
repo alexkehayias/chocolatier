@@ -46,7 +46,7 @@
                                      "resources/public/js/externs/stats.js"]
                            :optimizations :advanced
                            :verbose true
-                           :pseudo-names true}}]}
+                           :static-fns true}}]}
 
   :figwheel {:http-server-root "public" ;; default and assumes "resources"
              :server-port 3449          ;; default
