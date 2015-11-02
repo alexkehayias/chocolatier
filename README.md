@@ -27,7 +27,8 @@ After completing step 2 from the `figwheel` instructions above, in emacs:
 
 ### Compiling with advanced optimizations
 
-Currently not supported due to external library dependencies which will require an externs file or a rewrite of how external objects are called.
+1. Run `lein cljsbuild once min`
+2. Update `resources/public/index.html` to use `resources/public/js/compiled/chocolatier-min.js`
 
 ## Entity Component System
 
