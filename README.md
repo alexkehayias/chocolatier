@@ -9,8 +9,8 @@ The following instructions will start a browser connected repl and launch the de
 
 0. Clone the project and all submodules `git clone --recursive https://github.com/alexkehayias/chocolatier`
 1. Start the browser REPL server `lein figwheel`
-2. Navigate your browser to `http://127.0.0.1:3449` to connect to the REPL
-3. In the REPL, change namespaces `(in-ns 'chocolatier.core)` then start the game `(restart-game!)`. This may take a few seconds to load assets and init WebGL (if your browser supports it).
+2. Navigate your browser to `http://127.0.0.1:3449/dev` to connect to the REPL
+3. The example game should start immediately, changes to files will automatically restart the game
 
 ### With `figwheel` and emacs using `cider`
 
@@ -28,7 +28,7 @@ After completing step 2 from the `figwheel` instructions above, in emacs:
 ### Compiling with advanced optimizations
 
 1. Run `lein cljsbuild once min`
-2. Update `resources/public/index.html` to use `resources/public/js/compiled/chocolatier-min.js`
+2. Navigate your browser to `http://127.0.0.1:3449/min` and the game will start immediately
 
 ## Entity Component System
 
@@ -132,14 +132,11 @@ Currently does not support `lein-cljsbuild` tests. Instead, load a namespace in 
 
 ## Performance
 
-Performance tuning is an ongoing process and the project has not been thoroughly optimized. ClojureScript presents challenges for optimization including garbage collection, persistent data structures, and functional paradigms that js engines have difficulty optimizing.
+The game engine is being tested to get to 100 "game objects" with meaningful functionality, tilemaps, sound, etc at 60 FPS. Performance tuning is an ongoing process and the project is still being thoroughly optimized. ClojureScript presents challenges for optimization including garbage collection, persistent data structures, and functional paradigms that js engines may have difficulty optimizing.
 
 Where appropriate, transient state should be used when operating on large collections and hashmaps for better performance. See `chocolatier.macros` in the `clj` source directory for helpers with transient state.
 
-Next steps:
-
-- Comprehensive benchmarking and profiling
-- Introduce macros to rewrite systems/component/event functions to work better with js engines without sacrificing composability
+The `min` build uses advanced compilation and static function inlining which can nearly double the framerate in some instances due to the dynamic nature of the game engine internals.
 
 ## Benchmarks
 
@@ -151,5 +148,3 @@ Copyright © 2015 Alex Kehayias
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
-
-TP:4FD43481

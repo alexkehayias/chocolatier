@@ -87,7 +87,9 @@ CLOSED: [2015-11-01 Sun 19:32]
 - Provide a nice abstraction for declaring pipeline of functions for loading assets asynchronously so that it doesn't look like spaghetti
 - Integrate that into the mk-game-state function to keep the whole thing declarative
 * TODO Add example of audio to the demo
-* TODO Optimize the ces framework
+* TODO Optimize collision detection as it seems to be the slowest system <2015-11-08 Sun>
+* DONE Optimize the ces framework
+CLOSED: [2015-11-08 Sun 20:23]
 - When you double the number of entities the framerate drops nearly in half
 - AI system/component showcases this the best, removing it increases the framerate a ton
 - How can we reduce the number of changes to the global state?
@@ -129,7 +131,8 @@ CLOSED: [2015-11-01 Sun 19:32]
   - apply (unoptimized by v8) in component-fn-body
   - emit-events reduce is spending lots of time and number of function calls will grow linearly with each entity added
   - get-events spends all it's time with get-in
-* TODO Systems should only be running one component function instead of a collection <2015-08-02 Sun>
+* DONE Systems should only be running one component function instead of a collection <2015-08-02 Sun>
+CLOSED: [2015-11-08 Sun 20:22]
 
 * DONE Refactor events <2015-08-02 Sun>
 CLOSED: [2015-08-16 Sun 18:23]
@@ -168,7 +171,8 @@ CLOSED: [2015-08-16 Sun 18:23]
     - [X] Update controllable/react-to-input to only emit an event if the state has changed
     - [X] Update moveable to only emit when movement has changed
 
-* TODO Refactor component function args to all be a map instead of positional args <2015-08-16 Sun>
+* DONE Refactor component function args to all be a map instead of positional args <2015-08-16 Sun>
+CLOSED: [2015-11-08 Sun 20:19]
 - It would be hard to had additional functionality to component functions if we have to worry about breaking call signature changes
 - [X] Change args to all component functions to be a single hashmap
 - [ ] Rename :args-fn to something more appropriate
@@ -222,8 +226,10 @@ CLOSED: [2015-02-21 Sat 11:19]
 - Austin 1.6 has issues so need to use version 1.7-SNAPSHOT or the repl doesn't work
 - Had to update lein cljsbuild because it was to old to work with later cljs
 - Now using the cljs required by core async latest
-* TODO Add pixijs as a foreign dependency <2015-03-29 Sun>
-https://github.com/clojure/clojurescript/wiki/Foreign-Dependencies
+* DONE Add pixijs as a foreign dependency <2015-03-29 Sun>
+CLOSED: [2015-11-08 Sun 20:23]
+- https://github.com/clojure/clojurescript/wiki/Foreign-Dependencies
+- No need to do this with externs
 * TODO Live reloading during running game loop for any function change
 Looks like when the game loop is running the functions are immutable except in the case of multimethods so re evaluating a function does not guarantee that it will be used by the game engine.
 - Update the lookups of system/component fns inside the game loop to lookup by reference rather than by value??

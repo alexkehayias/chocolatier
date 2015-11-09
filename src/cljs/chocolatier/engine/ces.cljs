@@ -201,7 +201,7 @@
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.
-   Wraps each function in fns with mk-component-fn.
+   Wraps function with mk-component-fn.
 
    - state: global state hashmap
    - uid: unique identifier for this component

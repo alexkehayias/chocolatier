@@ -9,6 +9,8 @@ PIXI.Container.generateTexture = function(arg){};
 
 PIXI.CanvasRenderer = function(width, height, arg1, arg2){};
 PIXI.CanvasRenderer.render = function(){};
+PIXI.WebGLRenderer = function(width, height, arg1, arg2){};
+PIXI.WebGLRenderer.render = function(){};
 
 PIXI.loaders;
 PIXI.loaders.AssetLoader = function(locations){};
