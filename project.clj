@@ -43,7 +43,8 @@
                            :output-to "resources/public/js/compiled/chocolatier-min.js"
                            :externs ["resources/public/js/externs/pixi.js"
                                      "resources/public/js/externs/howler.js"
-                                     "resources/public/js/externs/stats.js"]
+                                     "resources/public/js/externs/stats.js"
+                                     "resources/public/js/externs/rbush.js"]
                            :optimizations :advanced
                            :verbose true
                            :static-fns true}}]}

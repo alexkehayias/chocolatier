@@ -85,17 +85,23 @@
       (assoc-in state spatial-index-location
                 (update-spatial-index spatial-index entity-states)))))
 
-(defn narrow-collision-system
-  [state]
-  (let [ ;; Get only the entities that are collidable and moveable
-        spatial-index (get-in state spatial-index-location)
-        component-ids [:collidable :moveable]
-        entity-ids (ces/entities-with-multi-components (:entities state)
-                                                       component-ids)
-        entity-states (get-multi-component-state state component-ids entity-ids)
-        events (for [e entity-states
-                     :let [collisions (rbush-search spatial-index
-                                                    (entity-state->bounding-box e))]
-                     :when (some #(not= (:id e) (:id (last %))) collisions)]
-                 (ev/mk-event {:colliding? true} [:collision (:id e)]))]
-    (ev/emit-events state events)))
+(defn mk-narrow-collision-system
+  [height width]
+  (fn [state]
+    [state]
+    (let [ ;; Get only the entities that are collidable and moveable
+          spatial-index (get-in state spatial-index-location)
+          component-ids [:collidable :moveable]
+          ;; Already have all the info on the entity in the spatial
+          ;; index. Remove any that are not in the viewport
+          items (filter (fn [[x y]] (and (< x width) (< y height)))
+                        (rbush-all spatial-index))
+          ;; TODO skip the combinations already checked
+          events (for [i items
+                       :let [id (:id (last i))
+                             collisions (rbush-search spatial-index (clj->js i))]
+                       :when (some #(not= id (:id (last %))) collisions)]
+                   (ev/mk-event {:colliding? true} [:collision id]))]
+      ;; TODO check if the entity is already colliding and skip sending
+      ;; an event
+      (ev/emit-events state (set events)))))
