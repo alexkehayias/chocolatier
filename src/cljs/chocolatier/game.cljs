@@ -5,7 +5,7 @@
             [chocolatier.engine.systems.user-input :refer [user-input-system]]
             [chocolatier.engine.systems.render :refer [render-system]]
             [chocolatier.engine.systems.animation :refer [animation-system]]
-            [chocolatier.engine.systems.collision :refer [broad-collision-system
+            [chocolatier.engine.systems.collision :refer [mk-broad-collision-system
                                                           narrow-collision-system]]
             [chocolatier.engine.systems.tiles :refer [tile-system load-tilemap mk-tiles-from-tilemap!]]
             [chocolatier.engine.systems.events :refer [event-system
@@ -89,7 +89,7 @@
     [animate {:args-fn include-moveable-state
               :subscriptions [:action]}]]
    ;; Collision detection system
-   [:system :broad-collision (broad-collision-system (/ width 20))]
+   [:system :broad-collision (mk-broad-collision-system 9)]
    [:system :narrow-collision narrow-collision-system]
    [:system :collision-debug debug-collision-system :collision-debuggable]
    [:component :collision-debuggable
