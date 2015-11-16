@@ -89,7 +89,7 @@
     [animate {:args-fn include-moveable-state
               :subscriptions [:action]}]]
    ;; Collision detection system
-   [:system :broad-collision (mk-broad-collision-system 10)]
+   [:system :broad-collision (mk-broad-collision-system 30)]
    [:system :narrow-collision (mk-narrow-collision-system height width)]
    [:system :collision-debug debug-collision-system :collision-debuggable]
    [:component :collision-debuggable

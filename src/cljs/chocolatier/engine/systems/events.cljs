@@ -72,6 +72,14 @@
     (reduce #(emit-event %1 (:msg %2) (:selectors %2)) state events)
     state))
 
+(defn batch-emit-events
+  "Batch add events with the same selectors. Events should be a hashmap of id,
+   collection of valid events (see mk-event). Will merge existing events map with
+   events-map overwriting existing keys"
+  [state selectors events-map]
+  (let [path (into queue-path selectors)]
+    (update-in state path merge events-map)))
+
 (defn clear-events-queue
   "Resets event queue to an empty vector. Returns updates state."
   [state]

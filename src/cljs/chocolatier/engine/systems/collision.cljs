@@ -48,11 +48,11 @@
 
 (defn rbush-search
   [rbush item]
-  (js->clj (.search rbush item)))
+  (.search rbush item))
 
 (defn rbush-all
   [rbush]
-  (js->clj (.all rbush)))
+  (.all rbush))
 
 (defn entity-state->bounding-box
   "Format entity state for use with spatial index"
@@ -85,6 +85,9 @@
       (assoc-in state spatial-index-location
                 (update-spatial-index spatial-index entity-states)))))
 
+(def collision-queue-path
+  (conj ev/queue-path :collision))
+
 (defn mk-narrow-collision-system
   [height width]
   (fn [state]
@@ -92,16 +95,17 @@
     (let [ ;; Get only the entities that are collidable and moveable
           spatial-index (get-in state spatial-index-location)
           component-ids [:collidable :moveable]
-          ;; Already have all the info on the entity in the spatial
-          ;; index. Remove any that are not in the viewport
-          items (filter (fn [[x y]] (and (< x width) (< y height)))
+          ;; Use the spatial index for the collection of items to check
+          ;; Remove any that are not in the viewport
+          items (filter (fn [[x y _ _ {:keys [offset-x offset-y]}]]
+                          (and (< x width) (< y height)))
                         (rbush-all spatial-index))
           ;; TODO skip the combinations already checked
-          events (for [i items
-                       :let [id (:id (last i))
-                             collisions (rbush-search spatial-index (clj->js i))]
-                       :when (some #(not= id (:id (last %))) collisions)]
-                   (ev/mk-event {:colliding? true} [:collision id]))]
+          event-pairs (for [i items
+                            :let [id (:id (last i))
+                                  collisions (rbush-search spatial-index i)]
+                            :when (some #(not= id (:id (last %))) collisions)]
+                        [id [(ev/mk-event {:colliding? true} [:collision id])]])]
       ;; TODO check if the entity is already colliding and skip sending
       ;; an event
-      (ev/emit-events state (set events)))))
+      (ev/batch-emit-events state [:collision] (into {} event-pairs)))))
