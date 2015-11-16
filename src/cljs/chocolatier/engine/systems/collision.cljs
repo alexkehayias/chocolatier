@@ -65,9 +65,14 @@
 
 (defn update-spatial-index
   [index entity-states]
-  (-> index
-      (rbush-clear)
-      (rbush-bulk-insert (clj->js (map entity-state->bounding-box entity-states)))))
+  (let [items (array)]
+    ;; YUK! This is to prevent having to call clj->js which is slow so
+    ;; we will use side effects instead
+    (doseq [e entity-states]
+      (.push items (entity-state->bounding-box e)))
+    (-> index
+        (rbush-clear)
+        (rbush-bulk-insert items))))
 
 (def spatial-index-location
   [:state :spatial-index])
