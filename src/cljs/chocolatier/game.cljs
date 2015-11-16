@@ -23,7 +23,7 @@
                                                               include-moveable-state-and-stage]]
             [chocolatier.engine.components.moveable :refer [move]]
             [chocolatier.engine.components.ai :refer [behavior
-                                                      include-player-state]]
+                                                      defer-events]]
             [chocolatier.entities.player :refer [create-player!]]
             [chocolatier.entities.enemy :refer [create-enemy!]]))
 
@@ -72,10 +72,8 @@
    ;; React to user input
    [:system :user-input user-input-system :controllable]
    [:component :controllable
-    ;; Calls react-to-input
-    ;; with additional argument
-    ;; for the current input
-    ;; state
+    ;; Calls react-to-input with additional argument for the current
+    ;; input state
     [react-to-input {:args-fn include-input-state}]]
    ;; Draw tile map in background
    [:system :tiles tile-system]
@@ -89,7 +87,7 @@
     [animate {:args-fn include-moveable-state
               :subscriptions [:action]}]]
    ;; Collision detection system
-   [:system :broad-collision (mk-broad-collision-system 30)]
+   [:system :broad-collision (mk-broad-collision-system 8)]
    [:system :narrow-collision (mk-narrow-collision-system height width)]
    [:system :collision-debug debug-collision-system :collision-debuggable]
    [:component :collision-debuggable
@@ -99,6 +97,6 @@
     [move {:subscriptions [:move-change :collision]}]]
    [:system :ai ai-system :ai]
    [:component :ai
-    [behavior {:args-fn include-player-state}]]
+    [behavior {:format-fn defer-events}]]
    ;; Replay game state on user input
    [:system :replay (replay-system 14 50)]))
