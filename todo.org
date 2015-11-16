@@ -83,11 +83,16 @@ CLOSED: [2015-11-01 Sun 19:32]
   ;; Flatten namespace conventions into
   ;; names instead of nested objects
   :pseudo-names true
+* DONE Spatial index for help reduce number of collision detections <2015-11-15 Sun>
+CLOSED: [2015-11-15 Sun 22:12]
+- Benchmarks http://0fps.net/2015/01/23/collision-detection-part-3-benchmarks/
+- Good r-tree lib https://github.com/mourner/rbush
 * TODO Assets pipeline for asynchronously loading sounds/tiles/sprites/etc
 - Provide a nice abstraction for declaring pipeline of functions for loading assets asynchronously so that it doesn't look like spaghetti
 - Integrate that into the mk-game-state function to keep the whole thing declarative
 * TODO Add example of audio to the demo
-* TODO Optimize collision detection as it seems to be the slowest system <2015-11-08 Sun>
+* DONE Optimize collision detection as it seems to be the slowest system <2015-11-08 Sun>
+CLOSED: [2015-11-15 Sun 22:11]
 * DONE Optimize the ces framework
 CLOSED: [2015-11-08 Sun 20:23]
 - When you double the number of entities the framerate drops nearly in half
