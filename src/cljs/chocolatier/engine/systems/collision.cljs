@@ -4,11 +4,12 @@
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]))
 
-
+;; TODO Optimize this function it sucks
 (defn get-multi-component-state
   "Returns a collection of hashmaps of component state. Append an :id field
    for the entity's unique ID"
   [state component-ids entity-ids]
+  ;; For each entity, for each component
   (map
    (fn [id]
      (into {:id id} (map #(ces/get-component-state state % id) component-ids)))

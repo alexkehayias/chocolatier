@@ -117,16 +117,21 @@
   [f state component-id entity-id
    {:keys [args-fn format-fn subscriptions component-states]}
    sys-opts]
-  (let [ ;; Implicitely add the entity ID to the end of the selectors,
-        ;; this ensures messages are per entity
-        subscriptions (map #(vector % entity-id) subscriptions)
+  (let [
         opts (cond-> (if args-fn
                        (args-fn state component-id entity-id)
                        {})
                component-states (assoc :component-states
                                        (map #(get-component-state state % entity-id)
                                             component-states))
-               subscriptions (assoc :inbox (ev/get-subscribed-events state subscriptions))
+               subscriptions (assoc :inbox (ev/get-subscribed-events
+                                            state
+                                            ;; Implicitely add the
+                                            ;; entity ID to the end of
+                                            ;; the selectors, this
+                                            ;; ensures messages are
+                                            ;; per entity
+                                            (map #(vector % entity-id) subscriptions)))
                sys-opts (merge sys-opts))
         component-state (get-component-state state component-id entity-id)
         ;; Pass args and system argument to the component function

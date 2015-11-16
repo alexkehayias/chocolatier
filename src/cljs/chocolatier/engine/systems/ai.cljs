@@ -24,7 +24,7 @@
     (let [moveable-state (ces/get-component-state state-accum :moveable entity-id)
           updated-context (assoc context :moveable-state moveable-state)
           [new-state events] (f state-accum entity-id updated-context)]
-      [new-state (conj! events-accum [entity-id events])])))
+      [new-state (conj events-accum [entity-id events])])))
 
 (defn ai-system
   "Returns updated game state. Anyone participating chases :player 1"
@@ -32,8 +32,8 @@
   (let [player (ces/get-component-state state :moveable :player1)
         context {:player-state player}
         [next-state events] (reduce (accum-state-and-events f context)
-                                    [state (transient [])]
+                                    [state []]
                                     entity-ids)]
     (ev/batch-emit-events next-state
                           [:move-change]
-                          (into {} (persistent! events)))))
+                          (into {} events))))

@@ -87,6 +87,11 @@ CLOSED: [2015-11-01 Sun 19:32]
 CLOSED: [2015-11-15 Sun 22:12]
 - Benchmarks http://0fps.net/2015/01/23/collision-detection-part-3-benchmarks/
 - Good r-tree lib https://github.com/mourner/rbush
+* TODO Optimize ev/get-subscribed-events <2015-11-15 Sun>
+According to profiler it's really slow
+* TODO Optimize update-spatial-index <2015-11-15 Sun>
+- According to profiler it's really slow
+- Seems like the root cause is get-multi-component-state function that only gets realized inside of update-spatial-index
 * TODO Assets pipeline for asynchronously loading sounds/tiles/sprites/etc
 - Provide a nice abstraction for declaring pipeline of functions for loading assets asynchronously so that it doesn't look like spaghetti
 - Integrate that into the mk-game-state function to keep the whole thing declarative
