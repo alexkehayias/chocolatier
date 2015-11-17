@@ -90,7 +90,7 @@
    entity. NOTE: As a convenience, if state is not found it returns an empty
    hashmap."
   [state component-id entity-id]
-  (or (get-in state [:state component-id entity-id]) {}))
+  (get-in state [:state component-id entity-id] {}))
 
 (defn get-all-component-state
   [state component-id]
