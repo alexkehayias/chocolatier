@@ -28,17 +28,11 @@
   (get-in state (concat queue-path selectors)))
 
 (defn get-subscribed-events
-  "Returns a collection of events that matches the collection of subscriptions
-   or nil if the subscriptions are empty"
+  "Returns a collection of events that matches the collection of
+   subscriptions or nil if the subscriptions are empty. Subscriptions
+   is a collection of selectors"
   [state subscriptions]
-  (loop [s subscriptions
-         accum (transient [])]
-    (if-let [[selectors & more] s]
-      (do
-        (doseq [e (get-events state selectors)]
-          (conj! accum e))
-        (recur more accum))
-      (persistent! accum))))
+  (reduce #(into %1 (get-events state %2)) [] subscriptions))
 
 (defn valid-event?
   "Asserts the validity of an event. A properly formed event has the
