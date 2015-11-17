@@ -92,6 +92,10 @@
   [state component-id entity-id]
   (or (get-in state [:state component-id entity-id]) {}))
 
+(defn get-all-component-state
+  [state component-id]
+  (get-in state [:state component-id]))
+
 (defn mk-component-state
   "Returns an updated hashmap with component state for the given entity"
   [state component-id entity-id val]

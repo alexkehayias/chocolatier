@@ -87,9 +87,14 @@ CLOSED: [2015-11-01 Sun 19:32]
 CLOSED: [2015-11-15 Sun 22:12]
 - Benchmarks http://0fps.net/2015/01/23/collision-detection-part-3-benchmarks/
 - Good r-tree lib https://github.com/mourner/rbush
+* TODO Batch all events at the system level? <2015-11-15 Sun>
+- This resulted in really big gains when doing collision detection where each entity can create more than one event
+- Batching events for the ai system brought much less improvement so there may be something inherent about the collision events that were more severe
+- Would be nice to only deal with events at the component fn level
 * TODO Optimize ev/get-subscribed-events <2015-11-15 Sun>
 According to profiler it's really slow
-* TODO Optimize update-spatial-index <2015-11-15 Sun>
+* DONE Optimize update-spatial-index <2015-11-15 Sun>
+CLOSED: [2015-11-16 Mon 22:18]
 - According to profiler it's really slow
 - Seems like the root cause is get-multi-component-state function that only gets realized inside of update-spatial-index
 * TODO Assets pipeline for asynchronously loading sounds/tiles/sprites/etc

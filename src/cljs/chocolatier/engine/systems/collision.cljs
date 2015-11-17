@@ -1,19 +1,18 @@
- (ns chocolatier.engine.systems.collision
+(ns chocolatier.engine.systems.collision
   "System for checking collisions between entities"
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]))
 
-;; TODO Optimize this function it sucks
-(defn get-multi-component-state
-  "Returns a collection of hashmaps of component state. Append an :id field
-   for the entity's unique ID"
-  [state component-ids entity-ids]
-  ;; For each entity, for each component
-  (map
-   (fn [id]
-     (into {:id id} (map #(ces/get-component-state state % id) component-ids)))
-   entity-ids))
+
+(defn get-component-state
+  "Returns a collection of vectors of id, move-state, collision-state for each
+   entity-ids"
+  [state entity-ids]
+  (let [collidable-state (ces/get-all-component-state state :collidable)
+        moveable-state (ces/get-all-component-state state :moveable)]
+    (for [e entity-ids]
+      [e (get moveable-state e) (get collidable-state e)])))
 
 (defn rbush
   ([]
@@ -57,7 +56,7 @@
 
 (defn entity-state->bounding-box
   "Format entity state for use with spatial index"
-  [{:keys [pos-x pos-y height width id]}]
+  [id {:keys [pos-x pos-y]} {:keys [height width]}]
   (rbush-item pos-x
               pos-y
               (+ pos-x width)
@@ -69,8 +68,8 @@
   (let [items (array)]
     ;; YUK! This is to prevent having to call clj->js which is slow so
     ;; we will use side effects instead
-    (doseq [e entity-states]
-      (.push items (entity-state->bounding-box e)))
+    (doseq [[id move-state collision-state] entity-states]
+      (.push items (entity-state->bounding-box id move-state collision-state)))
     (-> index
         (rbush-clear)
         (rbush-bulk-insert items))))
@@ -81,11 +80,10 @@
 (defn mk-broad-collision-system
   [max-entries]
   (fn [state]
-    (let [;; Get only the entities that are collidable and moveable
-          component-ids [:collidable :moveable]
+    (let [;; Get only the entities that are both collidable and moveable
           entity-ids (ces/entities-with-multi-components (:entities state)
-                                                         component-ids)
-          entity-states (get-multi-component-state state component-ids entity-ids)
+                                                         [:collidable :moveable])
+          entity-states (get-component-state state entity-ids)
           ;; Get or create the spatial index
           spatial-index (get-in state spatial-index-location (rbush max-entries))]
       (assoc-in state spatial-index-location
