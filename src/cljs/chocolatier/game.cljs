@@ -44,11 +44,9 @@
    [:custom (create-player! stage :player1 20 20 0 0 20)]
    ;; Enemies
    [:custom (fn [state]
-              (ces/iter-fns
-               state
-               (vec
-                (for [i (range 100)]
-                  #(create-enemy! % stage (keyword (gensym)) 20)))))]
+              (reduce #(create-enemy! %1 stage (keyword (gensym)) 20)
+                      state
+                      (range 100)))]
    ;; A scene is collection of keys representing systems
    ;; that will be called in sequential order
    [:scene :default [:input

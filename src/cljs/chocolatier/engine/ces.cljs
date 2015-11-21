@@ -29,43 +29,12 @@
   [state uid system-ids]
   (assoc-in state [:scenes uid] system-ids))
 
-(defn iter-fns
-  "Pass an initial value through a collection of functions with the
-   result of the function called is passed as an arg to the next
-   function.
-
-   WARNING: fns must be a non lazy collection"
-  [state fns]
-  (let [local-state (local state)
-        len-fns (count fns)]
-    (forloop [[i 0] (< i len-fns) (inc i)]
-             (>> local-state ((fns i) (<< local-state))))
-    (<< local-state)))
-
 (defn get-system-fns
   "Return system functions with an id that matches system-ids in order.
    If a key is not found it will not be returned."
   [state system-ids]
   (let [systems (:systems state)]
     (mapv systems system-ids)))
-
-(defn iter-entities
-  "Iterate over a collection of entity-ids with component functions.
-   Optionally pass in additional opts hashmap that will be passed to
-   each component function as the last argument"
-  ([state fns entity-ids]
-   (iter-entities state fns entity-ids nil))
-  ([state fns entity-ids opts]
-   (let [local-state (local state)
-         len-fns (count fns)
-         len-ents (count entity-ids)]
-     (forloop [[i 0] (< i len-fns) (inc i)]
-              (forloop [[j 0] (< j len-ents) (inc j)]
-                       (>> local-state
-                           (if opts
-                             ((fns i) (<< local-state) (entity-ids j) opts)
-                             ((fns i) (<< local-state) (entity-ids j))))))
-     (<< local-state))))
 
 (defn entities-with-component
   "Takes a hashmap and returns all keys whose values contain component-id"

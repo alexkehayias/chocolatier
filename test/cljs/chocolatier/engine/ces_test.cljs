@@ -6,9 +6,6 @@
             [chocolatier.engine.systems.events :as ev]))
 
 
-(deftest test-iter-fns
-  (is (= (ces/iter-fns 0 [inc inc inc]) 3)))
-
 (deftest test-mk-scene
   (is (= (ces/mk-scene {} :yo [:dawg]) {:scenes {:yo [:dawg]}})))
 
@@ -63,7 +60,7 @@
   (if (< frame-count 10)
     (let [system-ids (-> state :scenes scene-id)
           fns (ces/get-system-fns state system-ids)
-          updated-state (ces/iter-fns state fns)]
+          updated-state (reduce #(%2 %1) state fns)]
       (recur updated-state scene-id (inc frame-count)))
     state))
 
@@ -73,7 +70,7 @@
   (let [;; Dummy test system iterates through component fns with state
         ;; and entity id
         test-system-fn (fn [state fns entity-ids]
-                         (ces/iter-fns state (for [f fns, e entity-ids] #(f % e))))
+                         (reduce #(%2 %1) state (for [f fns, e entity-ids] #(f % e))))
         test-fn (fn [entity-id component-state inbox]
                   (println "testing" entity-id
                            component-state "->"
