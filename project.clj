@@ -10,20 +10,22 @@
                  [enlive "1.1.1"]
 
                  ;; cljs
-                 [org.clojure/clojurescript "0.0-3297"]
+                 [org.clojure/clojurescript "1.7.170"]
                  ;; DOM manipulation
                  [prismatic/dommy "1.1.0"
-                  :exclude [org.clojure/clojurescript]]
-
-                 ;; TODO deprecate this in favor of the built in testing
-                 [com.cemerick/clojurescript.test "0.3.1"
                   :exclude [org.clojure/clojurescript]]
 
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"
                   :exclude [org.clojure/clojurescript]]]
 
-  :plugins [[lein-cljsbuild "1.0.5"]
-            [lein-figwheel "0.3.5"]]
+  :plugins [[lein-cljsbuild "1.1.1" :exclude [org.clojure/clojurescript]]
+            [lein-figwheel "0.5.0-1" :exclude [org.clojure/clojurescript]]
+            [refactor-nrepl "1.1.0"]]
+
+  :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.1"
+                                   :exclude [org.clojure/clojurescript]]
+                                  [org.clojure/tools.nrepl "0.2.10"]]
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
@@ -55,6 +57,10 @@
 
              ;; Start an nREPL server into the running figwheel process
              :nrepl-port 8999
+             ;; Need this now to get nrepl to work
+             :nrepl-middleware ["cider.nrepl/cider-middleware"
+                                "refactor-nrepl.middleware/wrap-refactor"
+                                "cemerick.piggieback/wrap-cljs-repl"]
 
              ;; Server Ring Handler (optional)
              ;; if you want to embed a ring handler into the figwheel http-kit
