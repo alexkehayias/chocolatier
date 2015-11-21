@@ -47,7 +47,8 @@ The following example implements a simple game loop, system, component, and enti
 
 ```clojure
 (ns my-ns
-  (:require [chocolatier.engine.ces :as ces])
+  (:require [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.core :refer [mk-game-state]])
 
 (defn game-loop
   "Simple game loop that runs 10 times and returns the state after 10 frames."
@@ -56,8 +57,9 @@ The following example implements a simple game loop, system, component, and enti
     state
     (let [scene-id (get-in state [:game :scene-id])
           fns (ces/get-system-fns state (-> state :scenes scene-id))
-          updated-state (ces/iter-fns state fns)]
-      (recur updated-state scene-id (inc frame-count)))))
+          update-f (reduce comp fns)
+          updated-state (update-f state)]
+      (recur updated-state (inc frame-count)))))
 
 (defn test-system
   "Call all the component functions and return update game state"
@@ -72,15 +74,14 @@ The following example implements a simple game loop, system, component, and enti
 (defn my-game
   "Test the entire CES implementation with a system that changes component state"
   []
-  (->
-    (ces/mk-game-state {}
-                       :test-scene
-                       [:scene :test-scene [:test-system]]
-                       [:system :test-system test-system :testable]
-                       [:component :testable test-component-fn]
-                       [:entity :player1 :components [[:testable {:x 0 :y 0}]]]
-                       [:entity :player2 :components [[:testable {:x 10 :y 10]])
-      (game-loop 0)))
+  (-> {}
+    (mk-game-state :test-scene
+                   [:scene :test-scene [:test-system]]
+                   [:system :test-system test-system :testable]
+                   [:component :testable test-component-fn]
+                   [:entity :player1 [[:testable {:x 0 :y 0}]]]
+                   [:entity :player2 [[:testable {:x 10 :y 10}]]])
+    (game-loop 0)))
 
 ;; This will run 10 times and return the final state
 (my-game)

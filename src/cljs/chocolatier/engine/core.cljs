@@ -105,32 +105,22 @@
       (request-animation #(game-loop (<< state)))
       (println "Game stopped"))))
 
+(defn pmoc
+  "Returns a function that is the composition of f and g i.e comp that
+   goes right to left"
+  [f g]
+  (comp g f))
+
 (defn game-loop-with-stats
   [game-state stats-obj]
   (.begin stats-obj)
   (let [scene-id (get-in game-state scene-id-path)
         systems (ces/get-system-fns game-state (get-in game-state [:scenes scene-id]))
-        system-count (count systems)
-        state (local game-state)
-        loop-count (local 0)]
-    ;; Mutate local state by running the game loop
-    (forloop [[i loop-count] (< (<< i) system-count) i]
-             ;; Mutate state
-             (>> state
-                 (do ;; (.profile js/console (str "system:" (<< i)))
-                     (let [f (systems i)
-                           out (f (<< state))]
-                       ;; (.profileEnd js/console)
-                       out)))
-             ;; Iterate loop count
-             (>> i (+ (<< i) 1)))
-
-    (let [next-state (<< state)]
-      ;; Copy the state into an atom so we can inspect while running
-      (reset! *state* next-state)
-      (.end stats-obj)
-      ;; Recur
-      ;; (throw (js/Error. "STOP!"))
-      (if @*running*
-        (request-animation #(game-loop-with-stats (<< state) stats-obj))
-        (println "Game stopped")))))
+        update-f (reduce pmoc systems)
+        next-state (update-f game-state)]
+    ;; Copy the state into an atom so we can inspect while running
+    (reset! *state* next-state)
+    (.end stats-obj)
+    (if @*running*
+      (request-animation #(game-loop-with-stats next-state stats-obj))
+      (println "Game stopped"))))
