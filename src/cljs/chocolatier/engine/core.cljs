@@ -3,6 +3,18 @@
   (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
 
 
+(defn pmoc
+  "Takes a collection of functions and returns a fn that is the composition
+   of those fns. The returned function takes a single argument and
+   applies the leftmost of fns to the arg, the next fn (left-to-right)
+   to the result, etc."
+  [fs]
+  (fn [arg]
+    (loop [ret ((first fs) arg) fs (next fs)]
+      (if fs
+        (recur ((first fs) ret) (next fs))
+        ret))))
+
 (defmulti mk-state
   "Returns a hashmap representing game state. Dispatches based on the
    keyword of the first item in an arguments vector.
@@ -52,7 +64,14 @@
                      [:component :c2 [[f3 {:args-fn f4}] f5]]
                      [:entity :e1 :components [:c2] :subscriptions [[:e1 :ev1]]])"
   [state & specs]
-  (reduce mk-state state specs))
+  ;; After constructing the state, create a single arg update
+  ;; function that is cached in :game :update-fns scene-id
+  (let [new-state (reduce mk-state state specs)
+        scene-id (get-in new-state ces/scene-id-path)
+        systems (get-in new-state [:scenes scene-id])
+        system-fns (ces/get-system-fns new-state systems)
+        update-fn (pmoc system-fns)]
+    (assoc-in new-state [:game :update-fns scene-id] update-fn)))
 
 (defn timestamp
   "Get the current timestamp using performance.now.
@@ -92,37 +111,20 @@
    - state: the game state hash map"
   [game-state]
   (let [scene-id (get-in game-state ces/scene-id-path)
-        systems (ces/get-system-fns game-state (get-in game-state [:scenes scene-id]))
-        state (local game-state)]
-    (forloop [[i 0] (< i (count systems)) (inc i)]
-             (>> state ((systems i) (<< state))))
+        update-fn (get-in game-state [:game :update-fns scene-id])
+        next-state (update-fn game-state)]
     ;; Copy the state into an atom so we can inspect while running
-    (reset! *state* (<< state))
+    (reset! *state* next-state)
     (if @*running*
-      (request-animation #(game-loop (<< state)))
+      (request-animation #(game-loop next-state))
       (println "Game stopped"))))
-
-(defn pmoc
-  "Takes a collection of functions and returns a fn that is the composition
-   of those fns. The returned function takes a single argument and
-   applies the leftmost of fns to the arg, the next fn (left-to-right)
-   to the result, etc."
-  [fs]
-  (fn [arg]
-    (loop [ret ((first fs) arg) fs (next fs)]
-      (if fs
-        (recur ((first fs) ret) (next fs))
-        ret))))
 
 (defn game-loop-with-stats
   [game-state stats-obj]
   (.begin stats-obj)
   (let [scene-id (get-in game-state ces/scene-id-path)
-        systems (ces/get-system-fns game-state (get-in game-state [:scenes scene-id]))
-        ;; TODO cache this composed function instead of constructing
-        ;; it each time through the game loop
-        update-f (pmoc systems)
-        next-state (update-f game-state)]
+        update-fn (get-in game-state [:game :update-fns scene-id])
+        next-state (update-fn game-state)]
     ;; Copy the state into an atom so we can inspect while running
     (reset! *state* next-state)
     (.end stats-obj)
