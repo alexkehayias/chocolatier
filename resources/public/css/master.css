@@ -1,1 +1,8 @@
-/* CSS goes here */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#main{
+    text-align: center;
+}

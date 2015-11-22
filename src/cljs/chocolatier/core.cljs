@@ -12,9 +12,8 @@
 (defn -start-game!
   "Starts the game loop. This should be called only once all assets are loaded"
   [tilemap samples-library]
-  (let [;; TODO reset the game height on screen resize
-        width 800 ;; (aget js/window "innerWidth")
-        height 600 ;; (aget js/window "innerHeight")
+  (let [width 800
+        height 450
         stage (new js/PIXI.Container)
         options (clj->js {"transparent" true})
         renderer (new js/PIXI.CanvasRenderer width height options)
