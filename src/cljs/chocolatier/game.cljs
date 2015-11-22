@@ -33,7 +33,6 @@
   [renderer stage width height tilemap sample-library]
   (mk-game-state
    {}
-   :default
    [:custom (fn [state]
               (assoc-in state [:game :rendering-engine]
                         {:renderer renderer :stage stage}))]
@@ -62,6 +61,7 @@
                      :audio
                      :render
                      :events]]
+   [:current-scene :default]
    ;; Global event system broadcaster
    [:system :events event-system]
    ;; Updates the user input from keyboard,

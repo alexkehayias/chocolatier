@@ -55,10 +55,10 @@ The following example implements a simple game loop, system, component, and enti
   [state frame-count]
   (if (> frame-count 10)
     state
-    (let [scene-id (get-in state [:game :scene-id])
+    (let [scene-id (get-in state ces/scene-id-path)
           fns (ces/get-system-fns state (-> state :scenes scene-id))
-          update-f (reduce comp fns)
-          updated-state (update-f state)]
+          update-fn (reduce comp fns)
+          updated-state (update-fn state)]
       (recur updated-state (inc frame-count)))))
 
 (defn test-system
@@ -75,8 +75,8 @@ The following example implements a simple game loop, system, component, and enti
   "Test the entire CES implementation with a system that changes component state"
   []
   (-> {}
-    (mk-game-state :test-scene
-                   [:scene :test-scene [:test-system]]
+    (mk-game-state [:scene :test-scene [:test-system]]
+                   [:current-scene :test-scene]
                    [:system :test-system test-system :testable]
                    [:component :testable test-component-fn]
                    [:entity :player1 [[:testable {:x 0 :y 0}]]]

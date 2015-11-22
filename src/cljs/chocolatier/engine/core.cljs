@@ -3,9 +3,6 @@
   (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
 
 
-(def scene-id-path
-  [:game :scene-id])
-
 (defmulti mk-state
   "Returns a hashmap representing game state. Dispatches based on the
    keyword of the first item in an arguments vector.
@@ -33,6 +30,10 @@
   [state [_ & args]]
   (apply (partial ces/mk-scene state) args))
 
+(defmethod mk-state :current-scene
+  [state [_ scene-id]]
+  (ces/mk-current-scene state scene-id))
+
 ;; Anything labeled as custom is expected to be a function that takes
 ;; a single argument which is state hm
 (defmethod mk-state :custom
@@ -45,17 +46,13 @@
    for full details on required arguments and options.
 
    Example usage:
-   (mk-game-state {} :default
-                     [:scene :default [:s1]]
+   (mk-game-state {} [:scene :default [:s1]]
                      [:component :c1 [f1]]
                      [:system :s1 f2 :c1]
                      [:component :c2 [[f3 {:args-fn f4}] f5]]
-                     [:entity :e1 :components [:c2]
-                                  :subscriptions [[:e1 :ev1]]])"
-  [state init-scene-id & specs]
-  (reduce (fn [accum args] (mk-state accum args))
-          (assoc-in state scene-id-path init-scene-id)
-          specs))
+                     [:entity :e1 :components [:c2] :subscriptions [[:e1 :ev1]]])"
+  [state & specs]
+  (reduce mk-state state specs))
 
 (defn timestamp
   "Get the current timestamp using performance.now.
@@ -94,7 +91,7 @@
    Args:
    - state: the game state hash map"
   [game-state]
-  (let [scene-id (get-in game-state scene-id-path)
+  (let [scene-id (get-in game-state ces/scene-id-path)
         systems (ces/get-system-fns game-state (get-in game-state [:scenes scene-id]))
         state (local game-state)]
     (forloop [[i 0] (< i (count systems)) (inc i)]
@@ -106,17 +103,25 @@
       (println "Game stopped"))))
 
 (defn pmoc
-  "Returns a function that is the composition of f and g i.e comp that
-   goes right to left"
-  [f g]
-  (comp g f))
+  "Takes a collection of functions and returns a fn that is the composition
+   of those fns. The returned function takes a single argument and
+   applies the leftmost of fns to the arg, the next fn (left-to-right)
+   to the result, etc."
+  [fs]
+  (fn [arg]
+    (loop [ret ((first fs) arg) fs (next fs)]
+      (if fs
+        (recur ((first fs) ret) (next fs))
+        ret))))
 
 (defn game-loop-with-stats
   [game-state stats-obj]
   (.begin stats-obj)
-  (let [scene-id (get-in game-state scene-id-path)
+  (let [scene-id (get-in game-state ces/scene-id-path)
         systems (ces/get-system-fns game-state (get-in game-state [:scenes scene-id]))
-        update-f (reduce pmoc systems)
+        ;; TODO cache this composed function instead of constructing
+        ;; it each time through the game loop
+        update-f (pmoc systems)
         next-state (update-f game-state)]
     ;; Copy the state into an atom so we can inspect while running
     (reset! *state* next-state)

@@ -29,6 +29,14 @@
   [state uid system-ids]
   (assoc-in state [:scenes uid] system-ids))
 
+(def scene-id-path
+  [:game :scene-id])
+
+(defn mk-current-scene
+  "Sets the current scene of the game"
+  [state scene-id]
+  (assoc-in state scene-id-path scene-id))
+
 (defn get-system-fns
   "Return system functions with an id that matches system-ids in order.
    If a key is not found it will not be returned."
