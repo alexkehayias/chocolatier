@@ -27,8 +27,12 @@
 ;; the wrapped function and maintain that the state hashmap is the
 ;; first argument so we can use the threading macro easily
 (defmethod mk-state :entity
-  [state [_ & args]]
-  (apply (partial ces/mk-entity state) args))
+  [state [_ uid components]]
+  (ces/mk-entity state uid components))
+
+(defmethod mk-state :entity-remove
+  [state [_ uid]]
+  (ces/rm-entity state uid))
 
 (defmethod mk-state :component
   [state [_ & args]]

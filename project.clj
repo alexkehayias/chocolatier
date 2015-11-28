@@ -1,6 +1,7 @@
 (defproject chocolatier "0.1.0-SNAPSHOT"
   :description "Chocolatier prototype"
   :source-paths ["src/clj"]
+  :test-paths ["test/clj"]
 
   :dependencies [[org.clojure/clojure "1.7.0"]
 

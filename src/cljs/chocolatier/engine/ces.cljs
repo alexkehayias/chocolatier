@@ -59,7 +59,7 @@
 
 (defn get-component-fn
   [state component-id]
-  (or (get-in state [:components component-id])
+  (or (get-in state [:components component-id :fn])
       (throw (js/Error. (str "No component function found for " component-id)))))
 
 (defn get-component-state
@@ -162,6 +162,8 @@
        NOTE: must return a collection of arguments to be applied to f
      - format-fn: called with component-id, entity-id and the result of f,
        must return a mergeable hashmap
+     - cleanup-fn: called with global state and entity-id and must return
+       updated game state. Useful for cleaning up side effects like sprites
      - subscriptions: a collection of vectors of selectors of events to be
        included in the inbox argument of the component-fn. Implicitely adds
        the entity-id as the last selector so that component subscriptions
@@ -193,12 +195,14 @@
    - uid: unique identifier for this component
    - fn-spec: [f {<opts>}]"
   [state uid fn-spec]
-  (let [wrapped-fn (if (seqable? fn-spec)
+  (let [opts? (seqable? fn-spec)
+        wrapped-fn (if opts?
                      (do (log/debug "mk-component: found options for"
                                     uid (keys (second fn-spec)))
                          (apply mk-component-fn uid fn-spec))
-                     (mk-component-fn uid fn-spec))]
-    (assoc-in state [:components uid] wrapped-fn)))
+                     (mk-component-fn uid fn-spec))
+        cleanup-fn (when opts? (:cleanup-fn (second fn-spec)))]
+    (assoc-in state [:components uid] {:fn wrapped-fn :cleanup-fn cleanup-fn})))
 
 (defn mk-system-fn
   "Returns a function representing a system.
@@ -213,9 +217,7 @@
      of component functions for component-id, and a collection of entity ids that
      match ALL given component ids. Return result is updated game state and inbox
      messages are removed."
-  ([f]
-   (fn [state]
-     (f state)))
+  ([f] f)
   ([f component-id]
    (fn [state]
      (let [entities (entities-with-component state component-id)
@@ -252,21 +254,41 @@
    Create an entity with id :player1 with components and subscriptions.
    (mk-entity {}
               :player1
-              :components [:controllable
-                           [:collidable {:hit-radius 10}]
-                           :collision-debuggable
-                           [:moveable {:x 0 :y 0}]])"
+              [:controllable
+               [:collidable {:hit-radius 10}]
+               :collision-debuggable
+               [:moveable {:x 0 :y 0}]])"
   [state uid components]
   (reduce #(if (vector? %2)
              ;; If there was a vector passed in then the
              ;; second item is the initial component state
-             (-> (update-in %1 [:entities uid] conj (first %2))
-                 (mk-component-state (first %2) uid (second %2)))
+             (mk-component-state (update-in %1 [:entities uid] conj (first %2))
+                                 (first %2)
+                                 uid
+                                 (second %2))
              ;; Always initialize component state with an
              ;; empty hashmap. If they do not have any
              ;; component state they will not be found by
              ;; ces/entities-with-component
-             (-> (update-in %1 [:entities uid] conj %2)
-                 (mk-component-state %2 uid {})))
+             (mk-component-state (update-in %1 [:entities uid] conj %2)
+                                 %2
+                                 uid
+                                 {}))
           state
           components))
+
+(defn rm-entity
+  "Remove the specified entity and return updated game state"
+  [state uid]
+  (let [components (get-in state [:entities uid])]
+    (as-> state $
+      ;; Call cleanup function for the component if it's there
+      (reduce #(if-let [f (get-in %1 [:components %2 :cleanup-fn])]
+                 (f %1 uid)
+                 %1)
+              $
+              components)
+      ;; Clean out component state
+      (reduce #(update-in %1 [:state %2] dissoc uid) $ components)
+      ;; Remove the entity
+      (update-in $ [:entities] dissoc uid))))

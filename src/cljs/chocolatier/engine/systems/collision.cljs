@@ -55,13 +55,18 @@
   (.all rbush))
 
 (defn entity-state->bounding-box
-  "Format entity state for use with spatial index"
-  [id {:keys [pos-x pos-y]} {:keys [height width]}]
+  "Format entity state for use with spatial index. Includes all
+   collision component state in the metadata of the spatial tree item"
+  [id {:keys [pos-x pos-y offset-x offset-y]} {:keys [height width attributes]}]
   (rbush-item pos-x
               pos-y
-              (+ pos-x width)
-              (+ pos-y height)
-              {:id id}))
+              ;; Adjust the width and height of the bounding box based
+              ;; on where the entity will be next frame
+              (+ pos-x width offset-x)
+              (+ pos-y height offset-y)
+              ;; Include the parent ID so we can pass information
+              ;; about who created this collidable entity
+              {:id id :attributes attributes}))
 
 (defn update-spatial-index
   [index entity-states]
@@ -92,24 +97,45 @@
 (def collision-queue-path
   (conj ev/queue-path :collision))
 
+(defn attack?
+  "Returns a boolean of whether the id is an attack"
+  [attributes]
+  (:damage attributes))
+
+(defn valid-collision-item?
+  "Returns a function parameterized by the viewport height and width
+   that returns true if the spatial index item, a four element js
+   array, is valid for checking collisions against.
+
+   Excludes:
+   - Items that are not in the view port
+   - Items whose ID starts with attack (attacks shouldn't collide with attacks)
+   - Items with a parent ID that is the same as the entity-id (immune to your
+     own attacks)"
+  [width height]
+  (fn [[x y _ _ {:keys [id attributes]}]]
+    (and (< x width)
+         (< y height)
+         (not (attack? attributes))
+         (not= id (:from-id attributes)))))
+
 (defn mk-narrow-collision-system
+  "Returns a function parameterized by the height and width of the game.
+   Returns an update game state with collision events emitted for all eligible
+   entities stored in the spatial index"
   [height width]
   (fn [state]
-    [state]
     (let [ ;; Get only the entities that are collidable and moveable
           spatial-index (get-in state spatial-index-location)
           component-ids [:collidable :moveable]
           ;; Use the spatial index for the collection of items to check
-          ;; Remove any that are not in the viewport
-          items (filter (fn [[x y _ _ {:keys [offset-x offset-y]}]]
-                          (and (< x width) (< y height)))
+          ;; Remove any that are not in the viewport and exclude attacks
+          items (filter (valid-collision-item? width height)
                         (rbush-all spatial-index))
-          ;; TODO skip the combinations already checked
           event-pairs (for [i items
                             :let [id (:id (last i))
                                   collisions (rbush-search spatial-index i)]
                             :when (some #(not= id (:id (last %))) collisions)]
-                        [id [(ev/mk-event {:colliding? true} [:collision id])]])]
-      ;; TODO check if the entity is already colliding and skip sending
-      ;; an event
+                        [id [(ev/mk-event {:collisions collisions}
+                                          [:collision id])]])]
       (ev/batch-emit-events state [:collision] (into {} event-pairs)))))

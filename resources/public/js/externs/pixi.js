@@ -2,9 +2,11 @@ var PIXI = function(){};
 
 PIXI.Graphics = function(){};
 PIXI.Graphics.addChild = function(item){};
+PIXI.Graphics.removeChild = function(item){};
 
 PIXI.Container = function(){};
 PIXI.Container.addChild = function(item){};
+PIXI.Container.removeChild = function(item){};
 PIXI.Container.generateTexture = function(arg){};
 
 PIXI.CanvasRenderer = function(width, height, arg1, arg2){};

@@ -1,0 +1,18 @@
+(ns chocolatier.engine.components.ephemeral
+  (:require [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.systems.events :as ev]))
+
+
+(defn mk-ephemeral-state [duration]
+  {:ttl duration :counter 0})
+
+(defn update-ttl
+  "Returns update component state with an incremented counter. If the
+   counter exceeds the duration key of the component state then emit an
+   event to remove the entity from the game state"
+  [entity-id component-state _]
+  (let [{:keys [counter ttl]} component-state
+        inc-counter (inc counter)]
+    (if (> inc-counter ttl)
+      [component-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
+      (assoc component-state :counter inc-counter))))

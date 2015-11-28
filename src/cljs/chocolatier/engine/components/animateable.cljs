@@ -4,6 +4,14 @@
             [chocolatier.engine.pixi :as pixi]))
 
 
+(defn cleanup-animation-state
+  "Removes sprite from the stage belonging to the entity and returns state"
+  [state entity-id]
+  (let [stage (-> state :game :rendering-engine :stage)
+        {:keys [sprite] :as cs} (ces/get-component-state state :animateable entity-id)]
+    (pixi/remove-child! stage sprite)
+    state))
+
 (defn include-moveable-state
   "State parsing function. Returns a vector of component-state, moveable-state,
    component-id and entity-id"
@@ -124,7 +132,8 @@
   "Returns a keyword of the first action event from the inbox and appends
    the direction"
   [inbox last-action]
-  (if-let [event (first (filter #(= (:event-id %) :action) inbox))]
+  ;; TODO this doesn't handle multiple actions simultaneously
+  (if-let [event (some #(when (= (:event-id %) :action) %) inbox)]
     (let [{:keys [action direction]} (:msg event)]
       [true (keyword (str (name action) "-" (name direction)))])
     [false last-action]))
@@ -154,24 +163,27 @@
         frame-n (if animation-change? 0 frame)
         animation-name (or next-action current-animation-name)
         animation-fn (animation-name animations)
-        _ (assert animation-fn (str "Animation " animation-name " not found"))
         [sprite frame] (-> sprite
                            ;; Apply screen changes due to movement
                            (update-coords moveable-state)
                            ;; Update the animation to next frame
                            (incr-frame animation-fn frame-n))]
+    (when (= next-action :hit-up)
+      (println "HIT UP" :next next-action :current current-animation-name :stack animation-stack :inbox-count (count inbox)))
     ;; Sticking this in a conditional to avoid doing extra work if
     ;; there wasn't an animation change
     (if animation-change?
       (assoc component-state
-        :animation-stack (if next-action
-                             (conj (drop 1 animation-stack) next-action)
-                             ;; There always needs to be an animation
-                             ;; so if the stack has only 1 item in it
-                             ;; then do not drop any items
-                             (if (> (count animation-stack) 1)
-                               (drop 1 animation-stack)
-                               animation-stack))
-        :frame frame
-        :sprite sprite)
+             :animation-stack (if next-action
+                                ;; Put the next action on the top of
+                                ;; the stack
+                                (conj animation-stack next-action)
+                                ;; There always needs to be an animation
+                                ;; so if the stack has only 1 item in it
+                                ;; then do not drop any items
+                                (if (> (count animation-stack) 1)
+                                  (drop 1 animation-stack)
+                                  animation-stack))
+             :frame frame
+             :sprite sprite)
       (assoc component-state :frame frame :sprite sprite))))

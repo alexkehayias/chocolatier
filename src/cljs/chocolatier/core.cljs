@@ -4,7 +4,10 @@
             [chocolatier.game :refer [init-state]]
             [chocolatier.engine.systems.tiles :refer [load-tilemap]]
             [chocolatier.engine.systems.audio :refer [load-samples]]
-            [chocolatier.engine.core :refer [request-animation game-loop-with-stats *running* *state*]]))
+            [chocolatier.engine.core :refer [request-animation
+                                             game-loop-with-stats
+                                             *running*
+                                             *state*]]))
 
 
 (enable-console-print!)
@@ -50,7 +53,8 @@
     (try (doto js/PIXI.loader
            (.add "bunny" "img/bunny.png")
            (.add "tiles" "img/snowtiles_1.gif")
-           (.add "spritesheet" "img/test_spritesheet.png"))
+           (.add "spritesheet" "img/test_spritesheet.png")
+           (.add "fireball" "img/fireball.png"))
          (catch js/Object e (do (warn (str e))
                                 (tiles-callback))))
 
@@ -61,9 +65,9 @@
 
 (defn cleanup! []
   (try (dom/remove! (sel1 :canvas))
-       (catch js/Object e (warn (str e))))
-    (try (dom/remove! (sel1 :#stats))
-       (catch js/Object e (warn (str e)))))
+       (catch js/Object e nil))
+  (try (dom/remove! (sel1 :#stats))
+       (catch js/Object e nil)))
 
 (defn stop-game! []
   (reset! *running* false) nil)

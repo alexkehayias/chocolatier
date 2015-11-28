@@ -2,8 +2,8 @@
 
 (defn alter-obj!
   "Alter a js object's fields. Returns the object.
-   
-   Example: 
+
+   Example:
    (alter-obj! s  \"x\" 1 \"y\" 2)"
   [sprite & alterations]
   (doseq [[k v] (partition 2 alterations)]
@@ -12,6 +12,10 @@
 
 (defn add-child! [obj item]
   (.addChild obj item)
+  obj)
+
+(defn remove-child! [obj item]
+  (.removeChild obj item)
   obj)
 
 (defn mk-graphic!
@@ -77,7 +81,7 @@
   (new js/PIXI.RenderTexture w h))
 
 (defn load-assets
-  "Takes an asset loader from mk-asset-loader and loads assets using the 
+  "Takes an asset loader from mk-asset-loader and loads assets using the
    callback function f"
   [asset-loader f]
   (aset asset-loader "onComplete" f)
@@ -102,12 +106,6 @@
 
 (defn clear [graphic]
   (.clear graphic)
-  graphic)
-
-(defn add-to-stage
-  "Works for PIXI.Sprite and PIXI.Graphics and probably some others"
-  [stage graphic]
-  (add-child! stage graphic)
   graphic)
 
 (defn render-from-object-container

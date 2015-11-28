@@ -46,6 +46,38 @@ CLOSED: [2015-01-18 Sun 13:52]
   - [X] Initialize entities
     - Subscribe events
     - Init component state
+* TODO Add a combat system for attacking between entities [9/13] <2015-11-28 Sat>
+- [X] Combat system
+- [X] Meta system [2/2]
+  Dynamically add/remove/change the game state by listening to events on the :meta where the message implements the specs for :entity
+  - [X] Add entity
+  - [X] Remove entity
+- [X] TTL system/component
+  When the duration of an entity exceeds the counter, emit an event to remove itself from the game
+- [X] Attack component [2/2]
+  - [X] Attack throttling with configurable cooldowns
+  - [X] Emit events to :meta to create an attack entity
+- [X] Implement cleanup functions for components
+- [X] Update animateable component to remove the sprite from the stage using a :cleanup-fn
+- [X] Update collision system to take into account offset-x/y
+  Increase the size of the hit box to where the entity will be next frame this will mean all area the entity will pass through will be included for collision detection
+- [-] Add damage system and hitpoint component
+  - [X] Emit damage events when colliding with an entity prefixed by "attack"
+  - [X] Emit an action event when colliding with an attack
+  - Update hitpoints
+  - [X] If hitpoints falls to 0 then emit a message to show the destro animation then remove the entity
+  - [ ] Invinsibility period (cooldown of when they can take damage next)
+- [X] FIX collisions with invisible bounding boxes?
+  - When eliminating some enemies, end up colliding with nothing
+- [ ] FIX when sending out hit action event all enemy animations receive it?
+  - In animateable component:
+    - It's getting stuck on :hit-up and won't revert back to :stand-down
+      (when (= next-action :hit-up)
+        (println "HIT UP" next-action current-animation-name))
+    - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
+- [X] Determine if it's attack collision if there is a damage attribute instead of overloading the entity-id
+* TODO Add spinning to movement system
+* TODO Add diagonal movement
 * DONE Static lookups for component and system function calls
 CLOSED: [2015-07-11 Sat 21:37]
 - What if we just wrap all the higher order fns with defs?
@@ -87,6 +119,8 @@ CLOSED: [2015-11-01 Sun 19:32]
 CLOSED: [2015-11-15 Sun 22:12]
 - Benchmarks http://0fps.net/2015/01/23/collision-detection-part-3-benchmarks/
 - Good r-tree lib https://github.com/mourner/rbush
+* DONE Remove circle radius from player and enemy entity constructor <2015-11-22 Sun>
+CLOSED: [2015-11-27 Fri 15:16]
 * TODO Batch all events at the system level? <2015-11-15 Sun>
 - This resulted in really big gains when doing collision detection where each entity can create more than one event
 - Batching events for the ai system brought much less improvement so there may be something inherent about the collision events that were more severe
@@ -245,18 +279,25 @@ CLOSED: [2015-02-21 Sat 11:19]
 CLOSED: [2015-11-08 Sun 20:23]
 - https://github.com/clojure/clojurescript/wiki/Foreign-Dependencies
 - No need to do this with externs
-* TODO Live reloading during running game loop for any function change
+* DONE Live reloading during running game loop for any function change
+CLOSED: [2015-11-27 Fri 15:17]
 Looks like when the game loop is running the functions are immutable except in the case of multimethods so re evaluating a function does not guarantee that it will be used by the game engine.
 - Update the lookups of system/component fns inside the game loop to lookup by reference rather than by value??
-* TODO Benchmark for game engine performance <2015-03-07 Sat>
-Use it to compare different implementations of the core game functions and optimize
-* TODO Use transients for local mutability <2015-02-01 Sun>
+- This appears to work now <2015-11-27 Fri>
+* DONE Benchmark for game engine performance <2015-03-07 Sat>
+CLOSED: [2015-11-27 Fri 15:17]
+- Use it to compare different implementations of the core game functions and optimize
+- See chocolatier.engine.benchmarks for more
+* DONE Use transients for local mutability <2015-02-01 Sun>
+CLOSED: [2015-11-27 Fri 15:18]
 - [X] Figure out where we can use transients instead of normal hashmap operations
   - Systems?
   - Components?
   - CES operations?
 - [X] Change all systems to use transients
 - [ ] Change collision detection to use transients of js arrays to do collision detection
+  - No longer need to do this since implementing rbush for r-trees
+- Doesn't seem to help that much, may revisit this <2015-11-27 Fri>
 * DONE "Threads" using core.async to run systems async based on deps <2015-02-21 Sat>
 CLOSED: [2015-02-22 Sun 15:50]
 - Branch: async-systems

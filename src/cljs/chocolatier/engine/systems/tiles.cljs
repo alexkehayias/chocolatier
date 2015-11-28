@@ -16,18 +16,17 @@
 
 (defn render-tiles [this state]
   (let [{:keys [sprite screen-x screen-y]} this]
-    (if (or (not= (.-position.x sprite) screen-x)
-            (not= (.-position.y sprite) screen-y))
-      (do
-        (set! (.-position.x sprite) screen-x)
-        (set! (.-position.y sprite) screen-y)
-        (assoc this :sprite sprite)))))
+    (when (or (not= (.-position.x sprite) screen-x)
+              (not= (.-position.y sprite) screen-y))
+      (set! (.-position.x sprite) screen-x)
+      (set! (.-position.y sprite) screen-y)
+      (assoc this :sprite sprite))))
 
 (defn create-tile!
   "Adds a tile to the stage and returns the hashmap representation
    of a tile."
   [tileset-texture
-   width height 
+   width height
    map-x map-y ;; coords on the grid i.e 0,1
    screen-x screen-y ;; postiion on the screen
    tileset-x tileset-y ;; position on the tileset image
@@ -46,14 +45,14 @@
            attrs-hm)))
 
 (defn create-tiles-from-spec!
-  "Create tiles from a map-spec, a 1 dimensional array where the 
-   value of the item represents it's location in the tile set and 
+  "Create tiles from a map-spec, a 1 dimensional array where the
+   value of the item represents it's location in the tile set and
    the index of the item represents it's location in the tile map.
 
    Example of a 4 by 4 map spec:
    [0 1 2 0
     0 1 1 1
-    1 1 2 0 
+    1 1 2 0
     0 1 1 0]
 
     Args:
@@ -78,7 +77,7 @@
     (loop [tile-specs (map-indexed vector map-spec)
            tiles []]
       (if-let [[indx tile-pos] (first tile-specs)]
-        (if-not (== tile-pos 0)
+        (if-not (zero? tile-pos)
           (let [map-row (js/Math.floor (/ indx map-w))
                 map-col (if (> (inc indx) map-w)
                           (- indx (* map-row map-w))
@@ -98,7 +97,7 @@
                 tileset-x (- (* tileset-w tile-px-w) (* tileset-col tile-px-w))
                 tileset-y (- (* tileset-h tile-px-h) (* tileset-row tile-px-h))
                 tile (create-tile! tileset-texture
-                                   tile-px-w tile-px-h 
+                                   tile-px-w tile-px-h
                                    map-row map-col
                                    map-x map-y
                                    tileset-x tileset-y)]
@@ -125,8 +124,8 @@
                   tilesets
                   tileheight
                   tilewidth]} tilemap
-                  {:keys [imageheight imagewidth]} (-> tilesets first)
-           tileset-width (/ imagewidth tilewidth) 
+                  {:keys [imageheight imagewidth]} (first tilesets)
+           tileset-width (/ imagewidth tilewidth)
            tileset-height (/ imageheight tileheight)
            tileset-texture (pixi/mk-texture (-> tilesets first :image))]
       ;; Draw tiles from all layers of the tile map

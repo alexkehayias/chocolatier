@@ -18,7 +18,7 @@
    :A {:action :walk :direction :left :offset-x (* 1 move-rate) :offset-y 0}
    :D {:action :walk :direction :right :offset-x (* -1 move-rate) :offset-y 0}
    ;; TODO this causes a compiler error with optimizations advanced
-   ;; :¿ {:action :attack}
+   (keyword "¿") {:action :attack}
    :B {:action :replay}})
 
 ;; FIX The output of the interaction hashmap is non-deterministic
