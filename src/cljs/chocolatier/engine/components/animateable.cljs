@@ -168,8 +168,8 @@
                            (update-coords moveable-state)
                            ;; Update the animation to next frame
                            (incr-frame animation-fn frame-n))]
-    (when (= next-action :hit-up)
-      (println "HIT UP" :next next-action :current current-animation-name :stack animation-stack :inbox-count (count inbox)))
+    ;; (when (= next-action :hit-up)
+    ;;   (println "HIT UP" :next next-action :current current-animation-name :stack animation-stack :inbox-count (count inbox)))
     ;; Sticking this in a conditional to avoid doing extra work if
     ;; there wasn't an animation change
     (if animation-change?

@@ -25,7 +25,7 @@
 (defn get-events
   "Returns a collecition of events or nil"
   [state selectors]
-  (get-in state (concat queue-path selectors)))
+  (get-in state (into queue-path selectors)))
 
 (defn get-subscribed-events
   "Returns a collection of events that matches the collection of

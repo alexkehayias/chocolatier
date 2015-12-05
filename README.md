@@ -2,6 +2,12 @@
 
 A work-in-progress web game engine for repl driven game development written in ClojureScript using Pixi.js as a rendering engine.
 
+## Demo
+
+Here's the working example game that includes tilesets, collision detection, animation, sprites, and user input.
+
+![Alt text](/../screenshots/gameplay_1.gif?raw=true "Chocolatier engine gameplay")
+
 ## Usage
 
 ### With `figwheel`
