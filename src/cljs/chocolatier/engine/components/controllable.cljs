@@ -17,9 +17,14 @@
    :S {:action :walk :direction :down :offset-x 0 :offset-y (* -1 move-rate)}
    :A {:action :walk :direction :left :offset-x (* 1 move-rate) :offset-y 0}
    :D {:action :walk :direction :right :offset-x (* -1 move-rate) :offset-y 0}
-   ;; TODO this causes a compiler error with optimizations advanced
    (keyword "¿") {:action :attack}
    :B {:action :replay}})
+
+(defn comp-interaction
+  [v1 v2]
+  (if (and (number? v1) (number? v2))
+    (+ v1 v2)
+    v2))
 
 ;; FIX The output of the interaction hashmap is non-deterministic
 ;; because it is iterating through a hashmap where ordering is not
@@ -38,7 +43,7 @@
     (if (seq input-seq)
       (let [[k v] (first input-seq)
             out (if-let [interaction (k keycode->interaction)]
-                  (into out interaction)
+                  (merge-with comp-interaction out interaction)
                   out)]
         (recur out (rest input-seq)))
       out)))
