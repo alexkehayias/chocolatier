@@ -16,7 +16,6 @@
         pos-y (* 1000 (js/Math.random))
         animation-state (mk-animateable-state stage
                                               "img/bunny.png"
-                                              pos-x pos-y
                                               :stand-down
                                               [:stand-up 26 37 26 37 0 0 1]
                                               [:stand-down 26 37 26 37 0 0 1]

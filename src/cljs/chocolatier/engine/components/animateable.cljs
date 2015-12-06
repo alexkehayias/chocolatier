@@ -100,20 +100,14 @@
    Example:
    (mk-animateable-state stage
                          \"/img/my-spritesheet.png\"
-                         0 0
                          :walk
                          [:walk 10 10 2 2 0 0 5]
                          [:run 10 10 2 2 1 0 5])"
   [stage
    image-location
-   screen-x screen-y
    default-animation-kw
    & animation-specs]
-  (let [sprite (-> (pixi/mk-sprite! stage image-location)
-                   (pixi/alter-obj! "position.x" screen-x "position.y" screen-y)
-                   ;; Initialized at 0, on the first frame it will use
-                   ;; the animation specs to set it correctly
-                   (pixi/set-sprite-frame! 0 0 0 0))
+  (let [sprite (pixi/mk-sprite! stage image-location)
         animations (apply mk-animations-map animation-specs)]
     {:animation-stack (list default-animation-kw)
      :sprite sprite
@@ -145,9 +139,7 @@
   (let [{:keys [pos-x pos-y]} moveable-state]
     ;; Mutate the x and y position of the sprite if there was any
     ;; move changes
-    (set! (.-position.x sprite) pos-x)
-    (set! (.-position.y sprite) pos-y))
-  sprite)
+    (pixi/alter-obj! sprite "position" (js-obj "x" pos-x "y" pos-y))))
 
 ;; WARNING: Assumes a single spritesheet and a single sprite
 (defn animate

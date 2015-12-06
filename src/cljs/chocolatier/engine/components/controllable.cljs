@@ -17,7 +17,8 @@
    :S {:action :walk :direction :down :offset-x 0 :offset-y (* -1 move-rate)}
    :A {:action :walk :direction :left :offset-x (* 1 move-rate) :offset-y 0}
    :D {:action :walk :direction :right :offset-x (* -1 move-rate) :offset-y 0}
-   (keyword "¿") {:action :attack}
+   (keyword "¿") {:action :fireball}
+   :H {:action :spear}
    :B {:action :replay}})
 
 (defn comp-interaction
@@ -66,7 +67,10 @@
                        []
                      (= action :replay)
                      (conj (ev/mk-event {:replay? true} [:replay]))
-                     (= action :attack)
+                     (= action :fireball)
+                     (conj (ev/mk-event {:action action :direction direction}
+                                        [:action entity-id]))
+                     (= action :spear)
                      (conj (ev/mk-event {:action action :direction direction}
                                         [:action entity-id]))
                      (= action :walk)

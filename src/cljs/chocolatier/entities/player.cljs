@@ -17,7 +17,6 @@
     (info "Creating player" pos-x pos-y map-x map-y)
     (let [animation-state (mk-animateable-state stage
                                                 "img/test_spritesheet.png"
-                                                pos-x pos-y
                                                 :stand-down
                                                 [:stand-up 832 1344 64 64 8 0 1]
                                                 [:stand-down 832 1344 64 64 10 0 1]
@@ -27,13 +26,40 @@
                                                 [:walk-down 832 1344 64 64 10 0 9]
                                                 [:walk-left 832 1344 64 64 9 0 9]
                                                 [:walk-right 832 1344 64 64 11 0 9]
-                                                [:attack-up 832 1344 64 64 4 0 8]
-                                                [:attack-down 832 1344 64 64 6 0 8]
-                                                [:attack-left 832 1344 64 64 5 0 8]
-                                                [:attack-right 832 1344 64 64 7 0 8])
+                                                [:fireball-up 832 1344 64 64 4 0 2]
+                                                [:fireball-down 832 1344 64 64 6 0 2]
+                                                [:fireball-left 832 1344 64 64 5 0 2]
+                                                [:fireball-right 832 1344 64 64 7 0 2]
+                                                [:spear-up 832 1344 64 64 4 0 8]
+                                                [:spear-down 832 1344 64 64 6 0 8]
+                                                [:spear-left 832 1344 64 64 5 0 8]
+                                                [:spear-right 832 1344 64 64 7 0 8])
           move-state (mk-moveable-state pos-x pos-y)
           collision-state (mk-collidable-state 64 64 nil)
-          attack-state (mk-attack-state nil)
+          attack-state (mk-attack-state [:fireball {:damage 10
+                                                    :cooldown 8
+                                                    :type :fire
+                                                    :width 30
+                                                    :height 30
+                                                    :speed 10
+                                                    :ttl 100
+                                                    :animation-fn #(mk-animateable-state
+                                                                    stage
+                                                                    "img/fireball.png"
+                                                                    :fire
+                                                                    [:fire 30 30 30 30 0 0 1])}]
+                                        [:spear {:damage 10
+                                                 :cooldown 4
+                                                 :type :fire
+                                                 :width 10
+                                                 :height 10
+                                                 :speed 8
+                                                 :ttl 2
+                                                 :animation-fn #(mk-animateable-state
+                                                                 stage
+                                                                 "img/fireball.png"
+                                                                 :fire
+                                                                 [:fire 30 30 30 30 0 0 1])}])
           damage-state (mk-damage-state 100 10)]
       (ces/mk-entity state
                      uid

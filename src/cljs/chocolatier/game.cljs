@@ -26,7 +26,7 @@
             [chocolatier.engine.components.moveable :refer [move]]
             [chocolatier.engine.components.ai :refer [behavior defer-events]]
             [chocolatier.engine.components.attack :refer [attack
-                                                          include-move-state-and-stage]]
+                                                          include-move-state]]
             [chocolatier.engine.components.damage :refer [damage]]
             [chocolatier.engine.components.ephemeral :refer [update-ttl]]
             [chocolatier.entities.player :refer [create-player!]]
@@ -103,7 +103,7 @@
    [:system :narrow-collision (mk-narrow-collision-system height width)]
    [:system :attack attack-system :attack]
    [:component :attack
-    [attack {:args-fn include-move-state-and-stage
+    [attack {:args-fn include-move-state
              :subscriptions [:action]}]]
    [:system :damage attack-system :damage]
    [:component :damage
