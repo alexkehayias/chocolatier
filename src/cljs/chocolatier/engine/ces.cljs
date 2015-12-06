@@ -37,6 +37,10 @@
   [state scene-id]
   (assoc-in state scene-id-path scene-id))
 
+(defn mk-renderer
+  [state renderer stage]
+  (assoc-in state [:game :rendering-engine] {:renderer renderer :stage stage}))
+
 (defn get-system-fns
   "Return system functions with an id that matches system-ids in order.
    If a key is not found it will not be returned."

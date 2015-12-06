@@ -76,6 +76,8 @@ CLOSED: [2015-01-18 Sun 13:52]
         (println "HIT UP" next-action current-animation-name))
     - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
 - [X] Determine if it's attack collision if there is a damage attribute instead of overloading the entity-id
+- [ ] FIX cooldown requires a full cycle before it allows an attack
+* TODO FIX spear attack doesn't work unless pushing a direction key simultaneously
 * TODO Add spinning to movement system
 * TODO Add diagonal movement
 * DONE Static lookups for component and system function calls

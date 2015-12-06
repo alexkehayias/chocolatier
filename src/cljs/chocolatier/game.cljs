@@ -38,11 +38,7 @@
   [renderer stage width height tilemap sample-library]
   (mk-game-state
    {}
-   ;; TODO move this to a function so it's clear how to initialize the
-   ;; rendering engine
-   [:custom (fn [state]
-              (assoc-in state [:game :rendering-engine]
-                        {:renderer renderer :stage stage}))]
+   [:renderer renderer stage]
    [:custom init-events-system]
    ;; Initial tile map
    [:custom (mk-tiles-from-tilemap! renderer stage tilemap)]

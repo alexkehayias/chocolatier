@@ -50,6 +50,10 @@
   [state [_ scene-id]]
   (ces/mk-current-scene state scene-id))
 
+(defmethod mk-state :renderer
+  [state [_ & args]]
+  (apply (partial ces/mk-renderer state) args))
+
 ;; Anything labeled as custom is expected to be a function that takes
 ;; a single argument which is state hm
 (defmethod mk-state :custom

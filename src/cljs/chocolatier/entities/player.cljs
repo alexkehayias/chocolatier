@@ -36,30 +36,31 @@
                                                 [:spear-right 832 1344 64 64 7 0 8])
           move-state (mk-moveable-state pos-x pos-y)
           collision-state (mk-collidable-state 64 64 nil)
-          attack-state (mk-attack-state [:fireball {:damage 10
-                                                    :cooldown 8
-                                                    :type :fire
-                                                    :width 30
-                                                    :height 30
-                                                    :speed 10
-                                                    :ttl 100
-                                                    :animation-fn #(mk-animateable-state
-                                                                    stage
-                                                                    "img/fireball.png"
-                                                                    :fire
-                                                                    [:fire 30 30 30 30 0 0 1])}]
-                                        [:spear {:damage 10
-                                                 :cooldown 4
-                                                 :type :fire
-                                                 :width 10
-                                                 :height 10
-                                                 :speed 8
-                                                 :ttl 2
-                                                 :animation-fn #(mk-animateable-state
-                                                                 stage
-                                                                 "img/fireball.png"
-                                                                 :fire
-                                                                 [:fire 30 30 30 30 0 0 1])}])
+          attack-state (mk-attack-state
+                        [:fireball {:damage 10
+                                    :cooldown 8
+                                    :type :fire
+                                    :width 30
+                                    :height 30
+                                    :speed 10
+                                    :ttl 100
+                                    :animation-fn #(mk-animateable-state
+                                                    stage
+                                                    "img/fireball.png"
+                                                    :fire
+                                                    [:fire 30 30 30 30 0 0 1])}]
+                        [:spear {:damage 10
+                                 :cooldown 4
+                                 :type :fire
+                                 :width 10
+                                 :height 10
+                                 :speed 8
+                                 :ttl 2
+                                 :animation-fn #(mk-animateable-state
+                                                 stage
+                                                 "img/fireball.png"
+                                                 :fire
+                                                 [:fire 30 30 30 30 0 0 1])}])
           damage-state (mk-damage-state 100 10)]
       (ces/mk-entity state
                      uid
