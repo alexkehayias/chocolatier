@@ -7,8 +7,10 @@
 (defn cooldown?
   "Takes a cooldown hashmap and returns a boolean if it is in cooldown"
   [{:keys [counter limit]}]
-  (when (and counter limit)
-    (zero? counter)))
+  (cond
+    (zero? counter) false
+    (> counter limit) true
+    :else true))
 
 (defn tick-cooldown
   "Increments counter of the cooldown and returns a pair of updated

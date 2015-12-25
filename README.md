@@ -15,7 +15,7 @@ The following instructions will start a browser connected repl and launch the de
 
 0. Clone the project and all submodules `git clone --recursive https://github.com/alexkehayias/chocolatier`
 1. Start the browser REPL server `lein figwheel`
-2. Navigate your browser to `http://127.0.0.1:3449/dev` to connect to the REPL
+2. Navigate your browser to `http://127.0.0.1:1223/dev` to connect to the REPL
 3. The example game should start immediately, changes to files will automatically restart the game
 
 ### With `figwheel` and emacs using `cider`

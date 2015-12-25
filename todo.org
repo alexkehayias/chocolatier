@@ -2,30 +2,6 @@
 # Date stamps are when the task was started
 # Closed stamps are when it was completed
 
-* DONE Version 0.1.0 [3/3]                                          :release:
-CLOSED: [2015-01-18 Sun 20:55]
-** DONE Core [2/2]
-CLOSED: [2014-11-15 Sat 11:27]
-- [X] Browser repl
-- [X] Centralized logging
-** DONE Scenes State Components Entities Systems [5/5]
-CLOSED: [2014-11-22 Sat 11:35]
-- [X] Scenes (collection of systems)
-- [X] Systems (collection of component functions)
-- [X] Entities (UIDs with collection of component IDs)
-- [X] State (nested hashmap representing scene state)
-- [X] Messaging (Event bus for sending and receiving messages between systems)
-** DONE Systems/Components [8/8]
-CLOSED: [2015-01-18 Sun 13:52]
-- [X] Movement
-- [X] Circle collision detection
-- [X] Rendering
-- [X] User input
-- [X] Tile mapping
-- [X] Debug layer (collision circles)
-- [X] Replay game state (go back to old game state on the fly)
-- [X] Animations (sprites)
-
 * TODO Version 0.2.0 [2/8]
 - [X] Update to version of clojurescipt and Austin plugin
 - [ ] Sound system
@@ -46,7 +22,7 @@ CLOSED: [2015-01-18 Sun 13:52]
   - [X] Initialize entities
     - Subscribe events
     - Init component state
-* TODO Add a combat system for attacking between entities [9/13] <2015-11-28 Sat>
+* TODO Add a combat system for attacking between entities [10/12] <2015-11-28 Sat>
 - [X] Combat system
 - [X] Meta system [2/2]
   Dynamically add/remove/change the game state by listening to events on the :meta where the message implements the specs for :entity
@@ -76,239 +52,28 @@ CLOSED: [2015-01-18 Sun 13:52]
         (println "HIT UP" next-action current-animation-name))
     - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
 - [X] Determine if it's attack collision if there is a damage attribute instead of overloading the entity-id
-- [ ] FIX cooldown requires a full cycle before it allows an attack
+- [X] FIX cooldown requires a full cycle before it allows an attack
+* TODO Decouple movement offset from the controllable component <2015-12-25 Fri>
+Make the move component figure out to what rate the entity should move (offset)
+* DONE Certain actions should be in addition to movement <2015-12-25 Fri>
+CLOSED: [2015-12-25 Fri 18:00]
+i.e Moving in addition to certain attacks such as fireball and walking
 * TODO FIX spear attack doesn't work unless pushing a direction key simultaneously
 * TODO Add spinning to movement system
-* TODO Add diagonal movement
-* DONE Static lookups for component and system function calls
-CLOSED: [2015-07-11 Sat 21:37]
-- What if we just wrap all the higher order fns with defs?
-- What if at the time of wiring we def everything or stick them the game state in a deftype?
-  - engine.core/mk-game-state
-  - Maybe ces/mk-component should def the functions then return the fully qualified names in the state hashmap
-  - We already have a static number keys for the game state and should not allow anything else
-    - scenes
-    - game
-    - systems
-    - components
-    - entities
-- This didn't end up helping since I found that these issues only show up when dynamically loading things from the repl
-* DONE Audio component <2015-05-24 Sun>
-CLOSED: [2015-05-24 Sun 17:12]
-* DONE Talk for LispNYC <2015-08-16 Sun>
-CLOSED: [2015-09-25 Fri 10:28] DEADLINE: <2015-09-08 Tue>
-- Topics
-  - Profiling
-  - Functional game engine design
-  - Performance optimization of ClojureScript
-  - Embedded repl as a game mechanic
-* DONE Add static fn analysis and pseudo name optimization for min build <2015-08-01 Sat>
-CLOSED: [2015-11-01 Sun 19:32]
-- As per this blog post http://swannodette.github.io/2015/03/16/optimizing-clojurescript-function-invocation/ we can get better call site optimization
-- Need extern file to work with advanced Google Closure optimization i.e https://github.com/cljsjs/packages/blob/master/d3/resources/cljsjs/d3/common/d3.ext.js
-- Alternatively, refer to external libs by string name only
-  (let [yay ((goog.object.get js/window "yayQuery"))]
-    ((goog.object.get yay "sayHello") ((goog.object.get yay "getMessage"))))
-- [ ] Extern file for pixijs
-- [ ] Extern file for howlerjs
-- [ ] Update project.clj under cljsbuild profile "min" build
-  ;; Statically analyze function arrities
-  :static true
-  ;; Flatten namespace conventions into
-  ;; names instead of nested objects
-  :pseudo-names true
-* DONE Spatial index for help reduce number of collision detections <2015-11-15 Sun>
-CLOSED: [2015-11-15 Sun 22:12]
-- Benchmarks http://0fps.net/2015/01/23/collision-detection-part-3-benchmarks/
-- Good r-tree lib https://github.com/mourner/rbush
-* DONE Remove circle radius from player and enemy entity constructor <2015-11-22 Sun>
-CLOSED: [2015-11-27 Fri 15:16]
+* TODO Add diagonal attack <2015-12-13 Sun>
 * TODO Batch all events at the system level? <2015-11-15 Sun>
 - This resulted in really big gains when doing collision detection where each entity can create more than one event
 - Batching events for the ai system brought much less improvement so there may be something inherent about the collision events that were more severe
 - Would be nice to only deal with events at the component fn level
 * TODO Optimize ev/get-subscribed-events <2015-11-15 Sun>
 According to profiler it's really slow
-* DONE Optimize update-spatial-index <2015-11-15 Sun>
-CLOSED: [2015-11-16 Mon 22:18]
-- According to profiler it's really slow
-- Seems like the root cause is get-multi-component-state function that only gets realized inside of update-spatial-index
 * TODO Assets pipeline for asynchronously loading sounds/tiles/sprites/etc
 - Provide a nice abstraction for declaring pipeline of functions for loading assets asynchronously so that it doesn't look like spaghetti
 - Integrate that into the mk-game-state function to keep the whole thing declarative
 * TODO Add example of audio to the demo
-* DONE Optimize collision detection as it seems to be the slowest system <2015-11-08 Sun>
-CLOSED: [2015-11-15 Sun 22:11]
-* DONE Optimize the ces framework
-CLOSED: [2015-11-08 Sun 20:23]
-- When you double the number of entities the framerate drops nearly in half
-- AI system/component showcases this the best, removing it increases the framerate a ton
-- How can we reduce the number of changes to the global state?
-- Size of the state hashmap is not the problem
-  Adding initial state of (reduce into {} (map hash-map (range 10000) (range 10000))) has no slow down even with 10000 additional keys
-- Event messages the biggest issue?
-  - Every time a system runs it can generate up to n number of state changes where n is the number of events emitted
-  - Make the event queue a mutable object
-    - Was super slow, see mutable-queue branch
-  - Every time an event is emitted, mutate the queue instead of rewriting the state hashmap
-  - Make the queue a hashmap instead of a hashmap and an array
-    - Each message has it's own unique ID
-    - To get all messages at a selector, iterate through all keys at that point
-    - Only once per game loop will we need to return a new game state for the sake of events (when the queues are cleared)
-  - Flatten the keys for events and
-  - Batch all the events in one shot at the end of the system call\
-* Profiling notes
-- In the chrome js console profiler:
-  - "self" is how much time was spent doing work directly in that function.
-  - "total" is how much time was spent in that function, and in the functions it called.
-** Profiling <2015-07-19 Sun>
-- AI system profile
-  - apply is 45% of the time spent
-  - update-component-state-and-events 35%
-    - Looks like emit events is the culprite with update-in happening many times
-- Broad collision system
-  - entities-with-multi-components 40% of time
-  - mk-spatial-grid is 52% of time, looks like the group-by is inefficient
-- Narrow collision system
-  - Pretty small amount of time spent there
-** Profiling <2015-07-25 Sat>
-- narrow-collision detection takes 25%
-  - check-collsions appears to be the culprit with 20% time spent there
-- get-subscribed-events takes 22% of the overall profiled time
-  - usage of mapcat appears to be the culprit with 20% time spent there
-** Profiling <2015-08-01 Sat>
-- Only looked at 2 systems movement and ai
-- Major bottlenecks
-  - apply (unoptimized by v8) in component-fn-body
-  - emit-events reduce is spending lots of time and number of function calls will grow linearly with each entity added
-  - get-events spends all it's time with get-in
-* DONE Systems should only be running one component function instead of a collection <2015-08-02 Sun>
-CLOSED: [2015-11-08 Sun 20:22]
-
-* DONE Refactor events <2015-08-02 Sun>
-CLOSED: [2015-08-16 Sun 18:23]
-- Too slow
-  Profiler shows bottleneck in emit-events and get-events
-- Currently implemented as a nested hashmap of sequences of event hashmaps
-- [X] Remove nesting?
-  - Want a way to select what we need in one shot withouth walking a nested data structure
-  - Should reduce time for getting events and emitting events if there is no nesting
-  - Overload the names of the event to prevent nesting?
-  - Do we need to give up hierarchical event subscriptions? Are they useful?
-  - Removed nesting and that improves by a few frames
-- [ ] Remove events in favor of directly querying component state
-  - Would couple components implicitely
-    - Is there a way to explicitely make the dependencies between entities and components states?
-  - Instead of inbox, maybe replace with a read only queryable component state?
-    - If you have direct access to objects then they can be mutated by something other than the component that owns the state
-    - Components shouldn't have access to game meta state only component state
-
-- [-] Reduce the usage of events
-  - Movement/collision/animation is the challenging part to decouple
-    :player1
-    controllable -- moveable -- collision -- position -- animation
-
-    :enemy1
-    ai -- moveable -- collision -- position -- animation
-
-  - [ ] Make a new component called position which is based on the movement and collision component states
-    - [ ] Player1 movement component should query the input state and set the desired movement
-    - [ ] Position component
-    - [ ] For enemies, position component to set the offsets
-    - [ ] Animateable queries position and action component state
-
-  - [X] Use state machines instead of requiring a message to be present
-    Example: Only send an event if something has changed instead of requiring a message every frame
-    - [X] Update controllable/react-to-input to only emit an event if the state has changed
-    - [X] Update moveable to only emit when movement has changed
-
-* DONE Refactor component function args to all be a map instead of positional args <2015-08-16 Sun>
-CLOSED: [2015-11-08 Sun 20:19]
-- It would be hard to had additional functionality to component functions if we have to worry about breaking call signature changes
-- [X] Change args to all component functions to be a single hashmap
-- [ ] Rename :args-fn to something more appropriate
-* DONE Fix V8 optimization bailout in ces/iter-entities <2015-07-26 Sun>
-CLOSED: [2015-08-01 Sat 11:56]
-- Error is "bad value context for arguments value"
-- https://github.com/bevry/taskgroup/issues/12#issue-23512231
-- https://code.google.com/p/v8/issues/detail?id=3037
-- Fixed by making it a two arrity function
-* DONE Clean up usage of apply in mk-component-fn <2015-07-25 Sat>
-CLOSED: [2015-07-25 Sat 19:37]
-* DONE mk-event should take a vector of selectors instead of varargs <2015-07-25 Sat>
-CLOSED: [2015-07-25 Sat 19:37]
-* DONE Benchmarks for the engine <2015-04-04 Sat>
-CLOSED: [2015-04-04 Sat 13:29]
-Use this to test any pervasive changes to the rest of the framework related to performance
-- Use simple-benchmark which is built in which shows the running time for a function over n iterations
-- [X] Calculate the number of frames per second the engine can do
-- [X] Add best of calculation
-- [X] Add basic stats
-* DONE Remove use of filter to get a list of entities that have a component
-CLOSED: [2015-04-04 Sat 14:41]
-- Currently stored as :entitiy -> [:c1 :c2]
-- Reverse it so that when an entity is created it is indexed to a direct lookup path i.e :component [:e1 :e2]
-- Can use keys on :state -> :c1 to get all entities in one shot without a fitler then map
-* DONE Update to latest pixijs <2015-05-03 Sun>
-CLOSED: [2015-05-03 Sun 11:50]
-- Update to v3
-- Add as a submodule
-* DONE Add stats.js to track frame rates
-CLOSED: [2015-05-03 Sun 17:08]
-https://github.com/mrdoob/stats.js
 * TODO Gameloop macro to inline the entire program into one function block
 - Read this somewhere that referencing a ton of functions all over the place is not good for performance or garbage collection
 - Write a macro that explodes all code into one massive function
-* DONE Eliminate unoptimized function calls in v8 due to needing dynamic lookup
-CLOSED: [2015-07-11 Sat 21:38]
-- Profiler says all the inner functions can not be optimized because the require a dynamic lookup and therefore can not be inlined by v8
-- [X] Use macros to define a new function for each system/component instead of anonymous functions
-- See branch defcomponent, didn't pan out as this isn't actually an issue on the first run
-* DONE FIX debuggable collision circle overlay is not centered correctly
-CLOSED: [2015-05-03 Sun 12:38]
-* DONE Game loop helpers <2015-02-22 Sun>
-CLOSED: [2015-03-07 Sat 21:22]
-Make it easier to set up a game loop and constructing inital state
-- [X] Game state helper
-  Declare the function for a system, components and it will auto call mk-system/mk-component on them
-- [X] Game loop helper
-* DONE Update to latest version of austin and cljs <2015-02-21 Sat>
-CLOSED: [2015-02-21 Sat 11:19]
-- Austin 1.6 has issues so need to use version 1.7-SNAPSHOT or the repl doesn't work
-- Had to update lein cljsbuild because it was to old to work with later cljs
-- Now using the cljs required by core async latest
-* DONE Add pixijs as a foreign dependency <2015-03-29 Sun>
-CLOSED: [2015-11-08 Sun 20:23]
-- https://github.com/clojure/clojurescript/wiki/Foreign-Dependencies
-- No need to do this with externs
-* DONE Live reloading during running game loop for any function change
-CLOSED: [2015-11-27 Fri 15:17]
-Looks like when the game loop is running the functions are immutable except in the case of multimethods so re evaluating a function does not guarantee that it will be used by the game engine.
-- Update the lookups of system/component fns inside the game loop to lookup by reference rather than by value??
-- This appears to work now <2015-11-27 Fri>
-* DONE Benchmark for game engine performance <2015-03-07 Sat>
-CLOSED: [2015-11-27 Fri 15:17]
-- Use it to compare different implementations of the core game functions and optimize
-- See chocolatier.engine.benchmarks for more
-* DONE Use transients for local mutability <2015-02-01 Sun>
-CLOSED: [2015-11-27 Fri 15:18]
-- [X] Figure out where we can use transients instead of normal hashmap operations
-  - Systems?
-  - Components?
-  - CES operations?
-- [X] Change all systems to use transients
-- [ ] Change collision detection to use transients of js arrays to do collision detection
-  - No longer need to do this since implementing rbush for r-trees
-- Doesn't seem to help that much, may revisit this <2015-11-27 Fri>
-* DONE "Threads" using core.async to run systems async based on deps <2015-02-21 Sat>
-CLOSED: [2015-02-22 Sun 15:50]
-- Branch: async-systems
-- Example:
-  - Given dependency tree [[a b] [a c] [c d]]
-  - Run in this order where a vector denotes async operation [a, [b c], d]
-- Probably need to cache this when game loop is initialized and recalc anytime a new system is added/removed
-- Turned out to be much slower due to overhead of core.async since these are all cpu bound tasks there is no benefit to async'ing them
-
 * TODO input->interaction is non-deterministic
 FIX The output of the interaction hashmap is non-deterministic
 because it is iterating through a hashmap where ordering is not
@@ -324,130 +89,25 @@ According to the compiler, the move component requires multiple get-component-st
 - Collideable needs to know the intended position of the character
 
 * TODO Function that generates all the animation declarations in each direction
-* Live demo <2014-12-10 Wed>
-Want to show how nice it is getting quick feedback loops and adding new features to the game
-- Start a game from scratch and build it up
-- Show how to inspect game state
-- Show what it's like to work with
-- Add a new system or feature
-- Update an existing system on the fly
 * TODO Key combinations from input
-* DONE Add direction to movement and animation so you remain in that direction when standing <2015-01-18 Sun>
-CLOSED: [2015-01-25 Sun 12:36]
-- [X] Add stand as an action if not walking to Controllable
-- [X] FIX animation stack keeps growing
-  Need to remove the last action if a new one comes in
 * TODO Debug layer for spatial grid
 Show grid lines with numbers based on the spatial grid of that frame
 * TODO Text rendering to sprites
-* DONE Add attack animation <2015-01-25 Sun>
-CLOSED: [2015-01-25 Sun 20:49]
-* DONE Animation system <2015-01-17 Sat>
-CLOSED: [2015-01-18 Sun 13:52]
-- State machine for representing animations
-- Hold on to the last state so that after an animation it goes back to what it was in
-- State
-  - Animation state key i.e. :walking :running
-  - Frame number (for sprite sheet)
-  - Dimensions of sprite sheet i.e width/height/frame-width/frame-height
-- Abstraction for specifying an animation
-- Key frame animation?
-- Multi part sprites?
-- [X] Renderable system should only call the stage render code
-- [X] Move sprite updating based on movement to the animateable component
-- [X] Can change to animateable system rather than renderable so all can share sprite stuff in one place. It only reacts to events so it's ok
-  - Handles changes to sprites based on events including movement, animation, image swaps
-- [X] Fix collision detection to use move component for position state or to get all info from the incoming event msg
-- [X] Hold the hit zone info about an entity in the collidable component state
-- [X] Position information should be held by the move component
 * TODO Add skip frames to animation declaration to control animation speed
-* DONE Fix replay not working when pressing :B <2015-01-03 Sat>
-CLOSED: [2015-01-03 Sat 17:41]
-- Looks like new events evaluation causes replay to not work
-- One of the systems is clearing out messages before it can make it to the replay system
-- Systems were seqing over a hashmap which is not guaranteed to have order
 * TODO Use transients for things that are going to be iterated over and only need a local mutable value.
 Could work well for systems when iterating over them
-* DONE Implement snapshots of game state and function to reload it <2014-12-07 Sun>
-CLOSED: [2014-12-07 Sun 22:11]
-- Take a copy of game state every n seconds and stick in vector
-- Add an input control for a button to control stepping backward
-- Thumbnail???? Would be super cool to render a mini image
 * TODO Clean up tilemapping code
 - [ ] Add tests
 - [ ] Split up monster loops
 * TODO Fix collision detection <2014-12-07 Sun>
 It's not working due to broad collision detection not accounting for mass of entity and not factoring in intended movement
 
-* DONE Finish up selectors for events <2014-12-13 Sat>
-CLOSED: [2014-12-13 Sat 21:11]
-If there are keys instead of a seq then recursively concat all the messages down the tree
-* DONE Update subscription calls to filter out messages properly using the passed in boolean function for determining if an even should go into an inbox
-CLOSED: [2014-11-23 Sun 11:37]
-* DONE Behavior component (for demo) <2014-11-22 Sat>
-CLOSED: [2014-11-23 Sun 11:37]
-- Implement an AI behavior for entities with the :ai component
-- Chose to go towards the player on each turn
-
-* DONE Collision detection takes too much cpu time <2014-11-22 Sat>
-CLOSED: [2014-11-23 Sun 21:46]
-Profiling shows 70% of all cpu time each trip through the game loop
-- Alternatives
-  - Perform the lookup in one shot for all entities
-  - Sort by x, y, use x y to figure out which entities you should check against
-  - Spatial grid, divide up all the entities into a 2D grid once per frame, only compare entities in the same frame
-  - Cache the collision checks as you don't need to compare every entity in reverse A->B AND B->A
-* DONE Add spatial grid system <2014-11-23 Sun>
-CLOSED: [2014-11-23 Sun 21:46]
-
-* DONE Fan out messages takes too much cpu time <2014-11-22 Sat>
-CLOSED: [2014-11-28 Fri 19:32]
-Profiling shows 20% of cpu time each trip through the game loop
-- There was a message leak that was piling up in the queue
-- Make event subscriptions opt in not opt out
-- Subscribe to an event from someone to a specific ID
-- Make broadcast subscriptions optional?
-- Subscribe an entity to a specific event
-  Subscribe a component?
-  Subscribe an entity?
-  What does the entity get in their inbox? All messages?
-  When do you remove messages from inbox?
-  Need better parsing of event messages
-- Resulted in 2x framerate from 8-10 to 18-20
-
-  Put the messages in a hashmap instead of a list
-  {:events {:subscriptions {}
-            :queue {:<event-id>
-                     {:<source-id> [{:event-id :<event-id> :from :<from-entity> :msg <message>}]}}}}
-  Subscribing to broadcast events is the concatenation of all values of keys nested in the event id
-  A subscribed event is id -> from a specific entity
-
-  Don't do a fan out as part of each system only check the events queue and make a lazy sequence that gets included as the inbox argument
-  The event-system should clear out the event queue, handle new subscriptions/un-subscribes
 * TODO Tiles that are non-traversable <2014-11-30 Sun>
 Implement a tile map that checks for locations of entities that are collidable and sends an event if they are going to collide
 - [ ] Create a spatial grid based on the map location (offset based on the view port of the screen)
 - [ ] Put all tile collidable entities into their coordinates
 - [ ] Iterate over all occupied tiles
 - [ ] If they will be on a non-traversable tile, emit a tile collision event
-
-* DONE Tiled tile map support <2014-12-07 Sun>
-CLOSED: [2014-12-07 Sun 20:55]
-Create a system for using tilemaps defined by Tiled
-- [X] Load tile set image
-- [X] Load json
-- [X] Translate spec into tile set
-  https://github.com/bjorn/tiled/wiki/TMX-Map-Format#tileset
-  - imageheight, imagewidth, tileheight, tilewidth, tileproperties
-  - The spec for the tiles is in data.layers[0].data and is a one dimensional array with numbers representing the tile to use
-  - To get the x, y of the tile
-    - number * tile width
-    - by the width of the image divided by
-- [ ] Update tile system to display it
-  Needs to read the offsets of the tiles to shift the tileset image by x and y
-
-* DONE Update documentation about event system <2015-01-03 Sat>
-CLOSED: [2015-01-03 Sat 17:55]
 
 * TODO Optimizations <2014-11-29 Sat>
 - Systems iterate over all entities that have the component and then each component function
@@ -547,89 +207,19 @@ CLOSED: [2015-01-03 Sat 17:55]
 * TODO Make the input system emit an event
 Currently it updates it's component state but that's it. SHould send an event to avoid other components querying it directly
 
-* DONE Change game loop to wrap state in an atom so it can be inspected <2014-11-15 Sat>
-CLOSED: [2014-11-15 Sat 17:34]
-* DONE Fix controls does not register up and down <2014-11-16 Sun>
-CLOSED: [2014-11-16 Sun 21:10]
 * TODO Change mk-component to also handle subscribing to events
 * TODO Change mk-system to also register it with a scene id
-* DONE Pixijs wrapper <2014-11-16 Sun>
-CLOSED: [2014-11-16 Sun 17:14]
-Hide all of the javascript interop to keep the api clean. Consider a polymorphic layer so that a different renderer can be swapped in.
-* DONE [#A] Port existing components and systems to new CES refactor <2014-09-21 Sun> :core:
-CLOSED: [2014-11-22 Sat 14:48]
-- core
-  - [X] game-loop
-- systems
-  - [X] render
-  - [X] input
-    Collects system input and stores it every loop
-  - [X] user control
-    Does something with the user input
-  - [X] tiling
-  - [X] movement
-    Should handle reconciling user input to changes not sure how this is different than user control
-    - It's different because without it you will not be able to check if you should make the next move resulting in a loop where you get stuck because you are always colliding
-    - Can the entity make it's next move?
-    - Should take a message from input about changes and move if there is not also a message for a collision
-  - [X] collision detection
-    Check against all entities to see if they are colliding
-  - [X] debug layer (draw circles around entities)
-    - Turn red when a message collision message is present in the inbox
-    - Not sure how to do this without coupling renderable, collidable, and debuggable
-    - Make the selector for entities check multiple component-ids to get entity ids
-    - Make custom component state parsing function
-  - [X] Repl changing of game state via state atom
 * TODO Query-like functionality for state                              :core:
 Send a query with what you want and a filter function
 Returns a sequence
 * TODO Reset the game height on screen resize                          :core:
-* DONE [#A] Cross system/component communication [7/7] <2014-10-12 Sun> :core:
-CLOSED: [2014-11-15 Sat 17:03]
-Need a way to share information between systems and components
-- [X] Component/Entity events mailbox
-  - Each component should get access to it by default (can be nil)
-  - Example (send-msg state :from-component-id :from-entity-id msg)
-  - Messages are async, no response is given, all info must be in the message
-- [X] Need a system to clear out messages
-- [X] Fan out messages to all subscriber inboxes
-- Read only component state if it is not yours
-- [X] Default component functions should also take in an inbox as an argument by default
-- [X] Provide a way of emitting event from any component by passing it in as an arg
-  - Currently, the component function returns a hashmap which will be merged in to the game state
-  - We also need to provide a way of conveying that an event(s) should be emitted
-  - Component functions can output 1 or 2 items
-    - If it's 1 item then it's the component state
-    - If it's 2 items then it is component state and events
-    - You can never just return events
-- [X] Update game system fns now that component fns return updated game state rather than component state
-  No longer need to use deep-merge which is recursive and costly. Instead use iter-fns on the collection of component fns in a system
-- [X] Clear events inboxes after the system runs each component function
 * TODO Protection against overflowing messages
   Throw an error if two many messages are generated. This will prevent avalanches and fail faster so it is easier to diagnose problems.
   - [ ] Limit on number of messages in an inbox
   - [ ] Limit on number of messages in the event queue
 
-* DONE mk-component-fn should allow custom argument parsing function AND output wrapper <2014-10-12 Sun>
-CLOSED: [2014-10-12 Sun 19:25]
-- Currently, passing in a args-fn to mk-component-fn DOES NOT wrap the output of the function into a mergeable hashmap. The caller must handle it in the function. This is confusing since it is handled automatically if you don't pass in an args-fn.
-- 9 times out of 10 you will want to automatically merge in component state
-- This will get even harder to manage yourself if we have to handle merging of events
-- Solution:
-  - Allow optional argument parsing functions
-    1. Calling the function with the desired arguments
-    2. Wrapping the output of the function into something mergeable
-* DONE [#A] Replace ces/deep-merge in systems with iter-fns since each component by default calls ces/update-component-state-and-events which returns an updated global state
-CLOSED: [2014-11-16 Sun 17:24]
-* DONE Make assertions in component functions to fail faster <2014-11-15 Sat>
-CLOSED: [2014-11-15 Sat 13:13]
-- [X] Throw an error if output is not a 2 item collection
-- [X] Throw an error if component state or inbox or event-fn etc are nil
-
 * TODO Change 'state' to 'game' everywhere it is passed in as an argument
 game -> :state is where the state lives, everything else is game related such as systems, components, platform, etc
-* DONE Change component state to not live in the component but under the :state key <2014-10-12 Sun>
-CLOSED: [2014-10-12 Sun 17:20]
 * TODO Tests [2/3] <2014-10-04 Sat>
 - [X] CES internals
 - [ ] Input system/components
@@ -696,6 +286,38 @@ All game engine things must be inspectable, returning details about it's current
 Pass a message from one entity to another and process the list of messages
 Processing the list of messages can result in generating actions on the action list
 
+* Profiling notes
+- In the chrome js console profiler:
+  - "self" is how much time was spent doing work directly in that function.
+  - "total" is how much time was spent in that function, and in the functions it called.
+** Profiling <2015-07-19 Sun>
+- AI system profile
+  - apply is 45% of the time spent
+  - update-component-state-and-events 35%
+    - Looks like emit events is the culprite with update-in happening many times
+- Broad collision system
+  - entities-with-multi-components 40% of time
+  - mk-spatial-grid is 52% of time, looks like the group-by is inefficient
+- Narrow collision system
+  - Pretty small amount of time spent there
+** Profiling <2015-07-25 Sat>
+- narrow-collision detection takes 25%
+  - check-collsions appears to be the culprit with 20% time spent there
+- get-subscribed-events takes 22% of the overall profiled time
+  - usage of mapcat appears to be the culprit with 20% time spent there
+** Profiling <2015-08-01 Sat>
+- Only looked at 2 systems movement and ai
+- Major bottlenecks
+  - apply (unoptimized by v8) in component-fn-body
+  - emit-events reduce is spending lots of time and number of function calls will grow linearly with each entity added
+  - get-events spends all it's time with get-in
+* Live demo <2014-12-10 Wed>
+Want to show how nice it is getting quick feedback loops and adding new features to the game
+- Start a game from scratch and build it up
+- Show how to inspect game state
+- Show what it's like to work with
+- Add a new system or feature
+- Update an existing system on the fly
 * Macros
 ** TODO defsystem
 Takes a scene state and handler fn and returns a function
@@ -719,6 +341,391 @@ Creates a vector of actions used by an action list
 Defines a new level for the game
 Takes a list of assets to load, which world map, game scripts to load etc
 
+* DONE Version 0.1.0 [3/3]                                          :release:
+CLOSED: [2015-01-18 Sun 20:55]
+** DONE Core [2/2]
+CLOSED: [2014-11-15 Sat 11:27]
+- [X] Browser repl
+- [X] Centralized logging
+** DONE Scenes State Components Entities Systems [5/5]
+CLOSED: [2014-11-22 Sat 11:35]
+- [X] Scenes (collection of systems)
+- [X] Systems (collection of component functions)
+- [X] Entities (UIDs with collection of component IDs)
+- [X] State (nested hashmap representing scene state)
+- [X] Messaging (Event bus for sending and receiving messages between systems)
+** DONE Systems/Components [8/8]
+CLOSED: [2015-01-18 Sun 13:52]
+- [X] Movement
+- [X] Circle collision detection
+- [X] Rendering
+- [X] User input
+- [X] Tile mapping
+- [X] Debug layer (collision circles)
+- [X] Replay game state (go back to old game state on the fly)
+- [X] Animations (sprites)
+
+* DONE Add diagonal movement
+CLOSED: [2015-12-13 Sun 18:32]
+* DONE Static lookups for component and system function calls
+CLOSED: [2015-07-11 Sat 21:37]
+- What if we just wrap all the higher order fns with defs?
+- What if at the time of wiring we def everything or stick them the game state in a deftype?
+  - engine.core/mk-game-state
+  - Maybe ces/mk-component should def the functions then return the fully qualified names in the state hashmap
+  - We already have a static number keys for the game state and should not allow anything else
+    - scenes
+    - game
+    - systems
+    - components
+    - entities
+- This didn't end up helping since I found that these issues only show up when dynamically loading things from the repl
+* DONE Audio component <2015-05-24 Sun>
+CLOSED: [2015-05-24 Sun 17:12]
+* DONE Talk for LispNYC <2015-08-16 Sun>
+CLOSED: [2015-09-25 Fri 10:28] DEADLINE: <2015-09-08 Tue>
+- Topics
+  - Profiling
+  - Functional game engine design
+  - Performance optimization of ClojureScript
+  - Embedded repl as a game mechanic
+* DONE Add static fn analysis and pseudo name optimization for min build <2015-08-01 Sat>
+CLOSED: [2015-11-01 Sun 19:32]
+- As per this blog post http://swannodette.github.io/2015/03/16/optimizing-clojurescript-function-invocation/ we can get better call site optimization
+- Need extern file to work with advanced Google Closure optimization i.e https://github.com/cljsjs/packages/blob/master/d3/resources/cljsjs/d3/common/d3.ext.js
+- Alternatively, refer to external libs by string name only
+  (let [yay ((goog.object.get js/window "yayQuery"))]
+    ((goog.object.get yay "sayHello") ((goog.object.get yay "getMessage"))))
+- [ ] Extern file for pixijs
+- [ ] Extern file for howlerjs
+- [ ] Update project.clj under cljsbuild profile "min" build
+  ;; Statically analyze function arrities
+  :static true
+  ;; Flatten namespace conventions into
+  ;; names instead of nested objects
+  :pseudo-names true
+* DONE Spatial index for help reduce number of collision detections <2015-11-15 Sun>
+CLOSED: [2015-11-15 Sun 22:12]
+- Benchmarks http://0fps.net/2015/01/23/collision-detection-part-3-benchmarks/
+- Good r-tree lib https://github.com/mourner/rbush
+* DONE Remove circle radius from player and enemy entity constructor <2015-11-22 Sun>
+CLOSED: [2015-11-27 Fri 15:16]
+* DONE Optimize update-spatial-index <2015-11-15 Sun>
+CLOSED: [2015-11-16 Mon 22:18]
+- According to profiler it's really slow
+- Seems like the root cause is get-multi-component-state function that only gets realized inside of update-spatial-index
+* DONE Optimize collision detection as it seems to be the slowest system <2015-11-08 Sun>
+CLOSED: [2015-11-15 Sun 22:11]
+* DONE Optimize the ces framework
+CLOSED: [2015-11-08 Sun 20:23]
+- When you double the number of entities the framerate drops nearly in half
+- AI system/component showcases this the best, removing it increases the framerate a ton
+- How can we reduce the number of changes to the global state?
+- Size of the state hashmap is not the problem
+  Adding initial state of (reduce into {} (map hash-map (range 10000) (range 10000))) has no slow down even with 10000 additional keys
+- Event messages the biggest issue?
+  - Every time a system runs it can generate up to n number of state changes where n is the number of events emitted
+  - Make the event queue a mutable object
+    - Was super slow, see mutable-queue branch
+  - Every time an event is emitted, mutate the queue instead of rewriting the state hashmap
+  - Make the queue a hashmap instead of a hashmap and an array
+    - Each message has it's own unique ID
+    - To get all messages at a selector, iterate through all keys at that point
+    - Only once per game loop will we need to return a new game state for the sake of events (when the queues are cleared)
+  - Flatten the keys for events and
+  - Batch all the events in one shot at the end of the system call\
+* DONE Systems should only be running one component function instead of a collection <2015-08-02 Sun>
+CLOSED: [2015-11-08 Sun 20:22]
+
+* DONE Refactor events <2015-08-02 Sun>
+CLOSED: [2015-08-16 Sun 18:23]
+- Too slow
+  Profiler shows bottleneck in emit-events and get-events
+- Currently implemented as a nested hashmap of sequences of event hashmaps
+- [X] Remove nesting?
+  - Want a way to select what we need in one shot withouth walking a nested data structure
+  - Should reduce time for getting events and emitting events if there is no nesting
+  - Overload the names of the event to prevent nesting?
+  - Do we need to give up hierarchical event subscriptions? Are they useful?
+  - Removed nesting and that improves by a few frames
+- [ ] Remove events in favor of directly querying component state
+  - Would couple components implicitely
+    - Is there a way to explicitely make the dependencies between entities and components states?
+  - Instead of inbox, maybe replace with a read only queryable component state?
+    - If you have direct access to objects then they can be mutated by something other than the component that owns the state
+    - Components shouldn't have access to game meta state only component state
+
+- [-] Reduce the usage of events
+  - Movement/collision/animation is the challenging part to decouple
+    :player1
+    controllable -- moveable -- collision -- position -- animation
+
+    :enemy1
+    ai -- moveable -- collision -- position -- animation
+
+  - [ ] Make a new component called position which is based on the movement and collision component states
+    - [ ] Player1 movement component should query the input state and set the desired movement
+    - [ ] Position component
+    - [ ] For enemies, position component to set the offsets
+    - [ ] Animateable queries position and action component state
+
+  - [X] Use state machines instead of requiring a message to be present
+    Example: Only send an event if something has changed instead of requiring a message every frame
+    - [X] Update controllable/react-to-input to only emit an event if the state has changed
+    - [X] Update moveable to only emit when movement has changed
+
+* DONE Refactor component function args to all be a map instead of positional args <2015-08-16 Sun>
+CLOSED: [2015-11-08 Sun 20:19]
+- It would be hard to had additional functionality to component functions if we have to worry about breaking call signature changes
+- [X] Change args to all component functions to be a single hashmap
+- [ ] Rename :args-fn to something more appropriate
+* DONE Fix V8 optimization bailout in ces/iter-entities <2015-07-26 Sun>
+CLOSED: [2015-08-01 Sat 11:56]
+- Error is "bad value context for arguments value"
+- https://github.com/bevry/taskgroup/issues/12#issue-23512231
+- https://code.google.com/p/v8/issues/detail?id=3037
+- Fixed by making it a two arrity function
+* DONE Clean up usage of apply in mk-component-fn <2015-07-25 Sat>
+CLOSED: [2015-07-25 Sat 19:37]
+* DONE mk-event should take a vector of selectors instead of varargs <2015-07-25 Sat>
+CLOSED: [2015-07-25 Sat 19:37]
+* DONE Benchmarks for the engine <2015-04-04 Sat>
+CLOSED: [2015-04-04 Sat 13:29]
+Use this to test any pervasive changes to the rest of the framework related to performance
+- Use simple-benchmark which is built in which shows the running time for a function over n iterations
+- [X] Calculate the number of frames per second the engine can do
+- [X] Add best of calculation
+- [X] Add basic stats
+* DONE Remove use of filter to get a list of entities that have a component
+CLOSED: [2015-04-04 Sat 14:41]
+- Currently stored as :entitiy -> [:c1 :c2]
+- Reverse it so that when an entity is created it is indexed to a direct lookup path i.e :component [:e1 :e2]
+- Can use keys on :state -> :c1 to get all entities in one shot without a fitler then map
+* DONE Update to latest pixijs <2015-05-03 Sun>
+CLOSED: [2015-05-03 Sun 11:50]
+- Update to v3
+- Add as a submodule
+* DONE Add stats.js to track frame rates
+CLOSED: [2015-05-03 Sun 17:08]
+https://github.com/mrdoob/stats.js
+* DONE Eliminate unoptimized function calls in v8 due to needing dynamic lookup
+CLOSED: [2015-07-11 Sat 21:38]
+- Profiler says all the inner functions can not be optimized because the require a dynamic lookup and therefore can not be inlined by v8
+- [X] Use macros to define a new function for each system/component instead of anonymous functions
+- See branch defcomponent, didn't pan out as this isn't actually an issue on the first run
+* DONE FIX debuggable collision circle overlay is not centered correctly
+CLOSED: [2015-05-03 Sun 12:38]
+* DONE Game loop helpers <2015-02-22 Sun>
+CLOSED: [2015-03-07 Sat 21:22]
+Make it easier to set up a game loop and constructing inital state
+- [X] Game state helper
+  Declare the function for a system, components and it will auto call mk-system/mk-component on them
+- [X] Game loop helper
+* DONE Update to latest version of austin and cljs <2015-02-21 Sat>
+CLOSED: [2015-02-21 Sat 11:19]
+- Austin 1.6 has issues so need to use version 1.7-SNAPSHOT or the repl doesn't work
+- Had to update lein cljsbuild because it was to old to work with later cljs
+- Now using the cljs required by core async latest
+* DONE Add pixijs as a foreign dependency <2015-03-29 Sun>
+CLOSED: [2015-11-08 Sun 20:23]
+- https://github.com/clojure/clojurescript/wiki/Foreign-Dependencies
+- No need to do this with externs
+* DONE Live reloading during running game loop for any function change
+CLOSED: [2015-11-27 Fri 15:17]
+Looks like when the game loop is running the functions are immutable except in the case of multimethods so re evaluating a function does not guarantee that it will be used by the game engine.
+- Update the lookups of system/component fns inside the game loop to lookup by reference rather than by value??
+- This appears to work now <2015-11-27 Fri>
+* DONE Benchmark for game engine performance <2015-03-07 Sat>
+CLOSED: [2015-11-27 Fri 15:17]
+- Use it to compare different implementations of the core game functions and optimize
+- See chocolatier.engine.benchmarks for more
+* DONE Use transients for local mutability <2015-02-01 Sun>
+CLOSED: [2015-11-27 Fri 15:18]
+- [X] Figure out where we can use transients instead of normal hashmap operations
+  - Systems?
+  - Components?
+  - CES operations?
+- [X] Change all systems to use transients
+- [ ] Change collision detection to use transients of js arrays to do collision detection
+  - No longer need to do this since implementing rbush for r-trees
+- Doesn't seem to help that much, may revisit this <2015-11-27 Fri>
+* DONE "Threads" using core.async to run systems async based on deps <2015-02-21 Sat>
+CLOSED: [2015-02-22 Sun 15:50]
+- Branch: async-systems
+- Example:
+  - Given dependency tree [[a b] [a c] [c d]]
+  - Run in this order where a vector denotes async operation [a, [b c], d]
+- Probably need to cache this when game loop is initialized and recalc anytime a new system is added/removed
+- Turned out to be much slower due to overhead of core.async since these are all cpu bound tasks there is no benefit to async'ing them
+
+* DONE Add direction to movement and animation so you remain in that direction when standing <2015-01-18 Sun>
+CLOSED: [2015-01-25 Sun 12:36]
+- [X] Add stand as an action if not walking to Controllable
+- [X] FIX animation stack keeps growing
+  Need to remove the last action if a new one comes in
+* DONE Add attack animation <2015-01-25 Sun>
+CLOSED: [2015-01-25 Sun 20:49]
+* DONE Animation system <2015-01-17 Sat>
+CLOSED: [2015-01-18 Sun 13:52]
+- State machine for representing animations
+- Hold on to the last state so that after an animation it goes back to what it was in
+- State
+  - Animation state key i.e. :walking :running
+  - Frame number (for sprite sheet)
+  - Dimensions of sprite sheet i.e width/height/frame-width/frame-height
+- Abstraction for specifying an animation
+- Key frame animation?
+- Multi part sprites?
+- [X] Renderable system should only call the stage render code
+- [X] Move sprite updating based on movement to the animateable component
+- [X] Can change to animateable system rather than renderable so all can share sprite stuff in one place. It only reacts to events so it's ok
+  - Handles changes to sprites based on events including movement, animation, image swaps
+- [X] Fix collision detection to use move component for position state or to get all info from the incoming event msg
+- [X] Hold the hit zone info about an entity in the collidable component state
+- [X] Position information should be held by the move component
+* DONE Fix replay not working when pressing :B <2015-01-03 Sat>
+CLOSED: [2015-01-03 Sat 17:41]
+- Looks like new events evaluation causes replay to not work
+- One of the systems is clearing out messages before it can make it to the replay system
+- Systems were seqing over a hashmap which is not guaranteed to have order
+* DONE Implement snapshots of game state and function to reload it <2014-12-07 Sun>
+CLOSED: [2014-12-07 Sun 22:11]
+- Take a copy of game state every n seconds and stick in vector
+- Add an input control for a button to control stepping backward
+- Thumbnail???? Would be super cool to render a mini image
+* DONE Finish up selectors for events <2014-12-13 Sat>
+CLOSED: [2014-12-13 Sat 21:11]
+If there are keys instead of a seq then recursively concat all the messages down the tree
+* DONE Update subscription calls to filter out messages properly using the passed in boolean function for determining if an even should go into an inbox
+CLOSED: [2014-11-23 Sun 11:37]
+* DONE Behavior component (for demo) <2014-11-22 Sat>
+CLOSED: [2014-11-23 Sun 11:37]
+- Implement an AI behavior for entities with the :ai component
+- Chose to go towards the player on each turn
+
+* DONE Collision detection takes too much cpu time <2014-11-22 Sat>
+CLOSED: [2014-11-23 Sun 21:46]
+Profiling shows 70% of all cpu time each trip through the game loop
+- Alternatives
+  - Perform the lookup in one shot for all entities
+  - Sort by x, y, use x y to figure out which entities you should check against
+  - Spatial grid, divide up all the entities into a 2D grid once per frame, only compare entities in the same frame
+  - Cache the collision checks as you don't need to compare every entity in reverse A->B AND B->A
+* DONE Add spatial grid system <2014-11-23 Sun>
+CLOSED: [2014-11-23 Sun 21:46]
+
+* DONE Fan out messages takes too much cpu time <2014-11-22 Sat>
+CLOSED: [2014-11-28 Fri 19:32]
+Profiling shows 20% of cpu time each trip through the game loop
+- There was a message leak that was piling up in the queue
+- Make event subscriptions opt in not opt out
+- Subscribe to an event from someone to a specific ID
+- Make broadcast subscriptions optional?
+- Subscribe an entity to a specific event
+  Subscribe a component?
+  Subscribe an entity?
+  What does the entity get in their inbox? All messages?
+  When do you remove messages from inbox?
+  Need better parsing of event messages
+- Resulted in 2x framerate from 8-10 to 18-20
+
+  Put the messages in a hashmap instead of a list
+  {:events {:subscriptions {}
+            :queue {:<event-id>
+                     {:<source-id> [{:event-id :<event-id> :from :<from-entity> :msg <message>}]}}}}
+  Subscribing to broadcast events is the concatenation of all values of keys nested in the event id
+  A subscribed event is id -> from a specific entity
+
+  Don't do a fan out as part of each system only check the events queue and make a lazy sequence that gets included as the inbox argument
+  The event-system should clear out the event queue, handle new subscriptions/un-subscribes
+* DONE Tiled tile map support <2014-12-07 Sun>
+CLOSED: [2014-12-07 Sun 20:55]
+Create a system for using tilemaps defined by Tiled
+- [X] Load tile set image
+- [X] Load json
+- [X] Translate spec into tile set
+  https://github.com/bjorn/tiled/wiki/TMX-Map-Format#tileset
+  - imageheight, imagewidth, tileheight, tilewidth, tileproperties
+  - The spec for the tiles is in data.layers[0].data and is a one dimensional array with numbers representing the tile to use
+  - To get the x, y of the tile
+    - number * tile width
+    - by the width of the image divided by
+- [ ] Update tile system to display it
+  Needs to read the offsets of the tiles to shift the tileset image by x and y
+
+* DONE Update documentation about event system <2015-01-03 Sat>
+CLOSED: [2015-01-03 Sat 17:55]
+
+* DONE Change game loop to wrap state in an atom so it can be inspected <2014-11-15 Sat>
+CLOSED: [2014-11-15 Sat 17:34]
+* DONE Fix controls does not register up and down <2014-11-16 Sun>
+CLOSED: [2014-11-16 Sun 21:10]
+* DONE Pixijs wrapper <2014-11-16 Sun>
+CLOSED: [2014-11-16 Sun 17:14]
+Hide all of the javascript interop to keep the api clean. Consider a polymorphic layer so that a different renderer can be swapped in.
+* DONE [#A] Port existing components and systems to new CES refactor <2014-09-21 Sun> :core:
+CLOSED: [2014-11-22 Sat 14:48]
+- core
+  - [X] game-loop
+- systems
+  - [X] render
+  - [X] input
+    Collects system input and stores it every loop
+  - [X] user control
+    Does something with the user input
+  - [X] tiling
+  - [X] movement
+    Should handle reconciling user input to changes not sure how this is different than user control
+    - It's different because without it you will not be able to check if you should make the next move resulting in a loop where you get stuck because you are always colliding
+    - Can the entity make it's next move?
+    - Should take a message from input about changes and move if there is not also a message for a collision
+  - [X] collision detection
+    Check against all entities to see if they are colliding
+  - [X] debug layer (draw circles around entities)
+    - Turn red when a message collision message is present in the inbox
+    - Not sure how to do this without coupling renderable, collidable, and debuggable
+    - Make the selector for entities check multiple component-ids to get entity ids
+    - Make custom component state parsing function
+  - [X] Repl changing of game state via state atom
+* DONE [#A] Cross system/component communication [7/7] <2014-10-12 Sun> :core:
+CLOSED: [2014-11-15 Sat 17:03]
+Need a way to share information between systems and components
+- [X] Component/Entity events mailbox
+  - Each component should get access to it by default (can be nil)
+  - Example (send-msg state :from-component-id :from-entity-id msg)
+  - Messages are async, no response is given, all info must be in the message
+- [X] Need a system to clear out messages
+- [X] Fan out messages to all subscriber inboxes
+- Read only component state if it is not yours
+- [X] Default component functions should also take in an inbox as an argument by default
+- [X] Provide a way of emitting event from any component by passing it in as an arg
+  - Currently, the component function returns a hashmap which will be merged in to the game state
+  - We also need to provide a way of conveying that an event(s) should be emitted
+  - Component functions can output 1 or 2 items
+    - If it's 1 item then it's the component state
+    - If it's 2 items then it is component state and events
+    - You can never just return events
+- [X] Update game system fns now that component fns return updated game state rather than component state
+  No longer need to use deep-merge which is recursive and costly. Instead use iter-fns on the collection of component fns in a system
+- [X] Clear events inboxes after the system runs each component function
+* DONE mk-component-fn should allow custom argument parsing function AND output wrapper <2014-10-12 Sun>
+CLOSED: [2014-10-12 Sun 19:25]
+- Currently, passing in a args-fn to mk-component-fn DOES NOT wrap the output of the function into a mergeable hashmap. The caller must handle it in the function. This is confusing since it is handled automatically if you don't pass in an args-fn.
+- 9 times out of 10 you will want to automatically merge in component state
+- This will get even harder to manage yourself if we have to handle merging of events
+- Solution:
+  - Allow optional argument parsing functions
+    1. Calling the function with the desired arguments
+    2. Wrapping the output of the function into something mergeable
+* DONE [#A] Replace ces/deep-merge in systems with iter-fns since each component by default calls ces/update-component-state-and-events which returns an updated global state
+CLOSED: [2014-11-16 Sun 17:24]
+* DONE Make assertions in component functions to fail faster <2014-11-15 Sat>
+CLOSED: [2014-11-15 Sat 13:13]
+- [X] Throw an error if output is not a 2 item collection
+- [X] Throw an error if component state or inbox or event-fn etc are nil
+
+* DONE Change component state to not live in the component but under the :state key <2014-10-12 Sun>
+CLOSED: [2014-10-12 Sun 17:20]
 * DONE Validate component functions exist when called
 CLOSED: [2014-10-04 Sat 22:46]
 * DONE Validate system functions exist when called

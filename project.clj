@@ -25,7 +25,7 @@
 
   :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.1"
                                    :exclude [org.clojure/clojurescript]]
-                                  [org.clojure/tools.nrepl "0.2.10"]]
+                                  [org.clojure/tools.nrepl "0.2.12"]]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
@@ -48,12 +48,15 @@
                                      "resources/public/js/externs/howler.js"
                                      "resources/public/js/externs/stats.js"
                                      "resources/public/js/externs/rbush.js"]
+                           ;; Remove runtime assertions
+                           :elide-asserts true
                            :optimizations :advanced
                            :verbose true
+                           ;; Optimize nested function calls
                            :static-fns true}}]}
 
   :figwheel {:http-server-root "public" ;; default and assumes "resources"
-             :server-port 3449          ;; default
+             :server-port 1223          ;; default
              :css-dirs ["resources/public/css"] ;; watch and update CSS
 
              ;; Start an nREPL server into the running figwheel process

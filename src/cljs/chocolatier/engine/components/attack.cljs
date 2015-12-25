@@ -38,13 +38,15 @@
   {:stage (-> state :game :rendering-engine :stage)
    :move-state (ces/get-component-state state :moveable entity-id)})
 
-(defn direction->offset
-  [direction]
-  (condp keyword-identical? direction
-    :up [0 1]
-    :down [0 -1]
-    :left [1 0]
-    :right [-1 0]))
+(def direction->offset
+  {:up [0 1]
+   :down [0 -1]
+   :left [1 0]
+   :right [-1 0]
+   :up-right [-1 1]
+   :up-left [1 1]
+   :down-right [-1 -1]
+   :down-left [1 -1]})
 
 (defn player-attack
   "Unless the attack specified by the event is currently in cooldown
@@ -53,7 +55,7 @@
   [entity-id component-state event stage move-state]
   (let [{:keys [action direction]} (:msg event)
         {:keys [damage type width height ttl animation-fn speed]} (get component-state action)
-        [offset-x offset-y] (direction->offset direction)
+        [offset-x offset-y] (direction direction->offset)
         {:keys [pos-x pos-y]} move-state
         cooldown (get-in component-state [action :cooldown])
         [cooldown-state cooldown?] (tick-cooldown cooldown)

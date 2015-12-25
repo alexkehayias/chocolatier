@@ -110,7 +110,7 @@
    Excludes:
    - Items that are not in the view port
    - Items whose ID starts with attack (attacks shouldn't collide with attacks)
-   - Items with a parent ID that is the same as the entity-id (immune to your
+   - Items with a from ID that is the same as the entity-id (immune to your
      own attacks)"
   [width height]
   (fn [[x y _ _ {:keys [id attributes]}]]
@@ -118,6 +118,12 @@
          (< y height)
          (not (attack? attributes))
          (not= id (:from-id attributes)))))
+
+(defn not-self? [id item]
+  (not= id (:id (last item))))
+
+(defn not-self-attack? [id item]
+  (not= id (-> item last :attributes :from-id)))
 
 (defn mk-narrow-collision-system
   "Returns a function parameterized by the height and width of the game.
@@ -135,7 +141,11 @@
           event-pairs (for [i items
                             :let [id (:id (last i))
                                   collisions (rbush-search spatial-index i)]
-                            :when (some #(not= id (:id (last %))) collisions)]
+                            ;; Can't collide with yourself and can't
+                            ;; attack yourself
+                            :when (some #(and (not-self? id %)
+                                              (not-self-attack? id %))
+                                        collisions)]
                         [id [(ev/mk-event {:collisions collisions}
                                           [:collision id])]])]
       (ev/batch-emit-events state [:collision] (into {} event-pairs)))))
