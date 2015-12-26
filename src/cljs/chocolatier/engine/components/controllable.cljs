@@ -13,10 +13,10 @@
 (def move-rate 4)
 
 (def keycode->movement
-  {:W {:action :walk :direction :up :offset-x 0 :offset-y (* 1 move-rate)}
-   :S {:action :walk :direction :down :offset-x 0 :offset-y (* -1 move-rate)}
-   :A {:action :walk :direction :left :offset-x (* 1 move-rate) :offset-y 0}
-   :D {:action :walk :direction :right :offset-x (* -1 move-rate) :offset-y 0}})
+  {:W {:action :walk :direction :up}
+   :S {:action :walk :direction :down}
+   :A {:action :walk :direction :left}
+   :D {:action :walk :direction :right}})
 
 (def keycode->action
   {(keyword "¿") {:action :fireball}
@@ -44,7 +44,6 @@
 (defn comp-movement
   [v1 v2]
   (cond
-    (number? v1) (+ v1 v2)
     (direction? v1) (get directions->multi-directions #{v1 v2} v1)
     ;; Fireball takes precedence
     (action? v1) (if (or (keyword-identical? v1 :fireball)
@@ -62,7 +61,6 @@
   "Returns a hashmap of the intended interactions based on user input.
    There can be only one direction and action, last pressed key wins.
    Keys:
-   - offset-x/y: movement x/y in pixels
    - direction: direction the player is facing
    - action: the action based on the input"
   [input-state]
@@ -93,9 +91,7 @@
     ;; anything
     (if-not (= last-input-state input-state)
       (let [{move :action
-             direction :direction
-             offset-x :offset-x
-             offset-y :offset-y} move-action
+             direction :direction} move-action
              {attack :action} attack-action
              prev-direction (:direction component-state :down)
              ;; Default to standing
@@ -108,12 +104,12 @@
                       (not= last-move-action move-action)
                       (cond->
                           (keyword-identical? move :walk)
-                        (into [(ev/mk-event {:offset-x offset-x :offset-y offset-y}
+                        (into [(ev/mk-event {:direction direction}
                                             [:move-change entity-id])
                                (ev/mk-event {:action move :direction direction}
                                             [:action entity-id])])
                         (keyword-identical? move :stand)
-                        (into [(ev/mk-event {:offset-x 0 :offset-y 0}
+                        (into [(ev/mk-event {:direction :none}
                                             [:move-change entity-id])
                                (ev/mk-event {:action move :direction direction}
                                             [:action entity-id])]))

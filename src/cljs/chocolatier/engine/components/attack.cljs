@@ -38,16 +38,6 @@
   {:stage (-> state :game :rendering-engine :stage)
    :move-state (ces/get-component-state state :moveable entity-id)})
 
-(def direction->offset
-  {:up [0 1]
-   :down [0 -1]
-   :left [1 0]
-   :right [-1 0]
-   :up-right [-1 1]
-   :up-left [1 1]
-   :down-right [-1 -1]
-   :down-left [1 -1]})
-
 (defn player-attack
   "Unless the attack specified by the event is currently in cooldown
    then emit an event to create the attack. Returns updated
@@ -55,7 +45,6 @@
   [entity-id component-state event stage move-state]
   (let [{:keys [action direction]} (:msg event)
         {:keys [damage type width height ttl animation-fn speed]} (get component-state action)
-        [offset-x offset-y] (direction direction->offset)
         {:keys [pos-x pos-y]} move-state
         cooldown (get-in component-state [action :cooldown])
         [cooldown-state cooldown?] (tick-cooldown cooldown)
@@ -71,10 +60,10 @@
                                                                 :type type})]
                              ;; Determine where the sprite goes based
                              ;; on the position of the player
-                             [:moveable (assoc (mk-moveable-state (+ pos-x 16)
-                                                                  (+ pos-y 24))
-                                               :offset-x (* offset-x speed)
-                                               :offset-y (* offset-y speed))]
+                             [:moveable (mk-moveable-state (+ pos-x 16)
+                                                           (+ pos-y 24)
+                                                           speed
+                                                           direction)]
                              ;; Add a ttl to the attack entity so we
                              ;; don't need to handle cleaning it up!
                              [:ephemeral {:ttl ttl :counter 0}]

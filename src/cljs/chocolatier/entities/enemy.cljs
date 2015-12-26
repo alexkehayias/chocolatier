@@ -22,7 +22,7 @@
                                               [:stand-left 26 37 26 37 0 0 1]
                                               [:stand-right 26 37 26 37 0 0 1]
                                               [:hit-up 20 30 20 30 0 0 1])
-        move-state (mk-moveable-state pos-x pos-y)
+        move-state (mk-moveable-state pos-x pos-y 4 :down)
         collision-state (mk-collidable-state 26 37 nil)
         damage-state (mk-damage-state 200 5)]
     (ces/mk-entity state uid [[:moveable move-state]
