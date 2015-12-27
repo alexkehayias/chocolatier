@@ -49,27 +49,26 @@
     (if cooldown?
       next-state
       (let [uid (keyword (gensym "attack-"))
-            e (ev/mk-event [:entity
-                            uid
-                            [[:collidable (mk-collidable-state width height
-                                                               {:from-id entity-id
-                                                                :damage damage
-                                                                :type type})]
-                             ;; Determine where the sprite goes based
-                             ;; on the position of the player
-                             [:moveable (mk-moveable-state (+ pos-x 16)
-                                                           (+ pos-y 24)
-                                                           speed
-                                                           direction)]
-                             ;; Add a ttl to the attack entity so we
-                             ;; don't need to handle cleaning it up!
-                             [:ephemeral {:ttl ttl :counter 0}]
-                             ;; Add a sprite to visualize the attack
-                             ;; Sprite component state comes from
-                             ;; calling a function due to needing the stage
-                             [:sprite (sprite-fn)]
-]]
-                           [:meta])]
+            msg [:entity
+                 uid
+                 [[:collidable (mk-collidable-state width height
+                                                    {:from-id entity-id
+                                                     :damage damage
+                                                     :type type})]
+                  ;; Determine where the sprite goes based
+                  ;; on the position of the player
+                  [:moveable (mk-moveable-state (+ pos-x 16)
+                                                (+ pos-y 24)
+                                                speed
+                                                direction)]
+                  ;; Add a ttl to the attack entity so we
+                  ;; don't need to handle cleaning it up!
+                  [:ephemeral {:ttl ttl :counter 0}]
+                  ;; Add a sprite to visualize the attack
+                  ;; Sprite component state comes from
+                  ;; calling a function due to needing the stage
+                  [:sprite (sprite-fn)]]]
+            e (ev/mk-event msg [:meta])]
         [next-state [e]]))))
 
 (defn enemy-attack

@@ -66,6 +66,12 @@ Make the move component figure out to what rate the entity should move (offset)
 * DONE Certain actions should be in addition to movement <2015-12-25 Fri>
 CLOSED: [2015-12-25 Fri 18:00]
 i.e Moving in addition to certain attacks such as fireball and walking
+* TODO Add position offset to text component to better position text around an entity
+* DONE Add text with the damage taken when an entity gets hit <2015-12-27 Sun>
+CLOSED: [2015-12-27 Sun 17:26]
+- Show red text with the hit amount taken
+- Fade out after a short duration
+- Should follow the entity
 * TODO FIX spear attack doesn't work unless pushing a direction key simultaneously
 * DONE Text rendering to sprites <2015-12-27 Sun>
 CLOSED: [2015-12-27 Sun 15:37]

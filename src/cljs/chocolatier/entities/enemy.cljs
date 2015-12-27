@@ -2,7 +2,8 @@
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]
-            [chocolatier.engine.components.renderable :refer [mk-sprite-state]]
+            [chocolatier.engine.components.renderable :refer [mk-sprite-state
+                                                              mk-text-state]]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
@@ -24,7 +25,11 @@
                                               [:hit-up 20 30 20 30 0 0 1])
         move-state (mk-moveable-state pos-x pos-y 4 :down)
         collision-state (mk-collidable-state 26 37 nil)
-        damage-state (mk-damage-state 200 5)]
+        damage-state (mk-damage-state 200 5
+                                      #(mk-text-state stage % {"font" "bold 12px Arial"
+                                                               "fill" "red"
+                                                               "stroke" "white"
+                                                               "strokeThickness" 3}))]
     (ces/mk-entity state uid [[:moveable move-state]
                               [:animateable animation-state]
                               [:sprite sprite-state]

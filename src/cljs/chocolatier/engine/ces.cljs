@@ -1,6 +1,7 @@
 (ns chocolatier.engine.ces
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.systems.events :as ev])
+            [chocolatier.engine.systems.events :as ev]
+            [clojure.set :refer [subset?]])
   (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
 
 ;; Gameloop:   recursive function that calls all systems in a scene
@@ -56,10 +57,10 @@
 (defn entities-with-multi-components
   "Takes a hashmap and returns all keys whose values has all component-ids"
   [entities component-ids]
-  ;; TODO replace with finding the union of sets from entities with
-  ;; all component ids
-  (mapv first
-        (filter #(boolean (some (set component-ids) (second %))) entities)))
+  ;; TODO need a more efficient way of getting this
+  (let [component-ids (set component-ids)]
+    (map first
+         (filter #(subset? component-ids (-> % second set)) entities))))
 
 (defn get-component-fn
   [state component-id]

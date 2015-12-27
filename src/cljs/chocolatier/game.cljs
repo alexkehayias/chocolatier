@@ -117,7 +117,8 @@
              :subscriptions [:action]}]]
    [:system :damage attack-system :damage]
    [:component :damage
-    [damage {:subscriptions [:collision]}]]
+    [damage {:args-fn include-move-state
+             :subscriptions [:collision]}]]
    [:system :ttl ttl-system :ephemeral]
    [:component :ephemeral update-ttl]
    [:system :movement movement-system :moveable]

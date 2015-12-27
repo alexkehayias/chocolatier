@@ -73,7 +73,7 @@
                                  :speed 8
                                  :ttl 2
                                  :sprite-fn #(mk-sprite-state stage "img/fireball.png")}])
-          damage-state (mk-damage-state 100 10)]
+          damage-state (mk-damage-state 100 10 #(mk-text-state stage % {}))]
       (ces/mk-entity state
                      uid
                      [[:text text-state]

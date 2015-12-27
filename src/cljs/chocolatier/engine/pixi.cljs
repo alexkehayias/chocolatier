@@ -39,7 +39,11 @@
 
 (defn set-sprite-frame!
   "Set the frame of the sprite's spritesheet coords and dimensions
-   Returns the updated sprite."
+   Returns the updated sprite.
+
+   Args:
+   - sprite: a Pixi Sprite obj
+   - frame: a vector of pos-x, pos-y, width, height of a spritesheet"
   [sprite frame]
   (let [[x y w h] frame
         texture (.-texture sprite)
