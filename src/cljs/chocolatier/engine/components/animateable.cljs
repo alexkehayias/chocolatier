@@ -1,22 +1,5 @@
-(ns chocolatier.engine.components.animateable
-  (:require [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]
-            [chocolatier.engine.pixi :as pixi]))
+(ns chocolatier.engine.components.animateable)
 
-
-(defn cleanup-animation-state
-  "Removes sprite from the stage belonging to the entity and returns state"
-  [state entity-id]
-  (let [stage (-> state :game :rendering-engine :stage)
-        {:keys [sprite] :as cs} (ces/get-component-state state :animateable entity-id)]
-    (pixi/remove-child! stage sprite)
-    state))
-
-(defn include-moveable-state
-  "State parsing function. Returns a vector of component-state, moveable-state,
-   component-id and entity-id"
-  [state component-id entity-id]
-  {:moveable-state (ces/get-component-state state :moveable entity-id)})
 
 (defn get-sprite-coords
   "Returns a pair of values for the x and y position of a sprite at frame-n"
@@ -30,10 +13,11 @@
     [x y]))
 
 (defn mk-animation-fn
-  "Returns a function that when called with a sprite object and frame number:
-   - Alters a sprite to the desired frame number and returns updated sprite
+  "Returns a function that when called with a frame number:
    - If the frame number called is greater than the animation frame-count,
      returns nil
+   - Returns the frame-coords and frame number
+     - frame-coords is a vector of [frame-x frame-y frame-w frame-h]
 
    Args:
    - sprite-w: Width of the spritesheet in pixels
@@ -48,7 +32,7 @@
   ;; closure so it does not need to be calculated on every frame
   (let [col-w (js/Math.floor (/ sprite-w frame-w))
         frame-offset (+ (* col-w sprite-row) sprite-col)]
-    (fn [sprite frame-n]
+    (fn [frame-n]
       ;; NOTE frame-n is zero indezed so to compare to the total
       ;; frame-count correctly we must increment the frame-n by 1
       (when (<= (inc frame-n) frame-count)
@@ -60,7 +44,7 @@
                                        frame-h
                                        col-w
                                        sprite-frame-n)]
-          (pixi/set-sprite-frame! sprite x y frame-w frame-h))))))
+          [x y frame-w frame-h])))))
 
 (defn mk-animation
   "Returns a hashmap of the name and function to call to animate"
@@ -98,29 +82,22 @@
    on a spritesheet.
 
    Example:
-   (mk-animateable-state stage
-                         \"/img/my-spritesheet.png\"
-                         :walk
+   (mk-animateable-state :walk
                          [:walk 10 10 2 2 0 0 5]
                          [:run 10 10 2 2 1 0 5])"
-  [stage
-   image-location
-   default-animation-kw
-   & animation-specs]
-  (let [sprite (pixi/mk-sprite! stage image-location)
-        animations (apply mk-animations-map animation-specs)]
+  [default-animation-kw & animation-specs]
+  (let [animations (apply mk-animations-map animation-specs)]
     {:animation-stack (list default-animation-kw)
-     :sprite sprite
      :animations animations
      :frame 0}))
 
 (defn incr-frame
   "Increments the frame of a sprite's spritesheet. If the animation sequence is
-   at the end, starts from the beginning. Returns a pair; updated sprite and frame."
-  [sprite animation-fn frame-n]
-  (if-let [updated-sprite (animation-fn sprite (inc frame-n))]
-    [updated-sprite (inc frame-n)]
-    [(animation-fn sprite 0) 0]))
+   at the end, starts from the beginning. Returns a next-frame vector and frame number"
+  [animation-fn frame-n]
+  (if-let [next-frame (animation-fn (inc frame-n))]
+    [next-frame (inc frame-n)]
+    [(animation-fn 0) 0]))
 
 (defn get-action
   "Returns a keyword of the first action event from the inbox and appends
@@ -132,15 +109,6 @@
       [true (keyword (str (name action) "-" (name direction)))])
     [false last-action]))
 
-(defn update-coords
-  "Update the screen x, y position of the sprite based on any move events
-   from a component inbox. Returns the updated sprite."
-  [sprite moveable-state]
-  (let [{:keys [pos-x pos-y]} moveable-state]
-    ;; Mutate the x and y position of the sprite if there was any
-    ;; move changes
-    (pixi/alter-obj! sprite "position" (js-obj "x" pos-x "y" pos-y))))
-
 ;; WARNING: Assumes a single spritesheet and a single sprite
 (defn animate
   "When an action event is in the inbox changes the state and switches
@@ -148,18 +116,14 @@
    frame as specified by the animation spec.
 
    NOTE: The animation-stack must be a list not a vec so conj works as expected"
-  [entity-id component-state {:keys [moveable-state inbox]}]
-  (let [{:keys [animation-stack sprite frame animations]} component-state
+  [entity-id component-state {:keys [inbox]}]
+  (let [{:keys [animation-stack sprite frame-n animations]} component-state
         current-animation-name (first animation-stack)
         [animation-change? next-action] (get-action inbox current-animation-name)
-        frame-n (if animation-change? 0 frame)
+        frame-n (if animation-change? 0 frame-n)
         animation-name (or next-action current-animation-name)
         animation-fn (animation-name animations)
-        [sprite frame] (-> sprite
-                           ;; Apply screen changes due to movement
-                           (update-coords moveable-state)
-                           ;; Update the animation to next frame
-                           (incr-frame animation-fn frame-n))]
+        [frame frame-n] (incr-frame animation-fn frame-n)]
     ;; (when (= next-action :hit-up)
     ;;   (println "HIT UP" :next next-action :current current-animation-name :stack animation-stack :inbox-count (count inbox)))
     ;; Sticking this in a conditional to avoid doing extra work if
@@ -176,6 +140,6 @@
                                 (if (> (count animation-stack) 1)
                                   (drop 1 animation-stack)
                                   animation-stack))
-             :frame frame
-             :sprite sprite)
-      (assoc component-state :frame frame :sprite sprite))))
+             :frame-n frame-n
+             :frame frame)
+      (assoc component-state :frame-n frame-n :frame frame))))

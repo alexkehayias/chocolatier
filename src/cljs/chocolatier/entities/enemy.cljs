@@ -2,6 +2,7 @@
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]
+            [chocolatier.engine.components.renderable :refer [mk-sprite-state]]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
@@ -14,9 +15,8 @@
   [state stage uid]
   (let [pos-x (* 1000 (js/Math.random))
         pos-y (* 1000 (js/Math.random))
-        animation-state (mk-animateable-state stage
-                                              "img/bunny.png"
-                                              :stand-down
+        sprite-state (mk-sprite-state stage "img/bunny.png")
+        animation-state (mk-animateable-state :stand-down
                                               [:stand-up 26 37 26 37 0 0 1]
                                               [:stand-down 26 37 26 37 0 0 1]
                                               [:stand-left 26 37 26 37 0 0 1]
@@ -27,6 +27,7 @@
         damage-state (mk-damage-state 200 5)]
     (ces/mk-entity state uid [[:moveable move-state]
                               [:animateable animation-state]
+                              [:sprite sprite-state]
                               [:collidable collision-state]
                               [:damage damage-state]
                               :collision-debuggable

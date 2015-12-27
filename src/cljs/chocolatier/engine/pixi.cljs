@@ -37,20 +37,27 @@
 (defn mk-texture [image-location]
   (js/PIXI.Texture.fromImage image-location))
 
-(defn mk-sprite! [stage image-location]
-  (let [texture (js/PIXI.Texture.fromImage image-location)
-        sprite (js/PIXI.Sprite. texture)]
-    (add-child! stage sprite)
-    sprite))
-
 (defn set-sprite-frame!
   "Set the frame of the sprite's spritesheet coords and dimensions
    Returns the updated sprite."
-  [sprite x y w h]
-  (let [texture (.-texture sprite)
+  [sprite frame]
+  (let [[x y w h] frame
+        texture (.-texture sprite)
         bounds (new js/PIXI.Rectangle x y w h)]
     (set! (.-frame texture) bounds))
   sprite)
+
+(defn mk-sprite!
+  "Make a sprite object and add it to the stage.
+   Optionally pass in a third argument to set the frame of the sprite"
+  ([stage image-location]
+   (let [texture (js/PIXI.Texture.fromImage image-location)
+         sprite (js/PIXI.Sprite. texture)]
+     (add-child! stage sprite)
+     sprite))
+  ([stage image-location frame]
+   (let [sprite (mk-sprite! stage image-location)]
+     (set-sprite-frame! sprite frame))))
 
 (defn circle
   [graphic x y r]
@@ -115,3 +122,11 @@
         sprite (new js/PIXI.Sprite texture)]
     ;; This is a side-effect with no return value
     (add-child! stage sprite)))
+
+(defn mk-text!
+  "Creates a PIXI.Text object with styles.
+   List of style properties here: https://pixijs.github.io/docs/PIXI.Text.html"
+  [stage text styles]
+  (let [text-obj (new js/PIXI.Text text styles)]
+    (add-child! stage text-obj)
+    text-obj))

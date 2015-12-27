@@ -50,6 +50,8 @@
 
     ;; This will throw if there is already an entry for it so catch
     ;; any exceptions and then call the callback
+    ;; TODO don't need these for sprites since they are loaded
+    ;; dynamically if there is a cache miss
     (try (doto js/PIXI.loader
            (.add "bunny" "img/bunny.png")
            (.add "tiles" "img/snowtiles_1.gif")

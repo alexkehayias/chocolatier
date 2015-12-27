@@ -3,6 +3,8 @@
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
+            [chocolatier.engine.components.renderable :refer [mk-sprite-state
+                                                              mk-text-state]]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
             [chocolatier.engine.components.attack :refer [mk-attack-state]]
@@ -15,9 +17,11 @@
   [stage uid pos-x pos-y map-x map-y]
   (fn [state]
     (info "Creating player" pos-x pos-y map-x map-y)
-    (let [animation-state (mk-animateable-state stage
-                                                "img/test_spritesheet.png"
-                                                :stand-down
+    (let [text-state (mk-text-state stage "Player 1" {"font" "bold 12px Arial"
+                                                      "stroke" "white"
+                                                      "strokeThickness" 3})
+          sprite-state (mk-sprite-state stage "img/test_spritesheet.png")
+          animation-state (mk-animateable-state :stand-down
                                                 [:stand-up 832 1344 64 64 8 0 1]
                                                 [:stand-up-right 832 1344 64 64 8 0 1]
                                                 [:stand-up-left 832 1344 64 64 8 0 1]
@@ -60,11 +64,7 @@
                                     :height 30
                                     :speed 10
                                     :ttl 100
-                                    :animation-fn #(mk-animateable-state
-                                                    stage
-                                                    "img/fireball.png"
-                                                    :fire
-                                                    [:fire 30 30 30 30 0 0 1])}]
+                                    :sprite-fn #(mk-sprite-state stage "img/fireball.png" [0 0 30 30])}]
                         [:spear {:damage 10
                                  :cooldown 4
                                  :type :fire
@@ -72,15 +72,13 @@
                                  :height 10
                                  :speed 8
                                  :ttl 2
-                                 :animation-fn #(mk-animateable-state
-                                                 stage
-                                                 "img/fireball.png"
-                                                 :fire
-                                                 [:fire 30 30 30 30 0 0 1])}])
+                                 :sprite-fn #(mk-sprite-state stage "img/fireball.png")}])
           damage-state (mk-damage-state 100 10)]
       (ces/mk-entity state
                      uid
-                     [[:animateable animation-state]
+                     [[:text text-state]
+                      [:animateable animation-state]
+                      [:sprite sprite-state]
                       :controllable
                       [:collidable collision-state]
                       :collision-debuggable

@@ -46,6 +46,7 @@
 - [X] FIX collisions with invisible bounding boxes?
   - When eliminating some enemies, end up colliding with nothing
 - [ ] FIX when sending out hit action event all enemy animations receive it?
+  - CHECK FIRST: pixi reuses textures or frames
   - In animateable component:
     - It's getting stuck on :hit-up and won't revert back to :stand-down
       (when (= next-action :hit-up)
@@ -53,14 +54,50 @@
     - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
 - [X] Determine if it's attack collision if there is a damage attribute instead of overloading the entity-id
 - [X] FIX cooldown requires a full cycle before it allows an attack
-* TODO Decouple movement offset from the controllable component <2015-12-25 Fri>
+* DONE Should be able to create a sprite without an animation component <2015-12-27 Sun>
+CLOSED: [2015-12-27 Sun 16:04]
+Doesn't make sense that currently you need to make an animation component for something that doesn't animate
+- [X] Update render-sprite to check for a moveable state before attempting to set a position
+  - This means a sprite does not require a moveable component either
+- [X] Update mk-sprite! to optionally take a frame this will force the rendering
+* DONE Decouple movement offset from the controllable component <2015-12-25 Fri>
+CLOSED: [2015-12-25 Fri 21:38]
 Make the move component figure out to what rate the entity should move (offset)
 * DONE Certain actions should be in addition to movement <2015-12-25 Fri>
 CLOSED: [2015-12-25 Fri 18:00]
 i.e Moving in addition to certain attacks such as fireball and walking
 * TODO FIX spear attack doesn't work unless pushing a direction key simultaneously
+* DONE Text rendering to sprites <2015-12-27 Sun>
+CLOSED: [2015-12-27 Sun 15:37]
+- Move sprites to a separate place instead of component state?
+  - This would eliminate the coupling of multiple components that need to alter the sprite from having to know about each other
+  - Would not need to be animateable to have a position
+- Should there be a sprite component, position component, animation component?
+  - Sprite component would do all the altering at the same time on the sprite
+  - Sprite would only need to read the position component, animation component to know what to do
+- [X] Create a text component
+  - Initial state takes some text
+  - Must be created with a position component
+  - Don't want a text-movement system
+* TODO Use metadata to derive the boilerplate game state wiring
+- Instead of manually specifying all of the attributes of a system/component/entity use meta data
+- Example:
+  - Component function has a component name of :foo:
+    (defn cf {:component-name :foo} [] ...)
+    (defn component-name [f] (:component-name (meta (var component-fn))))
+    (component-name component-fn) => :foo
+- You can include functions in metadata too so we could use that to introspect the component's name instead of hardcoding it, you would only need to require the component-fn which means the compiler will throw errors earlier
+- Specify dependencies of components for the purpose of catching errors earlier such as depending on a component state that does not exist
+- mk-component-fn can read the meta data and intelligently figure out what args to call the function with
+  - Selected state ends up in the third argument to the component function (a hashmap)
+  - This prevents having to write a function every time you want to read some other component-state, instead you could list it in the meta data
+  - {:require-component-states [:moveable :collideable]}
+  - {:subscriptions [:move :collision]}
+  - Or with more sugar, a dsl for selecting state of the game/components etc
+    {:require-state [[:game :stage] [:component :move] [:component :collision]]}
 * TODO Add spinning to movement system
-* TODO Add diagonal attack <2015-12-13 Sun>
+* DONE Add diagonal attack <2015-12-13 Sun>
+CLOSED: [2015-12-27 Sun 13:11]
 * TODO Batch all events at the system level? <2015-11-15 Sun>
 - This resulted in really big gains when doing collision detection where each entity can create more than one event
 - Batching events for the ai system brought much less improvement so there may be something inherent about the collision events that were more severe
@@ -92,7 +129,6 @@ According to the compiler, the move component requires multiple get-component-st
 * TODO Key combinations from input
 * TODO Debug layer for spatial grid
 Show grid lines with numbers based on the spatial grid of that frame
-* TODO Text rendering to sprites
 * TODO Add skip frames to animation declaration to control animation speed
 * TODO Use transients for things that are going to be iterated over and only need a local mutable value.
 Could work well for systems when iterating over them

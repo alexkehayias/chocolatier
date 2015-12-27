@@ -2,14 +2,12 @@
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]
-            [chocolatier.engine.components.collidable
-             :refer [mk-collidable-state]]
-            [chocolatier.engine.components.moveable
-             :refer [mk-moveable-state]]
-            [chocolatier.engine.components.animateable
-             :refer [mk-animateable-state]]
-            [chocolatier.engine.utils.counters
-             :refer [mk-cooldown tick-cooldown cooldown?]]))
+            [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
+            [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
+            [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
+            [chocolatier.engine.utils.counters :refer [mk-cooldown
+                                                       tick-cooldown
+                                                       cooldown?]]))
 
 
 (defn mk-attack-state
@@ -21,12 +19,12 @@
                              :speed 5
                              :ttl 8
                              :type :physical
-                             :animation-fn animation-fn}])"
+                             :sprite-fn sprite-f}])"
   [& action-specs]
   (into {} (map (fn [[action spec]]
                   (assert (= (set [:damage :cooldown :type
                                    :width :height :speed
-                                   :ttl :animation-fn])
+                                   :ttl :sprite-fn])
                              (set (keys spec)))
                           "Missing required attack metadata")
                   [action (update spec :cooldown mk-cooldown)])
@@ -35,16 +33,15 @@
 (defn include-move-state
   "Returns a map move state of the entity"
   [state component-id entity-id]
-  {:stage (-> state :game :rendering-engine :stage)
-   :move-state (ces/get-component-state state :moveable entity-id)})
+  {:move-state (ces/get-component-state state :moveable entity-id)})
 
 (defn player-attack
   "Unless the attack specified by the event is currently in cooldown
    then emit an event to create the attack. Returns updated
    component-state and any events if necessary"
-  [entity-id component-state event stage move-state]
+  [entity-id component-state event move-state]
   (let [{:keys [action direction]} (:msg event)
-        {:keys [damage type width height ttl animation-fn speed]} (get component-state action)
+        {:keys [damage type width height ttl sprite-fn speed]} (get component-state action)
         {:keys [pos-x pos-y]} move-state
         cooldown (get-in component-state [action :cooldown])
         [cooldown-state cooldown?] (tick-cooldown cooldown)
@@ -67,21 +64,24 @@
                              ;; Add a ttl to the attack entity so we
                              ;; don't need to handle cleaning it up!
                              [:ephemeral {:ttl ttl :counter 0}]
-                             ;; Add a sprite animation
-                             [:animateable (animation-fn)]]]
+                             ;; Add a sprite to visualize the attack
+                             ;; Sprite component state comes from
+                             ;; calling a function due to needing the stage
+                             [:sprite (sprite-fn)]
+]]
                            [:meta])]
         [next-state [e]]))))
 
 (defn enemy-attack
-  [entity-id component-state event stage move-state]
+  [entity-id component-state event move-state]
   component-state)
 
 (defn handle-attack
-  [entity-id component-state event stage move-state]
+  [entity-id component-state event move-state]
   ;; Purposely avoiding multimethods here because they are slow
   (condp keyword-identical? entity-id
-    :player1 (player-attack entity-id component-state event stage move-state)
-    (enemy-attack entity-id component-state event stage move-state)))
+    :player1 (player-attack entity-id component-state event move-state)
+    (enemy-attack entity-id component-state event move-state)))
 
 (defn get-attack-event
   "Returns the first attack event from the inbox"
@@ -101,9 +101,9 @@
 (defn attack
   "Handles making attackes for the enemy. Must subscribe to
    the :action events for the entity."
-  [entity-id component-state {:keys [inbox stage move-state]}]
+  [entity-id component-state {:keys [inbox move-state]}]
   (if-let [event (get-attack-event component-state inbox)]
     ;; Dispatch to the attack handlers based on entity-id
-    (handle-attack entity-id component-state event stage move-state)
+    (handle-attack entity-id component-state event move-state)
     ;; Tick any in progress attack cooldowns
     (reduce tick-in-progress-attack component-state (seq component-state))))

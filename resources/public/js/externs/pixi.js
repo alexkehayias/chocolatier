@@ -35,3 +35,5 @@ PIXI.extras.TilingSprite = function(texture, width, height){};
 PIXI.extras.TilingSprite.tilePosition = function(texture, width, height){};
 
 PIXI.RenderTexture = function(w, h){};
+
+PIXI.Text = function(text){};
