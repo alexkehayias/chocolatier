@@ -66,12 +66,29 @@ Make the move component figure out to what rate the entity should move (offset)
 * DONE Certain actions should be in addition to movement <2015-12-25 Fri>
 CLOSED: [2015-12-25 Fri 18:00]
 i.e Moving in addition to certain attacks such as fireball and walking
+* TODO Update the sprite/text renderer component to cull if the entity is outside of the viewport
+- Pixi doesn't cull sprites outside of the viewport according to http://www.html5gamedevs.com/topic/6691-how-does-pixi-deal-with-items-positioned-off-the-screen/
+* TODO Add subscriptions to other entities' events
+- Currently all subscriptions are only for the entity which means another entity can not subscribe to the same messages
+- Would be useful to create say an entity with at text and move component that could follow around the player entity
+- Per component override
+* TODO Add assertions about the shape of the data in key areas of the framework
+When dev-ing it's nice to not have to deal with nil errors i.e calling nil as a function, nil values, etc
+- [ ] Systems can check that they are getting state that isn't empty
+- [ ] Components can check that the component state matches expected
+- [ ] Events can validate event messages
 * TODO Add position offset to text component to better position text around an entity
+* TODO Test coverage
+- [ ] Core framework
+- [ ] Components
+- [ ] Systems
 * DONE Add text with the damage taken when an entity gets hit <2015-12-27 Sun>
 CLOSED: [2015-12-27 Sun 17:26]
 - Show red text with the hit amount taken
 - Fade out after a short duration
 - Should follow the entity
+* TODO Store entity component labels in a set instead of a list/vector for faster comparisons
+multi-component-entities has to put the collection of component ids for each entity into a set before calling subset? on it
 * TODO FIX spear attack doesn't work unless pushing a direction key simultaneously
 * DONE Text rendering to sprites <2015-12-27 Sun>
 CLOSED: [2015-12-27 Sun 15:37]

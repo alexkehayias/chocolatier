@@ -1,7 +1,7 @@
 (defproject chocolatier "0.1.0-SNAPSHOT"
   :description "Chocolatier prototype"
-  :source-paths ["src/clj"]
-  :test-paths ["test/clj"]
+  :source-paths ["src/clj" "src/cljs"]
+  :test-paths ["test/clj" "test/cljs"]
 
   :dependencies [[org.clojure/clojure "1.7.0"]
 
@@ -26,7 +26,9 @@
   :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.1"
                                    :exclude [org.clojure/clojurescript]]
                                   [org.clojure/tools.nrepl "0.2.12"]]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+
+                   }}
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 

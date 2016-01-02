@@ -131,11 +131,13 @@
         (assert (and (<= (count result) 2)
                      (seq result)
                      ;; Make sure the items in the list are not nil
-                     (all-not-nil? result)))
+                     (all-not-nil? result))
+                (str "Component fn did not return valid vector: " result))
         (output-fn state component-id entity-id component-state events))
       (do
         ;; Make sure the result is a hashmap (updated state)
-        (assert (map? result))
+        (assert (map? result) (str "Component fn did not return a valid hashmap: "
+                                   result))
         (output-fn state component-id entity-id result)))))
 
 (defn mk-component-fn

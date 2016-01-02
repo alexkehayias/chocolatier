@@ -42,8 +42,7 @@
               [:text (text-fn (str "-" damage))]]]]
     ;; If hitpoints falls below 1 then remove entity from the game
     (if destroy?
-      [next-component-state [(ev/mk-event [:entity-remove entity-id]
-                                          [:meta])]]
+      [next-component-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
       [next-component-state [(ev/mk-event msg [:meta])]])))
 
 ;; If there are any collisions with events from entity-ids that start
