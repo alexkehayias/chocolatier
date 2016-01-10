@@ -25,7 +25,7 @@
                                               [:hit-up 20 30 20 30 0 0 1])
         move-state (mk-moveable-state pos-x pos-y 4 :down)
         collision-state (mk-collidable-state 26 37 nil)
-        damage-state (mk-damage-state 200 5
+        damage-state (mk-damage-state 50 5 5
                                       #(mk-text-state stage % {"font" "bold 12px Arial"
                                                                "fill" "red"
                                                                "stroke" "white"
