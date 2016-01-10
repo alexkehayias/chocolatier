@@ -151,7 +151,7 @@ Naive frames per second benchmarks are available at `chocolatier.engine.benchmar
 
 ## License
 
-Copyright © 2015 Alex Kehayias
+Copyright © 2016 Alex Kehayias
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
