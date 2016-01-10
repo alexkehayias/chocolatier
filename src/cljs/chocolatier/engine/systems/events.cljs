@@ -23,16 +23,19 @@
   [:state :events :queue])
 
 (defn get-events
-  "Returns a collecition of events or nil"
+  "Returns a collection of events or nil"
   [state selectors]
-  (get-in state (into queue-path selectors)))
+  (let [events (get-in state (into queue-path selectors))]
+    ;; Selectors represent a nested path of keys so if the selector is
+    ;; another map, throw an error
+    (assert (not (map? events)) (str "Invalid event selector: " selectors))
+    events))
 
 (defn get-subscribed-events
   "Returns a collection of events that matches the collection of
-   subscriptions or nil if the subscriptions are empty. Subscriptions
-   is a collection of selectors"
-  [state subscriptions]
-  (reduce #(into %1 (get-events state %2)) [] subscriptions))
+   selectors or nil if selectors-col is empty."
+  [state selectors-col]
+  (reduce #(into %1 (get-events state %2)) [] selectors-col))
 
 (defn valid-event?
   "Asserts the validity of an event. A properly formed event has the
