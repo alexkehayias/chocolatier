@@ -22,7 +22,7 @@
   - [X] Initialize entities
     - Subscribe events
     - Init component state
-* TODO Add a combat system for attacking between entities [10/12] <2015-11-28 Sat>
+* TODO Add a combat system for attacking between entities [11/12] <2015-11-28 Sat>
 - [X] Combat system
 - [X] Meta system [2/2]
   Dynamically add/remove/change the game state by listening to events on the :meta where the message implements the specs for :entity
@@ -37,12 +37,12 @@
 - [X] Update animateable component to remove the sprite from the stage using a :cleanup-fn
 - [X] Update collision system to take into account offset-x/y
   Increase the size of the hit box to where the entity will be next frame this will mean all area the entity will pass through will be included for collision detection
-- [-] Add damage system and hitpoint component
+- [X] Add damage system and hitpoint component
   - [X] Emit damage events when colliding with an entity prefixed by "attack"
   - [X] Emit an action event when colliding with an attack
   - Update hitpoints
   - [X] If hitpoints falls to 0 then emit a message to show the destro animation then remove the entity
-  - [ ] Invinsibility period (cooldown of when they can take damage next)
+  - [X] Invinsibility period (cooldown of when they can take damage next)
 - [X] FIX collisions with invisible bounding boxes?
   - When eliminating some enemies, end up colliding with nothing
 - [ ] FIX when sending out hit action event all enemy animations receive it?
