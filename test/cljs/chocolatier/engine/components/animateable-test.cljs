@@ -1,6 +1,6 @@
 (ns chocolatier.components.animateable-test
-  (:require-macros [cemerick.cljs.test :refer [is deftest]])
-  (:require [cemerick.cljs.test :refer [test-ns]]
+  (:require [cljs.test :refer-macros [is testing run-tests]]
+            [devcards.core :as dc :refer-macros [defcard deftest dom-node]]
             [chocolatier.engine.components.animateable :as a]
             [chocolatier.engine.pixi :as pixi]))
 
@@ -16,13 +16,11 @@
 
 (deftest test-mk-animations-map
   (is (map? (a/mk-animations-map [:walk 10 10 2 2 0 0 5]
-                                [:run 10 10 2 2 1 0 5]))))
+                                 [:run 10 10 2 2 1 0 5]))))
 
-(deftest test-mk-animation-state
-  (with-redefs [pixi/mk-sprite! (fn [& args] (js-obj))
-                pixi/set-sprite-frame! (fn [& args] (js-obj))]
-    (let [result (a/-mk-animation-state "my/image.png" 0 0 :walk
-                                        [:walk 10 10 2 2 0 0 5]
-                                        [:run 10 10 2 2 1 0 5])]
-      (is (= #{:animation-name :sprite :animations :frame}
-             (set (keys result)))))))
+(deftest test-mk-animateable-state
+  (let [result (a/mk-animateable-state :walk
+                                       [:walk 10 10 2 2 0 0 5]
+                                       [:run 10 10 2 2 1 0 5])]
+    (is (= #{:animation-stack :animations :frame}
+           (set (keys result))))))

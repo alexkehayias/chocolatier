@@ -17,7 +17,10 @@
                   :exclude [org.clojure/clojurescript]]
 
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"
-                  :exclude [org.clojure/clojurescript]]]
+                  :exclude [org.clojure/clojurescript]]
+
+                 ;; Devcards
+                 [devcards "0.2.1-4"]]
 
   :plugins [[lein-cljsbuild "1.1.1" :exclude [org.clojure/clojurescript]]
             [lein-figwheel "0.5.0-1" :exclude [org.clojure/clojurescript]]
@@ -35,9 +38,10 @@
   :cljsbuild {:builds
               [{:id "dev"
                 :source-paths ["src/cljs"]
-                :figwheel {:on-jsload "chocolatier.core/on-js-reload"}
+                :figwheel {:on-jsload "chocolatier.core/on-js-reload"
+                           :devcards true}
                 :compiler {:main chocolatier.dev
-                           :asset-path "js/compiled/out"
+                           :asset-path "/js/compiled/out"
                            :output-to "resources/public/js/compiled/chocolatier.js"
                            :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp true
@@ -55,7 +59,15 @@
                            :optimizations :advanced
                            :verbose true
                            ;; Optimize nested function calls
-                           :static-fns true}}]}
+                           :static-fns true}}
+               {:id "devcards"
+                :source-paths ["src/cljs"]
+                :figwheel {:devcards true}
+                :compiler {:main chocolatier.devcards
+                           :asset-path "js/compiled/out"
+                           :output-to "resources/public/js/compiled/chocolatier-devcards.js"
+                           :source-map-timestamp true
+                           :pretty-print true}}]}
 
   :figwheel {:http-server-root "public" ;; default and assumes "resources"
              :server-port 1223          ;; default

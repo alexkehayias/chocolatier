@@ -117,14 +117,12 @@
 
    Args:
    - state: the game state hash map"
-  [game-state]
+  [game-state running?]
   (let [scene-id (get-in game-state ces/scene-id-path)
         update-fn (get-in game-state [:game :update-fns scene-id])
         next-state (update-fn game-state)]
-    ;; Copy the state into an atom so we can inspect while running
-    (reset! *state* next-state)
-    (if @*running*
-      (request-animation #(game-loop next-state))
+    (if @running?
+      (request-animation #(game-loop next-state running?))
       (println "Game stopped"))))
 
 (defn game-loop-with-stats

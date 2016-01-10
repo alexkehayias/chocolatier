@@ -8,6 +8,7 @@
 (defroutes app-routes
   (GET "/dev" [] (response/resource-response "dev.html" {:root "public"}))
   (GET "/min" [] (response/resource-response "dev-min.html" {:root "public"}))
+  (GET "/dev/cards" [] (response/resource-response "devcards.html" {:root "public"}))
   (route/resources "/")
   (route/not-found "Not Found"))
 

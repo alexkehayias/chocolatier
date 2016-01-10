@@ -85,7 +85,9 @@
 (defn on-js-reload
   "When figwheel reloads, this function gets called."
   [& args]
-  (restart-game!))
+  ;; Only restart if there is a #main element
+  (when (sel1 :#main)
+    (restart-game!)))
 
 ;; Start the game on page load
-(set! (.-onload js/window) on-js-reload )
+(set! (.-onload js/window) on-js-reload)
