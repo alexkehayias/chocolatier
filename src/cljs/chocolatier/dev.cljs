@@ -4,7 +4,7 @@
 
 (enable-console-print!)
 
-(defn on-js-reload
-  "When figwheel reloads, this function gets called."
-  [& args]
-  (restart-game!))
+;; (defn on-js-reload
+;;   "When figwheel reloads, this function gets called."
+;;   [& args]
+;;   (restart-game!))

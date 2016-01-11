@@ -31,7 +31,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "image":"img/snowtiles_1.gif",
+         "image":"/img/snowtiles_1.gif",
          "imageheight":48,
          "imagewidth":160,
          "margin":0,

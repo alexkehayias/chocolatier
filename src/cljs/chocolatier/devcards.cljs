@@ -51,4 +51,4 @@
              ;; Give it a second to end the game
              (js/setTimeout start-game! 1000))
          (reset! rendered? true)))))
-  (atom false))
+  (atom true))

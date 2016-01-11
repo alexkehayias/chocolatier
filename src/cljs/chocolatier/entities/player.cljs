@@ -20,7 +20,7 @@
     (let [text-state (mk-text-state stage "Player 1" {"font" "bold 12px Arial"
                                                       "stroke" "white"
                                                       "strokeThickness" 3})
-          sprite-state (mk-sprite-state stage "img/test_spritesheet.png")
+          sprite-state (mk-sprite-state stage "/img/test_spritesheet.png")
           animation-state (mk-animateable-state :stand-down
                                                 [:stand-up 832 1344 64 64 8 0 1]
                                                 [:stand-up-right 832 1344 64 64 8 0 1]
@@ -64,7 +64,7 @@
                                     :height 30
                                     :speed 10
                                     :ttl 100
-                                    :sprite-fn #(mk-sprite-state stage "img/fireball.png" [0 0 30 30])}]
+                                    :sprite-fn #(mk-sprite-state stage "/img/fireball.png" [0 0 30 30])}]
                         [:spear {:damage 10
                                  :cooldown 4
                                  :type :fire
@@ -72,7 +72,7 @@
                                  :height 10
                                  :speed 8
                                  :ttl 2
-                                 :sprite-fn #(mk-sprite-state stage "img/fireball.png")}])
+                                 :sprite-fn #(mk-sprite-state stage "/img/fireball.png")}])
           damage-state (mk-damage-state 100 10 10 #(mk-text-state stage % {}))]
       (ces/mk-entity state
                      uid

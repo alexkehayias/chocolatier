@@ -16,7 +16,7 @@
   [state stage uid]
   (let [pos-x (* 1000 (js/Math.random))
         pos-y (* 1000 (js/Math.random))
-        sprite-state (mk-sprite-state stage "img/bunny.png")
+        sprite-state (mk-sprite-state stage "/img/bunny.png")
         animation-state (mk-animateable-state :stand-down
                                               [:stand-up 26 37 26 37 0 0 1]
                                               [:stand-down 26 37 26 37 0 0 1]
