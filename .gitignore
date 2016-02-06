@@ -19,3 +19,4 @@ pom.xml.asc
 /resources/public/js/compiled/*
 /figwheel_server.log
 /resources/assets
+./push-master.sh

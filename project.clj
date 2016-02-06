@@ -2,7 +2,6 @@
   :description "Chocolatier prototype"
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj" "test/cljs"]
-
   :dependencies [[org.clojure/clojure "1.7.0"]
 
                  ;; Web server
@@ -11,7 +10,7 @@
                  [enlive "1.1.1"]
 
                  ;; cljs
-                 [org.clojure/clojurescript "1.7.170"]
+                 [org.clojure/clojurescript "1.7.228"]
                  ;; DOM manipulation
                  [prismatic/dommy "1.1.0"
                   :exclude [org.clojure/clojurescript]]
@@ -57,6 +56,7 @@
                            ;; Remove runtime assertions
                            :elide-asserts true
                            :optimizations :advanced
+                           :parallel-build true
                            :verbose true
                            ;; Optimize nested function calls
                            :static-fns true}}
@@ -67,6 +67,7 @@
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/chocolatier-devcards.js"
                            :source-map-timestamp true
+                           :parallel-build true
                            :pretty-print true}}]}
 
   :figwheel {:http-server-root "public" ;; default and assumes "resources"

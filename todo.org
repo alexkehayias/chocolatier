@@ -12,6 +12,25 @@
     (when (= next-action :hit-up)
       (println "HIT UP" next-action current-animation-name))
   - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
+* DONE Submit talk for Clojure West <2016-01-27 Wed>
+CLOSED: [2016-01-28 Thu 06:10]
+** Bio:
+DEADLINE: <2016-01-28 Thu 12:00>
+Alex Kehayias is the CTO at Shareablee and works on biggish data problems to help brands and publishers win the social web. Clojure and Python are his weapons of choice by day and by night. He is an active musician, tech community organizer (ClojureNYC), and helps mentor people learning to code.
+** Description:
+Alex Kehayias shares the many joys and challenges of building a game engine in a functional style using Clojure and ClojureScript. Over the course of 2+ years, Alex has been actively writing (and rewriting) a functional game engine to find the ideal combination of a quick feedback loop, testing with data, and performance. Join in the sorrows and triumphs of bringing functional programming to web-based game development for fun and zero profit!
+** Main Ideas:
+1. Game loop as a reduce call
+  Structuring the overall game loop as a reduction over a collection of functions into a data structure provides the benefits of functional purity, one way data flow, and easy testing.
+2. Entity Component Systems are a perfect match for FP
+  Breaking down games following an entity component system popularized by Scott Bilas and the Unity game engine brings the ability to describe complex behaviors with data instead of code which makes for faster iteration to help find the fun.
+3. Functional programming comes at a cost
+  Performance is always a concern in game programming and the additional usage of functional paradigms means additional overhead, but thankfully can be overcome thanks to the ClojureScript compiler and heavy reference of the core of Clojure.
+** Past talks:
+- Functional Game Engine Design @ LispNYC: https://vimeo.com/152433890
+- Clojure Panel @ ClojureNYC: http://www.meetup.com/Clojure-NYC/events/224632241/
+- Storm & Clojure: http://www.meetup.com/Clojure-NYC/events/219336391/
+- And a few other workshops as part of the ClojureScript NYC meetup group
 * TODO Update the sprite/text renderer component to cull if the entity is outside of the viewport
 - Pixi doesn't cull sprites outside of the viewport according to http://www.html5gamedevs.com/topic/6691-how-does-pixi-deal-with-items-positioned-off-the-screen/
 * TODO Add subscriptions to other entities' events

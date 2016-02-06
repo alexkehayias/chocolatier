@@ -34,7 +34,7 @@ After completing step 2 from the `figwheel` instructions above, in emacs:
 ### Compiling with advanced optimizations
 
 1. Run `lein cljsbuild once min`
-2. Navigate your browser to `http://127.0.0.1:3449/min` and the game will start immediately
+2. Navigate your browser to `http://127.0.0.1:1223/min` and the game will start immediately
 
 ## Entity Component System
 
