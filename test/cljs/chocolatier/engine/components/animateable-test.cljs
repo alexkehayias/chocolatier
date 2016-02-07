@@ -4,6 +4,9 @@
             [chocolatier.engine.components.animateable :as a]
             [chocolatier.engine.pixi :as pixi]))
 
+
+(defcard "# Animation Component Tests")
+
 (deftest test-get-sprite-coords
   (is (= (a/get-sprite-coords 10 10 2 2 2 1) [2 0])))
 

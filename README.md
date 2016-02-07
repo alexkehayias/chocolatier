@@ -15,8 +15,8 @@ The following instructions will start a browser connected repl and launch the de
 
 0. Clone the project and all submodules `git clone --recursive https://github.com/alexkehayias/chocolatier`
 1. Start the browser REPL server `lein figwheel`
-2. Navigate your browser to `http://127.0.0.1:1223/dev` to connect to the REPL
-3. The example game should start immediately, changes to files will automatically restart the game
+2. Navigate your browser to `http://127.0.0.1:1223/dev` to connect to the REPL and view devcards for the project
+3. Play the example game at `http://127.0.0.1:1223/dev#!/chocolatier.examples.action_rpg.core` changes to files will automatically restart the game
 
 ### With `figwheel` and emacs using `cider`
 
@@ -26,10 +26,6 @@ After completing step 2 from the `figwheel` instructions above, in emacs:
 
 1. Connect to the `figwheel` REPL `M-x cider-connect RET localhost RET 8999`
 2. Start ClojureScript REPL `(do (use 'figwheel-sidecar.repl-api) (cljs-repl))`
-3. Open the game file `C-x C-f RET /chocolatier/src/cljs/chocolatier/core.cljs`
-4. Change to the namespace in that file `C-c M-n`
-5. Evaluate the file `C-c M-k`
-6. Start the demo game `(restart-game!)`
 
 ### Compiling with advanced optimizations
 
@@ -135,7 +131,7 @@ Tilemaps require all assets to be loaded (tileset images) to prevent any race co
 
 ## Running Tests
 
-Currently does not support `lein-cljsbuild` tests. Instead, load a namespace in a brepl and use the `test-ns` macro to run the tests.
+View the tests using the devcards at `http://127.0.0.1:1223/dev`
 
 ## Performance
 

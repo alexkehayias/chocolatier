@@ -3,6 +3,7 @@
             [cljs.test :refer-macros [is testing run-tests]]
             [chocolatier.engine.systems.events :as ev]))
 
+(defcard "# Event System Tests")
 
 (deftest test-get-events
   (testing "Test getting events from the queue given selectors"

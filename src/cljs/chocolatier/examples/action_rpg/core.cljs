@@ -1,22 +1,15 @@
-(ns ^:figwheel-always chocolatier.core
+(ns ^:figwheel-always chocolatier.examples.action-rpg.core
     (:require [dommy.core :as dom :refer-macros [sel sel1]]
               [devcards.core :as dc :refer-macros [defcard deftest dom-node]]
+              [chocolatier.utils.devcards :refer [str->markdown-code-block]]
               [chocolatier.utils.logging :refer [debug warn error]]
-              [chocolatier.game :refer [init-state]]
+              [chocolatier.examples.action-rpg.game :refer [init-state]]
               [chocolatier.engine.systems.tiles :refer [load-tilemap]]
               [chocolatier.engine.systems.audio :refer [load-samples]]
               [chocolatier.engine.core :refer [request-animation
                                                game-loop-with-stats
                                                *running*
                                                *state*]]))
-
-
-(enable-console-print!)
-
-(defcard "
-# Chocolatier Game Example
-Here is an example of a game running with a bunch of components and systems.
-")
 
 (defn -start-game!
   "Starts the game loop. This should be called only once all assets are loaded"
@@ -85,17 +78,39 @@ Here is an example of a game running with a bunch of components and systems.
   (js/setTimeout #(start-game! node) 1000)
   nil)
 
+(defcard "
+# Action RPG Example
+
+The example below utilizes the following systems and components:
+
+- Collision detection (using rbush for spatial indexing)
+- Keyboard input to control the player (WASD and slash to attack)
+- Attack/damage/hitpoints/death
+- Tile background via Tiled
+- Sprite animation
+- Movement
+- Enemy AI (chases he player)
+- Text labels that move with the entity
+")
+
+(defcard "
+## Game
+### Instructions
+Use WASD to control the player and the forward slash key to attack.
+"
+  (dom-node
+   (fn [_ node] (restart-game! node))))
+
+(defcard "## Spec"
+  (str->markdown-code-block
+   (with-out-str (clojure.repl/source init-state))))
+
 (defn on-js-reload
   "When figwheel reloads, this function gets called."
   [& args]
   ;; Only restart if there is a #main element
   (when-let [node (sel1 :#main)]
     (restart-game! node)))
-
-(defcard "# This is an example game."
-  (dom-node
-   (fn [rendered? node]
-     (restart-game! node))))
 
 ;; Start the game on page load
 (set! (.-onload js/window) on-js-reload)

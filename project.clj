@@ -28,18 +28,16 @@
   :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.1"
                                    :exclude [org.clojure/clojurescript]]
                                   [org.clojure/tools.nrepl "0.2.12"]]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-
-                   }}
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :cljsbuild {:builds
               [{:id "dev"
-                :source-paths ["src/cljs"]
-                :figwheel {:on-jsload "chocolatier.core/on-js-reload"
-                           :devcards true}
-                :compiler {:main chocolatier.dev
+                :source-paths ["src/cljs"
+                               "test/cljs"]
+                :figwheel {:devcards true}
+                :compiler {:main "chocolatier.devcards"
                            :asset-path "/js/compiled/out"
                            :output-to "resources/public/js/compiled/chocolatier.js"
                            :output-dir "resources/public/js/compiled/out"
@@ -47,7 +45,7 @@
                            :pretty-print true}}
                {:id "min"
                 :source-paths ["src/cljs"]
-                :compiler {:main chocolatier.dev
+                :compiler {:main "chocolatier.examples.action-rpg.core"
                            :output-to "resources/public/js/compiled/chocolatier-min.js"
                            :externs ["resources/public/js/externs/pixi.js"
                                      "resources/public/js/externs/howler.js"
@@ -59,16 +57,7 @@
                            :parallel-build true
                            :verbose true
                            ;; Optimize nested function calls
-                           :static-fns true}}
-               {:id "devcards"
-                :source-paths ["src/cljs"]
-                :figwheel {:devcards true}
-                :compiler {:main chocolatier.devcards
-                           :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled/chocolatier-devcards.js"
-                           :source-map-timestamp true
-                           :parallel-build true
-                           :pretty-print true}}]}
+                           :static-fns true}}]}
 
   :figwheel {:http-server-root "public" ;; default and assumes "resources"
              :server-port 1223          ;; default

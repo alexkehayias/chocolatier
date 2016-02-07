@@ -5,6 +5,8 @@
             [chocolatier.engine.systems.events :as ev]))
 
 
+(defcard "# Entity Component System Tests")
+
 (deftest test-mk-scene
   (testing "Test mk-scene returns the correct output"
     (is (= (ces/mk-scene {} :yo [:dawg]) {:scenes {:yo [:dawg]}}))))
