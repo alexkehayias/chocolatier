@@ -67,10 +67,10 @@
 
    Example usage:
    (mk-game-state {} [:scene :default [:s1]]
-                     [:component :c1 [f1]]
+                     [:component :c1 f1]
                      [:system :s1 f2 :c1]
-                     [:component :c2 [[f3 {:args-fn f4}] f5]]
-                     [:entity :e1 :components [:c2] :subscriptions [[:e1 :ev1]]])"
+                     [:component :c2 [f3 {:args-fn f4}]]
+                     [:entity :e1 :components [:c2]])"
   [state & specs]
   ;; After constructing the state, create a single arg update
   ;; function that is cached in :game :update-fns scene-id

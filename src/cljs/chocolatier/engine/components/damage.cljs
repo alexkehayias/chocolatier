@@ -43,15 +43,22 @@
         next-state (-> component-state
                        (update :hitpoints - damage)
                        (update :cooldown #(first (cnt/tick-cooldown %))))
-        destroy? (< (:hitpoints next-state) 1)
-        msg [:entity (keyword (gensym "damage-"))
-             [[:moveable (mk-moveable-state pos-x pos-y 2 :up)]
-              [:ephemeral {:ttl 4 :counter 0}]
-              [:text (text-fn (str "-" damage))]]]]
+        destroy? (< (:hitpoints next-state) 1)]
     ;; If hitpoints falls below 1 then remove entity from the game
+    ;; otherwise create an entity with a text component to display the
+    ;; damage taken
     (if destroy?
       [next-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
-      [next-state [(ev/mk-event msg [:meta])]])))
+      [next-state [(ev/mk-event [:entity (keyword (gensym "damage-"))
+                                 [[:moveable (mk-moveable-state pos-x pos-y 2 :up)]
+                                  [:ephemeral {:ttl 4 :counter 0}]
+                                  ;; WARNING: This function has side
+                                  ;; effects and should only be called
+                                  ;; when needed i.e not in a let
+                                  ;; binding if it could potentially
+                                  ;; not be used
+                                  [:text (text-fn (str "-" damage))]]]
+                                [:meta])]])))
 
 (defn tick-in-progress-damage
   [component-state]

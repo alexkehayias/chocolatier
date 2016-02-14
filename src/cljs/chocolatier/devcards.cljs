@@ -8,6 +8,9 @@
               [chocolatier.engine.ces-test]
               [chocolatier.components.animateable-test]
 
+              ;; Benchmarks
+              [chocolatier.engine.benchmarks]
+
               [dommy.core :as dom :refer-macros [sel sel1]]
               [chocolatier.engine.ces :as ces]
               [chocolatier.engine.core :refer [mk-game-state

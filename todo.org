@@ -4,7 +4,10 @@
 
 #+TODO: TODO FIX | DONE WONT-DO
 
-* FIX Text damage rendering to the top left corner sometimes
+* DONE Text damage rendering to the top left corner
+CLOSED: [2016-02-14 Sun 11:03]
+- :cleanup-fn is not being called when an entity is being removed from the scene
+- Can we make that automatically declared by the component instead of in the wiring up?
 * FIX Sending out hit action event all enemy animations receive it?
 - CHECK FIRST: pixi reuses textures or frames
 - In animateable component:
@@ -12,6 +15,9 @@
     (when (= next-action :hit-up)
       (println "HIT UP" next-action current-animation-name))
   - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
+* TODO State viewer
+Visualize the state of an entity and be able to adjust it
+-
 * DONE Submit talk for Clojure West <2016-01-27 Wed>
 CLOSED: [2016-01-28 Thu 06:10]
 ** Bio:

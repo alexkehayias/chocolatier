@@ -295,7 +295,6 @@
                  %1)
               $
               components)
-      ;; Clean out component state
       (reduce #(update-in %1 [:state %2] dissoc uid) $ components)
       ;; Remove the entity
       (update-in $ [:entities] dissoc uid))))
