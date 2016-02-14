@@ -11,11 +11,13 @@
   (is (= (a/get-sprite-coords 10 10 2 2 2 1) [2 0])))
 
 (deftest test-mk-animation-fn
-  (with-redefs [pixi/set-sprite-frame! (fn [_ x y w h]
-                                         (js-obj "x" x "y" y "width" w "height" h))]
-    (let [result ((a/mk-animation-fn 10 10 2 2 0 0 5) (js-obj) 1)]
-      (is (= (aget result "x") 2))
-      (is (= (aget result "y") 0)))))
+  "Test that when we call an animation function returned by mk-animation-fn with
+  a frame number we get the expected spritesheet position"
+  (let [[x y frame-w frame-h] ((a/mk-animation-fn 10 10 2 2 0 0 5) 1)]
+    (is (= x 2))
+    (is (= y 0))
+    (is (= frame-w 2))
+    (is (= frame-h 2))))
 
 (deftest test-mk-animations-map
   (is (map? (a/mk-animations-map [:walk 10 10 2 2 0 0 5]
