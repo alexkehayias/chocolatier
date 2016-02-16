@@ -4,16 +4,17 @@
             [chocolatier.engine.pixi :as pixi]))
 
 
-(defn include-moveable-state
-  "State parsing function. Returns a map of with a key for moveable-state"
-  [state component-id entity-id]
-  {:moveable-state (ces/get-component-state state :moveable entity-id)})
-
 (defn include-moveable-animateable-state
   "State parsing function. Returns a map of moveable-state and animateable-state"
   [state component-id entity-id]
   {:moveable-state (ces/get-component-state state :moveable entity-id)
    :animateable-state (ces/get-component-state state :animateable entity-id)})
+
+(defn include-moveable-text-state
+  "State parsing function. Returns a map of with a key for moveable-state"
+  [state component-id entity-id]
+  {:moveable-state (ces/get-component-state state :moveable entity-id)
+   :text-state (ces/get-component-state state :text entity-id)})
 
 (defn cleanup-sprite-state
   "Removes sprite from the stage belonging to the entity and returns state"
@@ -27,8 +28,8 @@
   "Removes sprite from the stage belonging to the entity and returns state"
   [state entity-id]
   (let [stage (-> state :game :rendering-engine :stage)
-        {:keys [text]} (ces/get-component-state state :text entity-id)]
-    (pixi/remove-child! stage text)
+        {:keys [text-obj]} (ces/get-component-state state :text-sprite entity-id)]
+    (pixi/remove-child! stage text-obj)
     state))
 
 (defn set-position!
@@ -52,9 +53,9 @@
   ([stage sprite-sheet-file-name frame]
    {:sprite (pixi/mk-sprite! stage sprite-sheet-file-name frame)}))
 
-(defn mk-text-state
+(defn mk-text-sprite-state
   [stage text styles]
-  {:text (pixi/mk-text! stage text (clj->js styles))})
+  {:text-obj (pixi/mk-text! stage text (clj->js styles))})
 
 (defn render-sprite
   "Renders the sprite in relation to the position of the entity and
@@ -67,12 +68,14 @@
     (when (seq moveable-state) (set-position! sprite moveable-state))
     ;; If there is an animation frame then update the spritesheet frame
     (when frame (pixi/set-sprite-frame! sprite frame))
-    {:sprite sprite}))
+    component-state))
 
 (defn render-text
   "Renders text in relation to the position of the entity"
-  [entity-id component-state {:keys [moveable-state]}]
-  (let [text (:text component-state)]
-    ;; This is a side-effect!
-    (when moveable-state (set-position! text moveable-state))
-    {:text text}))
+  [entity-id component-state {:keys [moveable-state text-state]}]
+  (let [{:keys [text rotation]} text-state
+        text-obj (:text-obj component-state)]
+    ;; Mutate the text object position and text
+    (when moveable-state (set-position! text-obj moveable-state))
+    (pixi/alter-obj! text-obj "text" text "rotation" rotation)
+    component-state))

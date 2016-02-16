@@ -17,7 +17,8 @@ CLOSED: [2016-02-14 Sun 11:03]
   - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
 * TODO State viewer
 Visualize the state of an entity and be able to adjust it
--
+* TODO Remove text and styles from mk-text-sprite-state
+It should be only needed for the text component so there is separation from state and rendering
 * DONE Submit talk for Clojure West <2016-01-27 Wed>
 CLOSED: [2016-01-28 Thu 06:10]
 ** Bio:
@@ -37,12 +38,27 @@ Alex Kehayias shares the many joys and challenges of building a game engine in a
 - Clojure Panel @ ClojureNYC: http://www.meetup.com/Clojure-NYC/events/224632241/
 - Storm & Clojure: http://www.meetup.com/Clojure-NYC/events/219336391/
 - And a few other workshops as part of the ClojureScript NYC meetup group
+* TODO Rename components with -able                                 :cleanup:
+i.e animateable -> animation
 * TODO Update the sprite/text renderer component to cull if the entity is outside of the viewport
 - Pixi doesn't cull sprites outside of the viewport according to http://www.html5gamedevs.com/topic/6691-how-does-pixi-deal-with-items-positioned-off-the-screen/
+* TODO Get rid of the event bus in favor of reading component state directly :idea:
+- Similar to React, instead of events to pass data, directly subscribe to other components
+- Can infer which components are coupled similar to how reagent does it
+- Can make component subscriptions explicit in the game wiring
+  Instead of subscriptions, provide collection of component labels
+- Currently all subscriptions are of components for the same entity, but in theory it doesn't have to be i.e global events
+- Having an event bus means component state can change, but downstream component state does not
+- Down stream would have to have logic for interpreting the state of the upstream component and they would thus be strongly coupled
 * TODO Add subscriptions to other entities' events
 - Currently all subscriptions are only for the entity which means another entity can not subscribe to the same messages
 - Would be useful to create say an entity with at text and move component that could follow around the player entity
 - Per component override
+* TODO Auto generate a schema for component state
+- Derive the component-state schema
+- Explicitely or implicitely?
+  Implicitely could use records and mk-state functions would have to return a record
+- When fields are updated in dev, perform a schema assertion (maybe using prismatic schema?)
 * TODO Add assertions about the shape of the data in key areas of the framework
 When dev-ing it's nice to not have to deal with nil errors i.e calling nil as a function, nil values, etc
 - [ ] Systems can check that they are getting state that isn't empty

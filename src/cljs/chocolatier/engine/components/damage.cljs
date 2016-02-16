@@ -4,6 +4,7 @@
             [chocolatier.engine.utils.counters :as cnt]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]
+            [chocolatier.engine.components.text :refer [mk-text-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]))
 
 
@@ -14,7 +15,7 @@
    - cooldown: the number of frames of invinsibility before getting being
      eligible to be hit again
    - text-fn: a fn that takes one argument and returns a text state using
-     engine.components.renderable/mk-text-state"
+     engine.components.renderable/mk-text-sprite-state"
   [hitpoints defense cooldown text-fn]
   {:hitpoints hitpoints
    :defense defense
@@ -57,7 +58,8 @@
                                   ;; when needed i.e not in a let
                                   ;; binding if it could potentially
                                   ;; not be used
-                                  [:text (text-fn (str "-" damage))]]]
+                                  [:text-sprite (text-fn (str "-" damage))]
+                                  [:text (mk-text-state (str "-" damage) 1)]]]
                                 [:meta])]])))
 
 (defn tick-in-progress-damage

@@ -16,6 +16,6 @@
   [state f entity-ids]
   (reduce f state entity-ids))
 
-(defn text-system
+(defn text-sprite-system
   [state f entity-ids]
   (reduce f state entity-ids))

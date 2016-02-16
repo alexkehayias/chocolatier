@@ -102,8 +102,7 @@
              ;; the other for attacking
              events (cond-> []
                       (not= last-move-action move-action)
-                      (cond->
-                          (keyword-identical? move :walk)
+                      (cond-> (keyword-identical? move :walk)
                         (into [(ev/mk-event {:direction direction}
                                             [:move-change entity-id])
                                (ev/mk-event {:action move :direction direction}
@@ -114,8 +113,7 @@
                                (ev/mk-event {:action move :direction direction}
                                             [:action entity-id])]))
                       (not= last-attack-action attack-action)
-                      (cond->
-                        (keyword-identical? attack :replay)
+                      (cond-> (keyword-identical? attack :replay)
                         (conj (ev/mk-event {:replay? true} [:replay]))
                         (keyword-identical? attack :fireball)
                         (conj (ev/mk-event {:action attack :direction direction}

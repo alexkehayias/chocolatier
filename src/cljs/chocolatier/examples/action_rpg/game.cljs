@@ -5,8 +5,9 @@
             [chocolatier.engine.systems.user-input :refer [user-input-system]]
             [chocolatier.engine.systems.render :refer [render-system
                                                        sprite-system
-                                                       text-system]]
+                                                       text-sprite-system]]
             [chocolatier.engine.systems.animation :refer [animation-system]]
+            [chocolatier.engine.systems.text :refer [text-system]]
             [chocolatier.engine.systems.collision :refer [mk-broad-collision-system
                                                           mk-narrow-collision-system]]
             [chocolatier.engine.systems.tiles :refer [tile-system load-tilemap mk-tiles-from-tilemap!]]
@@ -21,8 +22,9 @@
             [chocolatier.engine.systems.ttl :refer [ttl-system]]
             [chocolatier.engine.systems.meta :refer [meta-system]]
             [chocolatier.engine.components.animateable :refer [animate]]
+            [chocolatier.engine.components.text :refer [text]]
             [chocolatier.engine.components.renderable :refer [include-moveable-animateable-state
-                                                              include-moveable-state
+                                                              include-moveable-text-state
                                                               cleanup-sprite-state
                                                               cleanup-text-state
                                                               render-sprite
@@ -72,6 +74,7 @@
                      :animate
                      :sprite
                      :text
+                     :text-sprite
                      :audio
                      :render
                      :events]]
@@ -100,14 +103,14 @@
    [:system :sprite sprite-system :sprite]
    [:component :sprite [render-sprite {:args-fn include-moveable-animateable-state
                                        :cleanup-fn cleanup-sprite-state}] ]
-   ;; Animation system for animating sprites
    [:system :animate animation-system :animateable]
    [:component :animateable [animate {:subscriptions [:action]}]]
-   ;; Text system for displaying text
+   ;; Text sprite system for displaying text
+   [:system :text-sprite text-sprite-system :text-sprite]
+   [:component :text-sprite [render-text {:args-fn include-moveable-text-state
+                                          :cleanup-fn cleanup-text-state}] ]
    [:system :text text-system :text]
-   [:component :text [render-text {:args-fn include-moveable-state
-                                   :cleanup-fn cleanup-text-state}] ]
-
+   [:component :text [text {:subscriptions [:text-change]}]]
    ;; Collision detection system
    [:system :broad-collision (mk-broad-collision-system 8)]
    [:system :narrow-collision (mk-narrow-collision-system height width)]

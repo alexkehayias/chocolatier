@@ -4,7 +4,7 @@
             [chocolatier.engine.systems.events :as ev]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
             [chocolatier.engine.components.renderable :refer [mk-sprite-state
-                                                              mk-text-state]]
+                                                              mk-text-sprite-state]]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
             [chocolatier.engine.components.attack :refer [mk-attack-state]]
@@ -17,7 +17,7 @@
   [stage uid pos-x pos-y map-x map-y]
   (fn [state]
     (info "Creating player" pos-x pos-y map-x map-y)
-    (let [text-state (mk-text-state stage "Player 1" {"font" "bold 12px Arial"
+    (let [text-state (mk-text-sprite-state stage "Player 1" {"font" "bold 12px Arial"
                                                       "stroke" "white"
                                                       "strokeThickness" 3})
           sprite-state (mk-sprite-state stage "/img/test_spritesheet.png")
@@ -73,10 +73,11 @@
                                  :speed 8
                                  :ttl 2
                                  :sprite-fn #(mk-sprite-state stage "/img/fireball.png")}])
-          damage-state (mk-damage-state 100 10 10 #(mk-text-state stage % {}))]
+          damage-state (mk-damage-state 100 10 10 #(mk-text-sprite-state stage % {}))]
       (ces/mk-entity state
                      uid
-                     [[:text text-state]
+                     [[:text {:text (name uid) :rotation 0}]
+                      [:text-sprite text-state]
                       [:animateable animation-state]
                       [:sprite sprite-state]
                       :controllable

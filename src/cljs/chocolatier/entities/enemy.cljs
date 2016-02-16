@@ -3,7 +3,7 @@
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.events :as ev]
             [chocolatier.engine.components.renderable :refer [mk-sprite-state
-                                                              mk-text-state]]
+                                                              mk-text-sprite-state]]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
@@ -26,7 +26,7 @@
         move-state (mk-moveable-state pos-x pos-y 4 :down)
         collision-state (mk-collidable-state 26 37 nil)
         damage-state (mk-damage-state 50 5 5
-                                      #(mk-text-state stage % {"font" "bold 12px Arial"
+                                      #(mk-text-sprite-state stage % {"font" "bold 12px Arial"
                                                                "fill" "red"
                                                                "stroke" "white"
                                                                "strokeThickness" 3}))]
