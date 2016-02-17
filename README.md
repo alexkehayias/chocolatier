@@ -95,7 +95,7 @@ The following example implements a simple game loop, middleware, system, compone
 
 ## State
 
-The game is represented as a hashmap and a collection of functions that transform the state. This makes it easy to test game logic by calling functions with mocked data (since it's just a hasmap). You should be able to test any system, component, etc with data only.
+The game is represented as a hashmap and a collection of functions that transform the state. This makes it easy to test game logic by calling functions with mocked data (since it's just a hashmap). You should be able to test any system, component, etc with data only.
 
 ## Browser Connected Repl (Brepl)
 
@@ -131,6 +131,36 @@ The subscribed component will receive the event in a hashmap in the `:inbox` key
 The game engine supports tilemaps generated from the Tiled map editor http://www.mapeditor.org. Export the map as json and include the tileset image in the `resources/public/static/images` directory.
 
 Tilemaps require all assets to be loaded (tileset images) to prevent any race conditions with loading a tilemap see `chocolatier.engine.systems.tiles/load-assets`. Tilemaps are loaded asynchronously from the server via `chocolatier.engine.systems.tiles/load-tilemap` which takes a callback.
+
+## Middleware
+
+The game loop can be wrapped in middleware similar to `ring` middleware. This provides a way of accessing the running game state, ending the game loop, introspection, and other side effects.
+
+Here's an example of a middleware that makes a running game's state queryable in the repl:
+
+```clojure
+(defn wrap-copy-state-to-atom
+  "Copy the latest game state to the copy-atom so it can be inspected outside
+   the game loop."
+  [f copy-atom]
+  (fn [state]
+    (let [next-state (f state)]
+      (reset! copy-atom next-state)
+      next-state)))
+```
+
+Usage:
+
+```
+(def *state* (atom nil))
+
+(game-loop state (fn [handler]
+                   (-> handler
+                       (wrap-copy-state-to-atom *state*))))
+
+(println (-> *state* deref keys))
+```
+
 
 ## Running Tests
 

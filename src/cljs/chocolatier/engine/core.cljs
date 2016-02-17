@@ -101,8 +101,7 @@
     (update-fn game-state)))
 
 (defn game-loop
-  "Returns a game loop using requestAnimation to optimize frame rate. When
-   the loop terminates, returns the last game state.
+  "Returns a game loop using requestAnimation to optimize frame rate.
 
    Args:
    - game-state: The game state hash map. See mk-state for more.
