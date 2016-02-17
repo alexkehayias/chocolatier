@@ -6,14 +6,45 @@
               [chocolatier.examples.action-rpg.game :refer [init-state]]
               [chocolatier.engine.systems.tiles :refer [load-tilemap]]
               [chocolatier.engine.systems.audio :refer [load-samples]]
-              [chocolatier.engine.core :refer [request-animation
-                                               game-loop-with-stats
-                                               *running*
-                                               *state*]]))
+              [chocolatier.engine.core :refer [game-loop]]))
+
+
+(def *state* (atom nil))
+(def *running* (atom true))
+
+;; Some helpful middleware for the game loop
+(defn wrap-fps-stats
+  "Time how long it takes each frame to be calculated."
+  [f stats-obj]
+  (fn [state]
+    (.begin stats-obj)
+    (let [next-state (f state)]
+      (.end stats-obj)
+      next-state)))
+
+(defn wrap-killswitch
+  "Early exit the game by setting the running-atom to false.
+   Needed for cleanup so we don't duplicate game loops every reload."
+  [f running-atom]
+  (fn [state]
+    (if @running-atom
+      (f state)
+      (println "Terminating game loop"))))
+
+(defn wrap-copy-state-to-atom
+  "Copy the latest game state to the copy-atom so it can be inspected outside
+   the game loop."
+  [f copy-atom]
+  (fn [state]
+    (let [next-state (f state)]
+      (reset! copy-atom next-state)
+      next-state)))
 
 (defn -start-game!
-  "Starts the game loop. This should be called only once all assets are loaded"
+  "Starts the game loop. This should be called only once all assets are loaded."
   [node tilemap samples-library]
+  ;; Make sure the running flag is true
+  (reset! *running* true)
   (let [width (:width (dom/bounding-client-rect node))
         height 400
         stage (new js/PIXI.Container)
@@ -31,14 +62,16 @@
     (set! (.. stats-obj -domElement -style -right) "0px")
     (dom/append! node (.-domElement stats-obj))
 
-    ;; Start the game loop
-    (request-animation #(game-loop-with-stats state stats-obj))))
+    (game-loop state (fn [handler]
+                       (-> handler
+                           (wrap-killswitch *running*)
+                           (wrap-copy-state-to-atom *state*)
+                           (wrap-fps-stats stats-obj))))))
 
 (defn start-game!
   "Load all assets and call the tilemap loader. This is some async wankery to
    start the game."
   [node]
-  (reset! *running* true)
   ;; TODO GET RID OF THESE MOTHERFUCKING CALLBACKS FOR LOADING ASSETS
   (let [;; Once the assets are loaded, load the tilemap
         audio-callback #(load-samples "/audio/samples" [:drip]
@@ -64,7 +97,9 @@
       (.once "complete" tiles-callback)
       (.load))))
 
-(defn cleanup! [node]
+(defn cleanup!
+  "Clean up any elements that were generated"
+  [node]
   (dom/clear! node))
 
 (defn stop-game! []

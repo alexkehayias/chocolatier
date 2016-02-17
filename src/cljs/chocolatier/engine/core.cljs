@@ -3,18 +3,6 @@
   (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
 
 
-(defn pmoc
-  "Takes a collection of functions and returns a fn that is the composition
-   of those fns. The returned function takes a single argument and
-   applies the leftmost of fns to the arg, the next fn (left-to-right)
-   to the result, etc."
-  [fs]
-  (fn [arg]
-    (loop [ret ((first fs) arg) fs (next fs)]
-      (if fs
-        (recur ((first fs) ret) (next fs))
-        ret))))
-
 (defmulti mk-state
   "Returns a hashmap representing game state. Dispatches based on the
    keyword of the first item in an arguments vector.
@@ -73,12 +61,14 @@
                      [:entity :e1 :components [:c2]])"
   [state & specs]
   ;; After constructing the state, create a single arg update
-  ;; function that is cached in :game :update-fns scene-id
+  ;; function that is cached in :game :update-fns scene-id. This
+  ;; provides some optimization since it means we don't have to
+  ;; dynamically construct the update function every time.
   (let [new-state (reduce mk-state state specs)
         scene-id (get-in new-state ces/scene-id-path)
         systems (get-in new-state [:scenes scene-id])
         system-fns (ces/get-system-fns new-state systems)
-        update-fn (pmoc system-fns)]
+        update-fn (apply comp (reverse system-fns))]
     (assoc-in new-state [:game :update-fns scene-id] update-fn)))
 
 (defn timestamp
@@ -102,38 +92,35 @@
 (defn request-animation [f]
   (js/requestAnimationFrame f))
 
-;; A copy of the game state goes here so that it can be inspected
-;; any time while the game is running
-(def *state* (atom nil))
-
-;; Determines if the game is running, defaults to true
-(def *running* (atom true))
+(defn next-state
+  "Returns the next game state. The update function for the game is stored
+   in the game state as an optimization."
+  [game-state]
+  (let [scene-id (get-in game-state ces/scene-id-path)
+        update-fn (get-in game-state [:game :update-fns scene-id])]
+    (update-fn game-state)))
 
 (defn game-loop
   "Returns a game loop using requestAnimation to optimize frame rate.
-   Temporarily stop the game by resetting the *running* atom. State is
-   copied into the *state* atom to allow for inspection whilethe loop
-   is running.
 
    Args:
-   - state: the game state hash map"
-  [game-state running?]
-  (let [scene-id (get-in game-state ces/scene-id-path)
-        update-fn (get-in game-state [:game :update-fns scene-id])
-        next-state (update-fn game-state)]
-    (if @running?
-      (request-animation #(game-loop next-state running?))
-      (println "Game stopped"))))
+   - game-state: The game state hash map. See mk-state for more.
 
-(defn game-loop-with-stats
-  [game-state stats-obj]
-  (.begin stats-obj)
-  (let [scene-id (get-in game-state ces/scene-id-path)
-        update-fn (get-in game-state [:game :update-fns scene-id])
-        next-state (update-fn game-state)]
-    ;; Copy the state into an atom so we can inspect while running
-    (reset! *state* next-state)
-    (.end stats-obj)
-    (if @*running*
-      (request-animation #(game-loop-with-stats next-state stats-obj))
-      (println "Game stopped"))))
+   Optional Args:
+   - middleware: A function that takes the next state function and returns
+     a function that is called with a single argument for the current state.
+     The inner function should return the next state or nil to indicate
+     the game loop should terminate. This is similar to ring middleware.
+
+     Example that logs the next game state:
+     (defn wrap-log-state [f]
+       (fn [state]
+         (let [next-state (f state)]
+           (println next-state)
+           next-state)))"
+  ([game-state]
+   (request-animation #(game-loop (next-state game-state))))
+  ([game-state middleware]
+   (let [state ((middleware next-state) game-state)]
+     (when state
+       (request-animation #(game-loop state middleware))))))

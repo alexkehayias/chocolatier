@@ -15,8 +15,19 @@ CLOSED: [2016-02-14 Sun 11:03]
     (when (= next-action :hit-up)
       (println "HIT UP" next-action current-animation-name))
   - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
-* TODO State viewer
-Visualize the state of an entity and be able to adjust it
+* TODO Inspector
+- Show the component states of an entity and be able to adjust it
+- Implement as dom elements
+- [ ] Make game-loop take a state atom to copy state into every trip through the game loop
+- [ ] Read from *state*
+- [ ] Auto generate form of component state selected
+- [ ] If something is changed, write the change into the game state
+  - This should happen in real time
+  - Maybe specify if you want to override the current component state with what's in the inspector ignoring game loop?
+- Abstraction for adding functionality at the game loop level?
+  - This could be useful for tooling
+  - Logging
+
 * TODO Remove text and styles from mk-text-sprite-state
 It should be only needed for the text component so there is separation from state and rendering
 * DONE Submit talk for Clojure West <2016-01-27 Wed>

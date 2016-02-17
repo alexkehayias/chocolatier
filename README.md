@@ -48,20 +48,9 @@ Organization:
 The following example implements a simple game loop, system, component, and entities to show you how it all fits together. See the rest of the game for a more in-depth example (and graphics).
 
 ```clojure
-(ns my-ns
+(ns user.test
   (:require [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.core :refer [mk-game-state]])
-
-(defn game-loop
-  "Simple game loop that runs 10 times and returns the state after 10 frames."
-  [state frame-count]
-  (if (> frame-count 10)
-    state
-    (let [scene-id (get-in state ces/scene-id-path)
-          fns (ces/get-system-fns state (-> state :scenes scene-id))
-          update-fn (reduce comp fns)
-          updated-state (update-fn state)]
-      (recur updated-state (inc frame-count)))))
+            [chocolatier.engine.core :refer [game-loop mk-game-state]]))
 
 (defn test-system
   "Call all the component functions and return update game state"
@@ -73,20 +62,33 @@ The following example implements a simple game loop, system, component, and enti
   [entity-id component-state inbox]
   (assoc component-state :x (inc (:x component-state))))
 
-(defn my-game
+(def init-state
   "Test the entire CES implementation with a system that changes component state"
-  []
-  (-> {}
-    (mk-game-state [:scene :test-scene [:test-system]]
-                   [:current-scene :test-scene]
-                   [:system :test-system test-system :testable]
-                   [:component :testable test-component-fn]
-                   [:entity :player1 [[:testable {:x 0 :y 0}]]]
-                   [:entity :player2 [[:testable {:x 10 :y 10}]]])
-    (game-loop 0)))
+  (mk-game-state {} [:scene :test-scene [:test-system]]
+                    [:current-scene :test-scene]
+                    [:system :test-system test-system :testable]
+                    [:component :testable test-component-fn]
+                    [:entity :player1 [[:testable {:x 0 :y 0}]]]
+                    [:entity :player2 [[:testable {:x 10 :y 10}]]]))
 
-;; This will run 10 times and return the final state
-(my-game)
+(defn run-n-frames
+  "Middleware to count the number of frames and return nil to indicate
+  the game loop should exit after n frames"
+  [f n]
+  (fn [state]
+    (println "state" (:frame-count state 0))
+    (when (< (inc (:frame-count state)) 10)
+      (update (f state) :frame-count inc))))
+
+(defn run
+  "Defines the function that is called each time the game loop runs.
+  You can add additional middleware here similar to ring handlers."
+  [handler]
+  (-> handler
+    (run-n-frames 10)))
+
+;; This will run 10 times and print the frame count
+(game-loop init-state run)
 
 ```
 

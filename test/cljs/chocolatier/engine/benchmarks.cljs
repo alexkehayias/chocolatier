@@ -5,21 +5,15 @@
             [chocolatier.utils.devcards :refer [str->markdown-code-block]]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.core :refer [mk-game-state
+                                             next-state
                                              timestamp]]
-            [chocolatier.engine.systems.events :refer [mk-event]])
-  (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
+            [chocolatier.engine.systems.events :refer [mk-event]]))
 
 
 (defcard "# Benchmarks
 The benchmarks below test the performance of the game engine internals.
 Real world results are likely to be different and these currently don't test
 the performance of rendering to canvas/webgl.")
-
-(defn game-loop
-  [game-state]
-  (let [scene-id (get-in game-state ces/scene-id-path)
-        update-fn (get-in game-state [:game :update-fns scene-id])]
-    (update-fn game-state)))
 
 (defn system-fn
   [state f entity-ids]
@@ -91,7 +85,7 @@ the performance of rendering to canvas/webgl.")
       (let [frame-counter (atom 0)
             end (+ (timestamp) 1000)]
         (while (< (timestamp) end)
-          (game-loop game-state)
+          (next-state game-state)
           (swap! frame-counter inc))
         (swap! results conj @frame-counter)))
     {:median (-> @results

@@ -59,7 +59,7 @@
                                   ;; binding if it could potentially
                                   ;; not be used
                                   [:text-sprite (text-fn (str "-" damage))]
-                                  [:text (mk-text-state (str "-" damage) 1)]]]
+                                  [:text (mk-text-state (str "-" damage) 0.5)]]]
                                 [:meta])]])))
 
 (defn tick-in-progress-damage
