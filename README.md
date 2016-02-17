@@ -45,7 +45,7 @@ Organization:
 
 ### Example
 
-The following example implements a simple game loop, system, component, and entities to show you how it all fits together. See the rest of the game for a more in-depth example (and graphics).
+The following example implements a simple game loop, middleware, system, component, and entities to show you how it all fits together. See the rest of the game for a more in-depth example (and graphics).
 
 ```clojure
 (ns user.test
@@ -53,17 +53,19 @@ The following example implements a simple game loop, system, component, and enti
             [chocolatier.engine.core :refer [game-loop mk-game-state]]))
 
 (defn test-system
-  "Call all the component functions and return update game state"
+  "Call all the component functions and return updated game state"
   [state component-f entity-ids]
   (reduce component-f state entity-ids))
 
 (defn test-component-fn
   "Increment the :x value by 1"
   [entity-id component-state inbox]
-  (assoc component-state :x (inc (:x component-state))))
+  (println entity-id component-state)
+  (update component-state :x inc))
 
-(def init-state
-  "Test the entire CES implementation with a system that changes component state"
+(defn init-state
+  "Initial game state with our example system, component, and a few entities"
+  []
   (mk-game-state {} [:scene :test-scene [:test-system]]
                     [:current-scene :test-scene]
                     [:system :test-system test-system :testable]
@@ -76,8 +78,7 @@ The following example implements a simple game loop, system, component, and enti
   the game loop should exit after n frames"
   [f n]
   (fn [state]
-    (println "state" (:frame-count state 0))
-    (when (< (inc (:frame-count state)) 10)
+    (when (<= (:frame-count state 0) 10)
       (update (f state) :frame-count inc))))
 
 (defn run
@@ -85,10 +86,10 @@ The following example implements a simple game loop, system, component, and enti
   You can add additional middleware here similar to ring handlers."
   [handler]
   (-> handler
-    (run-n-frames 10)))
+      (run-n-frames 10)))
 
-;; This will run 10 times and print the frame count
-(game-loop init-state run)
+;; Run the game loop 10 times and print the component-state each frame
+(game-loop (init-state) run)
 
 ```
 
