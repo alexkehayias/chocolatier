@@ -1,6 +1,9 @@
 (ns ^:figwheel-always chocolatier.examples.action-rpg.core
     (:require [dommy.core :as dom :refer-macros [sel sel1]]
               [devcards.core :as dc :refer-macros [defcard deftest dom-node]]
+              [praline.core :refer [mount-inspector
+                                    mk-inspector-state
+                                    mk-inspector-app-state]]
               [chocolatier.utils.devcards :refer [str->markdown-code-block]]
               [chocolatier.utils.logging :refer [debug warn error]]
               [chocolatier.examples.action-rpg.game :refer [init-state]]
@@ -11,6 +14,15 @@
 
 (def *state* (atom nil))
 (def *running* (atom true))
+
+(defn wrap-state-inspector
+  [f inspector-state inspector-app-state]
+  (fn [state]
+    ;; HACK for some reason tiles does not work with praline and
+    ;; causes the page to hang so we dissoc it from the game state
+    ;; TODO these changes get applied and override what the user does
+    ;; so the changes have to be applied after
+    (reset! inspector-state (update-in (f state) [:state] dissoc :tiles))))
 
 ;; Some helpful middleware for the game loop
 (defn wrap-fps-stats
@@ -37,8 +49,7 @@
   [f copy-atom]
   (fn [state]
     (let [next-state (f state)]
-      (reset! copy-atom next-state)
-      next-state)))
+      (reset! copy-atom next-state))))
 
 (defn -start-game!
   "Starts the game loop. This should be called only once all assets are loaded."
@@ -51,7 +62,9 @@
         options (clj->js {"transparent" true})
         renderer (new js/PIXI.CanvasRenderer width height options)
         stats-obj (new js/Stats)
-        state (init-state renderer stage width height tilemap samples-library)]
+        state (init-state renderer stage width height tilemap samples-library)
+        inspector-state (mk-inspector-state (update-in state [:state] dissoc :tiles))
+        inspector-app-state (mk-inspector-app-state)]
 
     ;; Append the canvas to the dom
     (dom/append! node (.-view renderer))
@@ -62,11 +75,16 @@
     (set! (.. stats-obj -domElement -style -right) "0px")
     (dom/append! node (.-domElement stats-obj))
 
-    (game-loop state (fn [handler]
-                       (-> handler
-                           (wrap-killswitch *running*)
-                           (wrap-copy-state-to-atom *state*)
-                           (wrap-fps-stats stats-obj))))))
+    ;; Setup the inspector
+    (mount-inspector inspector-state inspector-app-state)
+
+    (game-loop state
+               (fn [handler]
+                 (-> handler
+                     (wrap-state-inspector inspector-state inspector-app-state)
+                     (wrap-killswitch *running*)
+                     ;; (wrap-copy-state-to-atom *state*)
+                     (wrap-fps-stats stats-obj))))))
 
 (defn start-game!
   "Load all assets and call the tilemap loader. This is some async wankery to

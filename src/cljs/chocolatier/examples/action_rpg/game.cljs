@@ -130,4 +130,5 @@
    [:system :ai ai-system :ai]
    [:component :ai [behavior {:format-fn defer-events}]]
    ;; Replay game state on user input
-   [:system :replay (replay-system 14 50)]))
+   [:system :replay (replay-system 14 50)]
+   ))

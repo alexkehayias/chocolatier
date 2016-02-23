@@ -98,6 +98,8 @@
   [game-state]
   (let [scene-id (get-in game-state ces/scene-id-path)
         update-fn (get-in game-state [:game :update-fns scene-id])]
+    (when (= (-> game-state :state :moveable :player1) 5)
+      (assert false "FIVE!!!"))
     (update-fn game-state)))
 
 (defn game-loop

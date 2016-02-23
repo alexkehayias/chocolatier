@@ -30,8 +30,9 @@ the performance of rendering to canvas/webgl.")
   [(update-in cmp-state [:x] inc)
    [(mk-event {:testing "hi"} [eid :ev1])]])
 
-(def simple
+(defn simple
   "Returns game state for a simple single system, single component, single entity"
+  []
   (mk-game-state {}
                  [:scene :default [:s1]]
                  [:current-scene :default]
@@ -39,8 +40,9 @@ the performance of rendering to canvas/webgl.")
                  [:component :c1 component-fn-state-change-only]
                  [:entity :e1 [:c1]]))
 
-(def many-entities
+(defn many-entities
   "Returns game state for a simple single system, single component, single entity"
+  []
   (let [entities (doall
                   (map #(vector :entity (keyword (str "e" %)) [:c1])
                          (range 1000)))
@@ -52,8 +54,9 @@ the performance of rendering to canvas/webgl.")
                      entities)]
     (apply mk-game-state args)))
 
-(def many-systems
+(defn many-systems
   "Returns a game state with 100 entities 100 components and 100 systems"
+  []
   (let [entities (doall
                   (map #(vector :entity (keyword (str "e" %))
                                 (doall (map (fn [n] (keyword (str "c" n)))
@@ -107,7 +110,7 @@ A baseline test for a simple game loop.
 (defcard "### Results
 Number of times the game loop runs per second
 "
-  (run-benchmark simple 5))
+  (run-benchmark (simple) 5))
 
 (defcard "## Many Entities Benchmark
 What happens when there are many entities in the game state,
@@ -118,7 +121,7 @@ but minimal functionality?"
 (defcard "### Results
 Number of times the game loop runs per second
 "
-  (run-benchmark many-entities 5))
+  (run-benchmark (many-entities) 5))
 
 (defcard "## Many Systems Benchmark
 What happens when there are 100 systems and 100 entities?
@@ -129,4 +132,4 @@ What happens when there are 100 systems and 100 entities?
 (defcard "### Results
 Number of times the game loop runs per second
 "
-  (run-benchmark many-systems 5))
+  (run-benchmark (many-systems) 5))

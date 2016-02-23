@@ -93,11 +93,6 @@
        (mk-component-state component-id entity-id val)
        (ev/emit-events events))))
 
-(defn all-not-nil?
-  "Returns false if any of the items in coll are nil"
-  [coll]
-  (every? identity coll))
-
 (defn- component-fn-body
   "Use mk-component-fn to construct a component function body"
   [f state component-id entity-id
@@ -125,19 +120,15 @@
         output-fn (or format-fn update-component-state-and-events)]
     ;; Handle if the result is going to include events or not
     (if (vector? result)
-      (let [[component-state events] result]
-        ;; Make sure the results are not more than 2 items and not
-        ;; an empty vector
-        (assert (and (<= (count result) 2)
-                     (seq result)
-                     ;; Make sure the items in the list are not nil
-                     (all-not-nil? result))
+      (let [[component-state events :as r] result]
+        ;; Make sure the results are 2 items and not nil
+        (assert (not-any? nil? r)
                 (str "Component fn did not return valid vector: " result))
         (output-fn state component-id entity-id component-state events))
       (do
         ;; Make sure the result is a hashmap (updated state)
-        (assert (map? result) (str "Component fn did not return a valid hashmap: "
-                                   result))
+        (assert (map? result)
+                (str "Component fn did not return a valid hashmap: " result))
         (output-fn state component-id entity-id result)))))
 
 (defn mk-component-fn

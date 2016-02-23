@@ -19,7 +19,10 @@
                   :exclude [org.clojure/clojurescript]]
 
                  ;; Devcards
-                 [devcards "0.2.1-4"]]
+                 [devcards "0.2.1-4"]
+
+                 ;; State inspection
+                 [praline "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-cljsbuild "1.1.1" :exclude [org.clojure/clojurescript]]
             [lein-figwheel "0.5.0-1" :exclude [org.clojure/clojurescript]]

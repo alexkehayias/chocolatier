@@ -4,6 +4,25 @@
 
 #+TODO: TODO FIX | DONE WONT-DO
 
+* TODO Initial release
+- [ ] Move out anything that is not a core system or component into examples
+- [ ] Provide tutorial example with graphics (devcards)
+- [ ] Component state validation?
+  Not sure if this should be the responsibility of the game engine or not sinc ethere are many ways to handle validation and assertions
+- [ ] Inspector integration?
+  This can be a library, but could be useful for beginners
+- [ ] Lein template
+  Everything needed with a basic setup of a game
+- [ ] Better example game
+  - [ ] Nicer tile map
+  - [ ] Nicer sprites
+* TODO Test runner for js tests via PhantomJS
+https://github.com/emezeske/lein-cljsbuild/blob/1.1.2/doc/TESTING.md
+* TODO FX system
+- Global effects such as grayscale, waves, pixelate, color tint
+- Entity effects limited in scope to the entity
+* TODO Add meta tags to component data for inspector to provide help text for fields
+Example: (meta ^{:doc "yo"} {:a 1})
 * DONE Text damage rendering to the top left corner
 CLOSED: [2016-02-14 Sun 11:03]
 - :cleanup-fn is not being called when an entity is being removed from the scene
@@ -18,22 +37,24 @@ CLOSED: [2016-02-14 Sun 11:03]
 * TODO Inspector
 - Show the component states of an entity and be able to adjust it
 - Implement as dom elements
-- [ ] Make game-loop take a state atom to copy state into every trip through the game loop
-- [ ] Read from *state*
-- [ ] Auto generate form of component state selected
+- [X] Make game-loop take a state atom to copy state into every trip through the game loop
+- [X] Auto generate form of component state selected
 - [ ] If something is changed, write the change into the game state
   - This should happen in real time
   - Maybe specify if you want to override the current component state with what's in the inspector ignoring game loop?
-- Abstraction for adding functionality at the game loop level?
+- [X] Abstraction for adding functionality at the game loop level?
   - This could be useful for tooling
   - Logging
+  - Created middleware to address this
+- [ ] Remove the checkouts directory when done integrating
 
-* TODO Remove text and styles from mk-text-sprite-state
+* DONE Remove text and styles from mk-text-sprite-state
+CLOSED: [2016-02-22 Mon 09:52]
 It should be only needed for the text component so there is separation from state and rendering
 * DONE Submit talk for Clojure West <2016-01-27 Wed>
 CLOSED: [2016-01-28 Thu 06:10]
-** Bio:
 DEADLINE: <2016-01-28 Thu 12:00>
+** Bio:
 Alex Kehayias is the CTO at Shareablee and works on biggish data problems to help brands and publishers win the social web. Clojure and Python are his weapons of choice by day and by night. He is an active musician, tech community organizer (ClojureNYC), and helps mentor people learning to code.
 ** Description:
 Alex Kehayias shares the many joys and challenges of building a game engine in a functional style using Clojure and ClojureScript. Over the course of 2+ years, Alex has been actively writing (and rewriting) a functional game engine to find the ideal combination of a quick feedback loop, testing with data, and performance. Join in the sorrows and triumphs of bringing functional programming to web-based game development for fun and zero profit!
