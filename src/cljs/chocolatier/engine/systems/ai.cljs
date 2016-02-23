@@ -1,7 +1,7 @@
 (ns chocolatier.engine.systems.ai
   "System for handling entity artificial intelligence"
   (:require [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]
+            [chocolatier.engine.events :as ev]
             [clojure.core.reducers :as r]))
 
 

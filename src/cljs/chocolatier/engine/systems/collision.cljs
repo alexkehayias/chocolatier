@@ -2,7 +2,7 @@
   "System for checking collisions between entities"
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]))
+            [chocolatier.engine.events :as ev]))
 
 
 (defn get-component-state

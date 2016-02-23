@@ -1,7 +1,7 @@
 (ns chocolatier.engine.components.ai
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]
+            [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.moveable :refer [offset->direction]]))
 
 (defn behavior

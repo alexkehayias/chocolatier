@@ -1,7 +1,7 @@
-(ns chocolatier.engine.systems.events-test
+(ns chocolatier.engine.events-test
   (:require [devcards.core :as dc :refer-macros [defcard deftest dom-node]]
             [cljs.test :refer-macros [is testing run-tests]]
-            [chocolatier.engine.systems.events :as ev]))
+            [chocolatier.engine.events :as ev]))
 
 (defcard "# Event System Tests")
 

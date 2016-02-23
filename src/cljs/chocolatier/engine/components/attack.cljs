@@ -1,7 +1,7 @@
 (ns chocolatier.engine.components.attack
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]
+            [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]

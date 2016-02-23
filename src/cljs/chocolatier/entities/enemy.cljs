@@ -1,7 +1,7 @@
 (ns chocolatier.entities.enemy
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]
+            [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.renderable :refer [mk-sprite-state
                                                               mk-text-sprite-state]]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]

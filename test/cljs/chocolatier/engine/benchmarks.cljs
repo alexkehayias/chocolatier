@@ -7,7 +7,7 @@
             [chocolatier.engine.core :refer [mk-game-state
                                              next-state
                                              timestamp]]
-            [chocolatier.engine.systems.events :refer [mk-event]]))
+            [chocolatier.engine.events :refer [mk-event]]))
 
 
 (defcard "# Benchmarks

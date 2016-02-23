@@ -1,6 +1,6 @@
 (ns chocolatier.engine.systems.replay
   (:require [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]))
+            [chocolatier.engine.events :as ev]))
 
 
 (defn replay-system
@@ -22,4 +22,3 @@
       (if replay?
         (or (first snapshots) updated-state)
         updated-state))))
-

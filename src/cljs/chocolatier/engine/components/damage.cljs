@@ -3,7 +3,7 @@
             [chocolatier.utils.logging :as log]
             [chocolatier.engine.utils.counters :as cnt]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]
+            [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.text :refer [mk-text-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]))
 

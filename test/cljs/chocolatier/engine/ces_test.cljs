@@ -2,7 +2,7 @@
   (:require [cljs.test :refer-macros [is testing run-tests]]
             [devcards.core :as dc :refer-macros [defcard deftest dom-node]]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]))
+            [chocolatier.engine.events :as ev]))
 
 
 (defcard "# Entity Component System Tests")

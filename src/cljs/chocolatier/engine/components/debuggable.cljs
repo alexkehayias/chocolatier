@@ -2,7 +2,7 @@
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]
             [chocolatier.engine.pixi :as pixi]
-            [chocolatier.engine.systems.events :as ev]))
+            [chocolatier.engine.events :as ev]))
 
 (defn include-moveable-state-and-stage
   "Include the moveable component state and stage (for drawing new things adhoc)

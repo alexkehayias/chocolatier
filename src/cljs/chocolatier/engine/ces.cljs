@@ -1,6 +1,6 @@
 (ns chocolatier.engine.ces
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.systems.events :as ev]
+            [chocolatier.engine.events :as ev]
             [clojure.set :refer [subset?]])
   (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
 

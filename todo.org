@@ -18,6 +18,17 @@
   - [ ] Nicer sprites
 * TODO Test runner for js tests via PhantomJS
 https://github.com/emezeske/lein-cljsbuild/blob/1.1.2/doc/TESTING.md
+* DONE Use reducer for events/get-subscribed-events
+CLOSED: [2016-02-23 Tue 04:19]
+Doesn't make any noticeable difference
+* DONE Move event functions out of chocolatier.systems.events and into chocolatier.events
+CLOSED: [2016-02-23 Tue 04:51]
+* TODO Rename ces namespace to ecs
+* TODO Remove mk- prefix from functions as per convention
+* TODO Refactor attacking
+- [ ] Delete hitpoints namespace as it is not being used
+- [ ] Don't overload collision events with data about damage
+- [ ] Query the damage amount from the component state of the entity that is being collided with
 * TODO FX system
 - Global effects such as grayscale, waves, pixelate, color tint
 - Entity effects limited in scope to the entity

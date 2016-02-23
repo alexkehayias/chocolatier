@@ -1,7 +1,7 @@
 (ns chocolatier.engine.components.controllable
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.systems.events :as ev]))
+            [chocolatier.engine.events :as ev]))
 
 
 (defn include-input-state
