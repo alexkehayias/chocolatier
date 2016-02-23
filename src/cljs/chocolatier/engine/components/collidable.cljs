@@ -1,5 +1,4 @@
-(ns chocolatier.engine.components.collidable
-  (:require [chocolatier.engine.ces :as ces]))
+(ns chocolatier.engine.components.collidable)
 
 
 (defn mk-collidable-state

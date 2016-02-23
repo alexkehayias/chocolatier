@@ -1,6 +1,5 @@
 (ns chocolatier.engine.systems.ttl
-  "System for handling entities with a limited life time"
-  (:require [chocolatier.engine.ces :as ces]))
+  "System for handling entities with a limited life time")
 
 
 (defn ttl-system

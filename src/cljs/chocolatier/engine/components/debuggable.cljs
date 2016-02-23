@@ -1,6 +1,6 @@
 (ns chocolatier.engine.components.debuggable
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.pixi :as pixi]
             [chocolatier.engine.events :as ev]))
 
@@ -8,8 +8,8 @@
   "Include the moveable component state and stage (for drawing new things adhoc)
    in the args passed to draw-collision-zone"
   [state component-id entity-id]
-  (let [moveable-state (ces/get-component-state state :moveable entity-id)
-        collidable-state (ces/get-component-state state :collidable entity-id)
+  (let [moveable-state (ecs/get-component-state state :moveable entity-id)
+        collidable-state (ecs/get-component-state state :collidable entity-id)
         stage (get-in state [:game :rendering-engine :stage])]
     {:moveable-state moveable-state :collidable-state collidable-state :stage stage}))
 

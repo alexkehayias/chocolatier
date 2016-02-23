@@ -1,5 +1,4 @@
-(ns chocolatier.engine.systems.debug
-  (:require [chocolatier.engine.ces :as ces]))
+(ns chocolatier.engine.systems.debug)
 
 
 (defn debug-collision-system

@@ -1,8 +1,7 @@
-(ns chocolatier.engine.ces
+(ns chocolatier.engine.ecs
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.events :as ev]
-            [clojure.set :refer [subset?]])
-  (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
+            [clojure.set :refer [subset?]]))
 
 ;; Gameloop:   recursive function that calls all systems in a scene
 ;;
@@ -267,7 +266,7 @@
              ;; Always initialize component state with an
              ;; empty hashmap. If they do not have any
              ;; component state they will not be found by
-             ;; ces/entities-with-component
+             ;; ecs/entities-with-component
              (mk-component-state (update-in %1 [:entities uid] conj %2)
                                  %2
                                  uid

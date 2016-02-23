@@ -1,6 +1,6 @@
 (ns chocolatier.engine.systems.ai
   "System for handling entity artificial intelligence"
-  (:require [chocolatier.engine.ces :as ces]
+  (:require [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.events :as ev]
             [clojure.core.reducers :as r]))
 
@@ -21,7 +21,7 @@
    contain :player-state"
   [f context]
   (fn [[state-accum events-accum] entity-id]
-    (let [moveable-state (ces/get-component-state state-accum :moveable entity-id)
+    (let [moveable-state (ecs/get-component-state state-accum :moveable entity-id)
           updated-context (assoc context :moveable-state moveable-state)
           [new-state events] (f state-accum entity-id updated-context)]
       [new-state (conj events-accum [entity-id events])])))
@@ -29,7 +29,7 @@
 (defn ai-system
   "Returns updated game state. Anyone participating chases :player 1"
   [state f entity-ids]
-  (let [player (ces/get-component-state state :moveable :player1)
+  (let [player (ecs/get-component-state state :moveable :player1)
         context {:player-state player}
         [next-state events] (reduce (accum-state-and-events f context)
                                     [state []]

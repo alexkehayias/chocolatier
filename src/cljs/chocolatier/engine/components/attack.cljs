@@ -1,6 +1,6 @@
 (ns chocolatier.engine.components.attack
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
@@ -33,7 +33,7 @@
 (defn include-move-state
   "Returns a map move state of the entity"
   [state component-id entity-id]
-  {:move-state (ces/get-component-state state :moveable entity-id)})
+  {:move-state (ecs/get-component-state state :moveable entity-id)})
 
 (defn player-attack
   "Unless the attack specified by the event is currently in cooldown

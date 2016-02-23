@@ -1,5 +1,4 @@
-(ns chocolatier.engine.systems.animation
-  (:require [chocolatier.engine.ces :as ces]))
+(ns chocolatier.engine.systems.animation)
 
 ;; Maybe return a function that given a sprite and a frame number
 ;; changes the sprite viewport correctly

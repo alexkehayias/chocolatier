@@ -1,6 +1,5 @@
 (ns chocolatier.engine.components.ephemeral
-  (:require [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.events :as ev]))
+  (:require [chocolatier.engine.events :as ev]))
 
 
 (defn mk-ephemeral-state [duration]

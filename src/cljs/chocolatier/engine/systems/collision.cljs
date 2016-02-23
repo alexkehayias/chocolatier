@@ -1,7 +1,7 @@
 (ns chocolatier.engine.systems.collision
   "System for checking collisions between entities"
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.events :as ev]))
 
 
@@ -9,8 +9,8 @@
   "Returns a collection of vectors of id, move-state, collision-state for each
    entity-ids"
   [state entity-ids]
-  (let [collidable-state (ces/get-all-component-state state :collidable)
-        moveable-state (ces/get-all-component-state state :moveable)]
+  (let [collidable-state (ecs/get-all-component-state state :collidable)
+        moveable-state (ecs/get-all-component-state state :moveable)]
     (for [e entity-ids]
       [e (get moveable-state e) (get collidable-state e)])))
 
@@ -86,7 +86,7 @@
   [max-entries]
   (fn [state]
     (let [;; Get only the entities that are both collidable and moveable
-          entity-ids (ces/entities-with-multi-components (:entities state)
+          entity-ids (ecs/entities-with-multi-components (:entities state)
                                                          [:collidable :moveable])
           entity-states (get-component-state state entity-ids)
           ;; Get or create the spatial index

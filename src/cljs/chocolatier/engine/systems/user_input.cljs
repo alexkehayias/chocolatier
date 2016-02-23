@@ -1,7 +1,5 @@
 (ns chocolatier.engine.systems.user-input
-  "System for reacting to user input"
-  (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]))
+  "System for reacting to user input")
 
 
 (defn user-input-system

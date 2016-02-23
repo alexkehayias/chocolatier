@@ -1,6 +1,5 @@
 (ns chocolatier.engine.core
-  (:require [chocolatier.engine.ces :as ces])
-  (:require-macros [chocolatier.macros :refer [forloop local >> <<]]))
+  (:require [chocolatier.engine.ecs :as ecs]))
 
 
 (defmulti mk-state
@@ -16,31 +15,31 @@
 ;; first argument so we can use the threading macro easily
 (defmethod mk-state :entity
   [state [_ uid components]]
-  (ces/mk-entity state uid components))
+  (ecs/mk-entity state uid components))
 
 (defmethod mk-state :entity-remove
   [state [_ uid]]
-  (ces/rm-entity state uid))
+  (ecs/rm-entity state uid))
 
 (defmethod mk-state :component
   [state [_ & args]]
-  (apply (partial ces/mk-component state) args))
+  (apply (partial ecs/mk-component state) args))
 
 (defmethod mk-state :system
   [state [_ & args]]
-  (apply (partial ces/mk-system state) args))
+  (apply (partial ecs/mk-system state) args))
 
 (defmethod mk-state :scene
   [state [_ & args]]
-  (apply (partial ces/mk-scene state) args))
+  (apply (partial ecs/mk-scene state) args))
 
 (defmethod mk-state :current-scene
   [state [_ scene-id]]
-  (ces/mk-current-scene state scene-id))
+  (ecs/mk-current-scene state scene-id))
 
 (defmethod mk-state :renderer
   [state [_ & args]]
-  (apply (partial ces/mk-renderer state) args))
+  (apply (partial ecs/mk-renderer state) args))
 
 ;; Anything labeled as custom is expected to be a function that takes
 ;; a single argument which is state hm
@@ -65,9 +64,9 @@
   ;; provides some optimization since it means we don't have to
   ;; dynamically construct the update function every time.
   (let [new-state (reduce mk-state state specs)
-        scene-id (get-in new-state ces/scene-id-path)
+        scene-id (get-in new-state ecs/scene-id-path)
         systems (get-in new-state [:scenes scene-id])
-        system-fns (ces/get-system-fns new-state systems)
+        system-fns (ecs/get-system-fns new-state systems)
         update-fn (apply comp (reverse system-fns))]
     (assoc-in new-state [:game :update-fns scene-id] update-fn)))
 
@@ -96,7 +95,7 @@
   "Returns the next game state. The update function for the game is stored
    in the game state as an optimization."
   [game-state]
-  (let [scene-id (get-in game-state ces/scene-id-path)
+  (let [scene-id (get-in game-state ecs/scene-id-path)
         update-fn (get-in game-state [:game :update-fns scene-id])]
     (when (= (-> game-state :state :moveable :player1) 5)
       (assert false "FIVE!!!"))

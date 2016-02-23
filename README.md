@@ -49,7 +49,7 @@ The following example implements a simple game loop, middleware, system, compone
 
 ```clojure
 (ns user.test
-  (:require [chocolatier.engine.ces :as ces]
+  (:require [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.core :refer [game-loop mk-game-state]]))
 
 (defn test-system
@@ -107,7 +107,7 @@ A global pub-sub event queue is available for any component enabling cross compo
 
 ### Events
 
-By default, component functions created with `ces/mk-component` can output a single value, representing component state, or two values, component state and a collection of events to emit.
+By default, component functions created with `ecs/mk-component` can output a single value, representing component state, or two values, component state and a collection of events to emit.
 
 For example, the following component will emit a single event called `:my-event` with the message `{:foo :bar}`:
 

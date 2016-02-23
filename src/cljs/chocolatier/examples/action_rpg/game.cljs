@@ -1,6 +1,5 @@
 (ns chocolatier.examples.action-rpg.game
   (:require [chocolatier.engine.core :refer [mk-game-state]]
-            [chocolatier.engine.ces :as ces]
             [chocolatier.engine.systems.input :refer [input-system]]
             [chocolatier.engine.systems.user-input :refer [user-input-system]]
             [chocolatier.engine.systems.render :refer [render-system

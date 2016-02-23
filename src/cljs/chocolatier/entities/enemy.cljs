@@ -1,6 +1,6 @@
 (ns chocolatier.entities.enemy
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
-            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.renderable :refer [mk-sprite-state
                                                               mk-text-sprite-state]]
@@ -30,7 +30,7 @@
                                                                "fill" "red"
                                                                "stroke" "white"
                                                                "strokeThickness" 3}))]
-    (ces/mk-entity state uid [[:moveable move-state]
+    (ecs/mk-entity state uid [[:moveable move-state]
                               [:animateable animation-state]
                               [:sprite sprite-state]
                               [:collidable collision-state]

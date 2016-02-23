@@ -23,7 +23,8 @@ CLOSED: [2016-02-23 Tue 04:19]
 Doesn't make any noticeable difference
 * DONE Move event functions out of chocolatier.systems.events and into chocolatier.events
 CLOSED: [2016-02-23 Tue 04:51]
-* TODO Rename ces namespace to ecs
+* DONE Rename ces namespace to ecs
+CLOSED: [2016-02-23 Tue 05:31]
 * TODO Remove mk- prefix from functions as per convention
 * TODO Refactor attacking
 - [ ] Delete hitpoints namespace as it is not being used

@@ -1,6 +1,5 @@
 (ns chocolatier.engine.components.moveable
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]
             [chocolatier.engine.events :as ev]))
 
 

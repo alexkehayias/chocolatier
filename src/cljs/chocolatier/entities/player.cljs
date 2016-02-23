@@ -1,6 +1,6 @@
 (ns chocolatier.entities.player
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
-            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
             [chocolatier.engine.components.renderable :refer [mk-sprite-state
                                                               mk-text-sprite-state]]
@@ -73,7 +73,7 @@
                                  :ttl 2
                                  :sprite-fn #(mk-sprite-state stage "/img/fireball.png")}])
           damage-state (mk-damage-state 100 10 10 #(mk-text-sprite-state stage % {}))]
-      (ces/mk-entity state
+      (ecs/mk-entity state
                      uid
                      [[:text {:text (name uid) :rotation 0}]
                       [:text-sprite text-state]

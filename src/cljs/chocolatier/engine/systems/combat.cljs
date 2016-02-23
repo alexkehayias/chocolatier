@@ -1,6 +1,5 @@
 (ns chocolatier.engine.systems.combat
-  "System for handling entity combat"
-  (:require [chocolatier.engine.ces :as ces]))
+  "System for handling entity combat")
 
 
 (defn attack-system

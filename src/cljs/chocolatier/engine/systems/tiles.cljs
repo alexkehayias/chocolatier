@@ -1,7 +1,6 @@
 (ns chocolatier.engine.systems.tiles
   (:require [goog.net.XhrIo :as xhr]
             [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]
             [chocolatier.engine.pixi :as pixi]))
 
 (defn screen-offset

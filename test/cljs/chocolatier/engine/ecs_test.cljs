@@ -1,7 +1,7 @@
-(ns chocolatier.engine.ces-test
+(ns chocolatier.engine.ecs-test
   (:require [cljs.test :refer-macros [is testing run-tests]]
             [devcards.core :as dc :refer-macros [defcard deftest dom-node]]
-            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.events :as ev]))
 
 
@@ -9,27 +9,27 @@
 
 (deftest test-mk-scene
   (testing "Test mk-scene returns the correct output"
-    (is (= (ces/mk-scene {} :yo [:dawg]) {:scenes {:yo [:dawg]}}))))
+    (is (= (ecs/mk-scene {} :yo [:dawg]) {:scenes {:yo [:dawg]}}))))
 
 (deftest test-entities-with-component
   (testing "Test the expected entity IDs are returned"
     (let [state (-> {}
-                    (ces/mk-entity :e1 [:c1 :c2])
-                    (ces/mk-entity :e2 [:c2]))]
-      (is (= [:e1] (ces/entities-with-component state :c1)))
-      (is (= [:e1 :e2] (ces/entities-with-component state :c2)))
-      (is (= [] (ces/entities-with-component state :c3))))))
+                    (ecs/mk-entity :e1 [:c1 :c2])
+                    (ecs/mk-entity :e2 [:c2]))]
+      (is (= [:e1] (ecs/entities-with-component state :c1)))
+      (is (= [:e1 :e2] (ecs/entities-with-component state :c2)))
+      (is (= [] (ecs/entities-with-component state :c3))))))
 
 (deftest test-mk-entity
   (testing "Test the output shape of mk-entity"
     (is (= {:entities {:e1 '(:c2 :c1)}
             :state {:c1 {:e1 {}} :c2 {:e1 {}}}}
-           (ces/mk-entity {} :e1 [:c1 :c2])))))
+           (ecs/mk-entity {} :e1 [:c1 :c2])))))
 
 (deftest test-mk-component-state
   (testing "Test the output shape of mk-component-state"
     (is (= {:state {:foo {:bar {}}}}
-           (ces/mk-component-state {} :foo :bar {})))))
+           (ecs/mk-component-state {} :foo :bar {})))))
 
 (deftest test-mk-component-fn
   (testing
@@ -42,11 +42,11 @@
        - When the wrapped function returns a vector of a hashmap and coll of events
          the hashmap should be merged into the game state and events should be in the
          queue"
-    (let [f1 (ces/mk-component-fn :c1 (fn [entity-id component-state context]
+    (let [f1 (ecs/mk-component-fn :c1 (fn [entity-id component-state context]
                                         (assoc component-state :id entity-id)))
-          f2 (ces/mk-component-fn :c1 (fn [entity-id component-state context]
+          f2 (ecs/mk-component-fn :c1 (fn [entity-id component-state context]
                                         (assoc component-state :context context)))
-          f3 (ces/mk-component-fn :c1 (fn [entity-id component-state context]
+          f3 (ecs/mk-component-fn :c1 (fn [entity-id component-state context]
                                         [component-state
                                          [(ev/mk-event {:foo :bar} [:q1])]]))]
       (is (= {:state {:c1 {:e1 {:id :e1}}}} (f1 {} :e1)))
@@ -61,7 +61,7 @@
   (testing "Test a component fn can emit events when by returning a two element vector"
     (let [event (ev/mk-event {:yo :dawg} [:x :y])
           component-fn (fn [& args] [{:foo "bar"} [event]])
-          f (ces/mk-component-fn :test component-fn)
+          f (ecs/mk-component-fn :test component-fn)
           result (f {} :yo)]
       (is (= {:state {:test {:yo {:foo "bar"}}
                       :events {:queue {:x {:y [event]}}}}}
@@ -71,7 +71,7 @@
   (testing "Test optional args-fn and format-fn to ensure it calls the component fn correctly."
     (let [ ;; The component fn takes a single argument, the state hashmap
           args-fn (fn [state component-id entity-id] {:state state})
-          f (ces/mk-component-fn :c1 (fn [_ _ context] context)
+          f (ecs/mk-component-fn :c1 (fn [_ _ context] context)
                                  {:args-fn args-fn :format-fn identity})
           state {:state {:foo :bar}}]
       (is (= state (f state :e1))))))

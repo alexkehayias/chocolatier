@@ -1,6 +1,5 @@
 (ns chocolatier.engine.systems.movement
-  "System for handling entity movements"
-  (:require [chocolatier.engine.ces :as ces]))
+  "System for handling entity movements")
 
 
 (defn movement-system

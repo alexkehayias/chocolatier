@@ -1,8 +1,7 @@
 (ns chocolatier.engine.systems.meta
   "System for handling changes to the game state
    i.e add/remove entities, changing scenes, etc."
-  (:require [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.events :as ev]
+  (:require [chocolatier.engine.events :as ev]
             [chocolatier.engine.core :refer [mk-state]]))
 
 

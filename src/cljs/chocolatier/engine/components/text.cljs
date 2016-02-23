@@ -1,6 +1,4 @@
-(ns chocolatier.engine.components.text
-  (:require [chocolatier.engine.ces :as ces]
-            [chocolatier.engine.events :as ev]))
+(ns chocolatier.engine.components.text)
 
 
 (defn mk-text-state

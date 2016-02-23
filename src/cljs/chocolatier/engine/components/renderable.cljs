@@ -1,5 +1,5 @@
 (ns chocolatier.engine.components.renderable
-  (:require [chocolatier.engine.ces :as ces]
+  (:require [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.events :as ev]
             [chocolatier.engine.pixi :as pixi]))
 
@@ -7,20 +7,20 @@
 (defn include-moveable-animateable-state
   "State parsing function. Returns a map of moveable-state and animateable-state"
   [state component-id entity-id]
-  {:moveable-state (ces/get-component-state state :moveable entity-id)
-   :animateable-state (ces/get-component-state state :animateable entity-id)})
+  {:moveable-state (ecs/get-component-state state :moveable entity-id)
+   :animateable-state (ecs/get-component-state state :animateable entity-id)})
 
 (defn include-moveable-text-state
   "State parsing function. Returns a map of with a key for moveable-state"
   [state component-id entity-id]
-  {:moveable-state (ces/get-component-state state :moveable entity-id)
-   :text-state (ces/get-component-state state :text entity-id)})
+  {:moveable-state (ecs/get-component-state state :moveable entity-id)
+   :text-state (ecs/get-component-state state :text entity-id)})
 
 (defn cleanup-sprite-state
   "Removes sprite from the stage belonging to the entity and returns state"
   [state entity-id]
   (let [stage (-> state :game :rendering-engine :stage)
-        {:keys [sprite] :as cs} (ces/get-component-state state :sprite entity-id)]
+        {:keys [sprite] :as cs} (ecs/get-component-state state :sprite entity-id)]
     (pixi/remove-child! stage sprite)
     state))
 
@@ -28,7 +28,7 @@
   "Removes sprite from the stage belonging to the entity and returns state"
   [state entity-id]
   (let [stage (-> state :game :rendering-engine :stage)
-        {:keys [text-obj]} (ces/get-component-state state :text-sprite entity-id)]
+        {:keys [text-obj]} (ecs/get-component-state state :text-sprite entity-id)]
     (pixi/remove-child! stage text-obj)
     state))
 

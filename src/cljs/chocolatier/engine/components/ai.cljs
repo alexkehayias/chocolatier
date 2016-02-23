@@ -1,6 +1,6 @@
 (ns chocolatier.engine.components.ai
   (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.ces :as ces]
+            [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.moveable :refer [offset->direction]]))
 
@@ -21,5 +21,5 @@
   "Returns a pair of new game state and events. This allows the system
   function to deal with events for post processing or batching"
   [state component-id entity-id component-state events]
-  [(ces/mk-component-state state component-id entity-id component-state)
+  [(ecs/mk-component-state state component-id entity-id component-state)
    events])

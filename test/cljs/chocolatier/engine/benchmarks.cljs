@@ -3,7 +3,6 @@
   (:require [cljs.test :refer-macros [is testing run-tests]]
             [devcards.core :as dc :refer-macros [defcard deftest dom-node]]
             [chocolatier.utils.devcards :refer [str->markdown-code-block]]
-            [chocolatier.engine.ces :as ces]
             [chocolatier.engine.core :refer [mk-game-state
                                              next-state
                                              timestamp]]
