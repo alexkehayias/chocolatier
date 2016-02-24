@@ -9,13 +9,17 @@
 - [ ] Provide tutorial example with graphics (devcards)
 - [ ] Component state validation?
   Not sure if this should be the responsibility of the game engine or not sinc ethere are many ways to handle validation and assertions
-- [ ] Inspector integration?
+- [X] Inspector integration?
   This can be a library, but could be useful for beginners
 - [ ] Lein template
   Everything needed with a basic setup of a game
 - [ ] Better example game
   - [ ] Nicer tile map
   - [ ] Nicer sprites
+  - [ ] Obligatory Flappy Bird?
+* TODO Fix all keys being captures by input system and it should only be in a certain scope
+* TODO Component state as defrecords
+Could solve the validation problem so all keys are known up front
 * TODO Test runner for js tests via PhantomJS
 https://github.com/emezeske/lein-cljsbuild/blob/1.1.2/doc/TESTING.md
 * DONE Use reducer for events/get-subscribed-events
@@ -25,6 +29,10 @@ Doesn't make any noticeable difference
 CLOSED: [2016-02-23 Tue 04:51]
 * DONE Rename ces namespace to ecs
 CLOSED: [2016-02-23 Tue 05:31]
+* TODO Self hosted cljs integration
+Can we get the whole library and examples bootstrapped using self compiled cljs?
+- Replumb is a library for creating your own
+- Here's a nice implementation of a repl https://github.com/jaredly/reepl
 * TODO Remove mk- prefix from functions as per convention
 * TODO Refactor attacking
 - [ ] Delete hitpoints namespace as it is not being used
@@ -46,20 +54,20 @@ CLOSED: [2016-02-14 Sun 11:03]
     (when (= next-action :hit-up)
       (println "HIT UP" next-action current-animation-name))
   - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
-* TODO Inspector
+* DONE Inspector
+CLOSED: [2016-02-23 Tue 19:46]
 - Show the component states of an entity and be able to adjust it
 - Implement as dom elements
 - [X] Make game-loop take a state atom to copy state into every trip through the game loop
 - [X] Auto generate form of component state selected
-- [ ] If something is changed, write the change into the game state
+- [X] If something is changed, write the change into the game state
   - This should happen in real time
   - Maybe specify if you want to override the current component state with what's in the inspector ignoring game loop?
 - [X] Abstraction for adding functionality at the game loop level?
   - This could be useful for tooling
   - Logging
   - Created middleware to address this
-- [ ] Remove the checkouts directory when done integrating
-
+- [X] Remove the checkouts directory when done integrating
 * DONE Remove text and styles from mk-text-sprite-state
 CLOSED: [2016-02-22 Mon 09:52]
 It should be only needed for the text component so there is separation from state and rendering

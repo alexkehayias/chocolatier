@@ -2,8 +2,8 @@
     (:require [dommy.core :as dom :refer-macros [sel sel1]]
               [devcards.core :as dc :refer-macros [defcard deftest dom-node]]
               [praline.core :refer [mount-inspector
-                                    mk-inspector-state
-                                    mk-inspector-app-state]]
+                                    inspector-state
+                                    inspector-app-state]]
               [chocolatier.utils.devcards :refer [str->markdown-code-block]]
               [chocolatier.utils.logging :refer [debug warn error]]
               [chocolatier.examples.action-rpg.game :refer [init-state]]
@@ -18,11 +18,7 @@
 (defn wrap-state-inspector
   [f inspector-state inspector-app-state]
   (fn [state]
-    ;; HACK for some reason tiles does not work with praline and
-    ;; causes the page to hang so we dissoc it from the game state
-    ;; TODO these changes get applied and override what the user does
-    ;; so the changes have to be applied after
-    (reset! inspector-state (update-in (f state) [:state] dissoc :tiles))))
+    (swap! inspector-state f)))
 
 ;; Some helpful middleware for the game loop
 (defn wrap-fps-stats
@@ -63,8 +59,8 @@
         renderer (new js/PIXI.CanvasRenderer width height options)
         stats-obj (new js/Stats)
         state (init-state renderer stage width height tilemap samples-library)
-        inspector-state (mk-inspector-state (update-in state [:state] dissoc :tiles))
-        inspector-app-state (mk-inspector-app-state)]
+        inspector-state (inspector-state (update-in state [:state] dissoc :tiles))
+        inspector-app-state (inspector-app-state)]
 
     ;; Append the canvas to the dom
     (dom/append! node (.-view renderer))
