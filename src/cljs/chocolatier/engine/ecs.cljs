@@ -51,7 +51,7 @@
 (defn entities-with-component
   "Takes a hashmap and returns all keys whose values contain component-id"
   [state component-id]
-  (reduce-kv (fn [acc k v] (conj acc k)) [] (get-in state [:state component-id])))
+  (or (keys (get-in state [:state component-id])) []))
 
 (defn entities-with-multi-components
   "Takes a hashmap and returns all keys whose values has all component-ids"

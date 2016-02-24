@@ -18,8 +18,10 @@
   - [ ] Nicer sprites
   - [ ] Obligatory Flappy Bird?
 * TODO Fix all keys being captures by input system and it should only be in a certain scope
-* TODO Component state as defrecords
-Could solve the validation problem so all keys are known up front
+* DONE Component state as defrecords perf improvement?
+CLOSED: [2016-02-24 Wed 13:53]
+- Could also solve the validation problem so all keys are known up front
+- In the benchmarks it didn't make a difference
 * TODO Test runner for js tests via PhantomJS
 https://github.com/emezeske/lein-cljsbuild/blob/1.1.2/doc/TESTING.md
 * DONE Use reducer for events/get-subscribed-events
