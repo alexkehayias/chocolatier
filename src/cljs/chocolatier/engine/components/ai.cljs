@@ -15,7 +15,7 @@
                 (if (< player-pos-y pos-y) 1 -1)]
         event (ev/mk-event {:direction (offset->direction offset)}
                            [:move-change entity-id])]
-    [{} [event]]))
+    [component-state [event]]))
 
 (defn defer-events
   "Returns a pair of new game state and events. This allows the system

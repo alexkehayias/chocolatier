@@ -33,7 +33,7 @@
    :up-left [1 1]
    :down-right [-1 -1]
    :down-left [1 -1]
-   :none [0 0]})
+   nil [0 0]})
 
 (def offset->direction
   {[0 1] :up
@@ -44,34 +44,24 @@
    [1 1] :up-left
    [-1 -1] :down-right
    [1 -1] :down-left
-   [0 0] :none})
-
-(defn get-position
-  [{:keys [direction ^boolean stop?] :as movement-event}
-   move-rate
-   ^boolean collision?
-   pos-x pos-y
-   last-direction]
-  (let [direction (or direction last-direction)
-        [offset-x offset-y] (if collision?
-                              [0 0]
-                              (map #(* move-rate %) (direction->offset direction)))]
-    {:pos-x (- pos-x offset-x)
-     :pos-y (- pos-y offset-y)
-     :offset-x offset-x
-     :offset-y offset-y
-     :move-rate move-rate
-     :direction direction}))
+   [0 0] nil})
 
 (defn move
   "Check if there is an input-change, collision events, and calculates the
    new position of the entity on the screen."
   [entity-id component-state {:keys [inbox]}]
   (let [{:keys [pos-x pos-y move-rate direction]} component-state
-        movement-event (:msg (get-move-change-event inbox))
+        {new-direction :direction} (:msg (get-move-change-event inbox))
         collision? (collision-event? inbox)]
-    (get-position movement-event
-                  move-rate
-                  collision?
-                  pos-x pos-y
-                  direction)))
+    (let [next-direction (or new-direction direction)
+          [offset-x offset-y] (if collision?
+                                [0 0]
+                                (mapv #(* move-rate %)
+                                      (direction->offset next-direction)))]
+      (assoc component-state
+             :pos-x (- pos-x offset-x)
+             :pos-y (- pos-y offset-y)
+             :offset-x offset-x
+             :offset-y offset-y
+             :move-rate move-rate
+             :direction next-direction))))

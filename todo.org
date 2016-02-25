@@ -22,6 +22,9 @@
 CLOSED: [2016-02-24 Wed 13:53]
 - Could also solve the validation problem so all keys are known up front
 - In the benchmarks it didn't make a difference
+* TODO Make component state mutable
+Same benefit if you use transient
+Also don't return a new object, return the same one so we are not creating new data structures every time
 * TODO Test runner for js tests via PhantomJS
 https://github.com/emezeske/lein-cljsbuild/blob/1.1.2/doc/TESTING.md
 * DONE Use reducer for events/get-subscribed-events
