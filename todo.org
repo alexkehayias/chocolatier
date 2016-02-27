@@ -17,14 +17,28 @@
   - [ ] Nicer tile map
   - [ ] Nicer sprites
   - [ ] Obligatory Flappy Bird?
-* TODO Fix all keys being captures by input system and it should only be in a certain scope
+* TODO Cache dynamic lookups in the game loop
+- There are many places that use dynamic lookups to get things like the list of entities, components, etc that could be cached
+- If you cache, need a way to invalidate the cache
+- Shouldn't v8 be doing this already?
+* DONE Create a reverse lookup for checking entities given a component label
+CLOSED: [2016-02-27 Sat 15:48]
+- Currently, to get entities that have a component you would need to get all keys in that component's state which is not very intuitive
+- There should be a way of looking up all the components an entity has
+- There should be a way of looking up all entities for a given component
+- The index should be a set to guarantee uniqueness
+* FIX Fix all keys being captures by input system and it should only be in a certain scope
 * DONE Component state as defrecords perf improvement?
 CLOSED: [2016-02-24 Wed 13:53]
 - Could also solve the validation problem so all keys are known up front
 - In the benchmarks it didn't make a difference
-* TODO Make component state mutable
-Same benefit if you use transient
-Also don't return a new object, return the same one so we are not creating new data structures every time
+* DONE Make component state mutable
+CLOSED: [2016-02-24 Wed 16:48]
+- Same benefit if you use transient or a js-obj
+- Tested in benchmarks js objects and transient hashmaps performed 40% better that persistent maps
+- In the running game engine though there was not much of a difference in the overall frame rate
+  See the flatten-state branch for more
+- [ ] Don't return a new object, return the same one so we are not creating new data structures every time
 * TODO Test runner for js tests via PhantomJS
 https://github.com/emezeske/lein-cljsbuild/blob/1.1.2/doc/TESTING.md
 * DONE Use reducer for events/get-subscribed-events
@@ -47,7 +61,8 @@ Can we get the whole library and examples bootstrapped using self compiled cljs?
 - Global effects such as grayscale, waves, pixelate, color tint
 - Entity effects limited in scope to the entity
 * TODO Add meta tags to component data for inspector to provide help text for fields
-Example: (meta ^{:doc "yo"} {:a 1})
+- Example: (meta ^{:doc "yo"} {:a 1})
+- This doesn't work with the evaluation model of praline because the parent would hold the information and need to pass it to the child
 * DONE Text damage rendering to the top left corner
 CLOSED: [2016-02-14 Sun 11:03]
 - :cleanup-fn is not being called when an entity is being removed from the scene

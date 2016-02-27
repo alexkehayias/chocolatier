@@ -49,17 +49,22 @@
     (mapv systems system-ids)))
 
 (defn entities-with-component
-  "Takes a hashmap and returns all keys whose values contain component-id"
+  "Returns a set of all entity IDs that have the specified component-id"
   [state component-id]
-  (or (keys (get-in state [:state component-id])) []))
+  (get-in state [:components component-id :entities] #{}))
 
 (defn entities-with-multi-components
-  "Takes a hashmap and returns all keys whose values has all component-ids"
-  [entities component-ids]
-  ;; TODO need a more efficient way of getting this
-  (let [component-ids (set component-ids)]
-    (map first
-         (filter #(subset? component-ids (-> % second set)) entities))))
+  "Returns a set of all entity IDs that have all the specified component-ids."
+  [state component-ids]
+  (let [component-set (set component-ids)]
+    ;; Iterate through all the entities and only accumulate the ones
+    ;; that have all the required component IDs
+    (reduce (fn [accum [entity-id entity-component-set]]
+              (if (subset? component-set entity-component-set)
+                (conj accum entity-id)
+                accum))
+            #{}
+            (:entities state))))
 
 (defn get-component-fn
   [state component-id]
@@ -97,8 +102,7 @@
   [f state component-id entity-id
    {:keys [args-fn format-fn subscriptions component-states]}
    sys-opts]
-  (let [
-        opts (cond-> (if args-fn
+  (let [opts (cond-> (if args-fn
                        (args-fn state component-id entity-id)
                        {})
                component-states (assoc :component-states
@@ -199,7 +203,9 @@
                          (apply mk-component-fn uid fn-spec))
                      (mk-component-fn uid fn-spec))
         cleanup-fn (when opts? (:cleanup-fn (second fn-spec)))]
-    (assoc-in state [:components uid] {:fn wrapped-fn :cleanup-fn cleanup-fn})))
+    (update-in state [:components uid] assoc
+               :fn wrapped-fn
+               :cleanup-fn cleanup-fn)))
 
 (defn mk-system-fn
   "Returns a function representing a system.
@@ -223,7 +229,7 @@
   ([f component-id & more-component-ids]
    (fn [state]
      (let [ids (conj more-component-ids component-id)
-           entities (entities-with-multi-components (:entities state) ids)
+           entities (entities-with-multi-components state ids)
            component-fn (get-component-fn state component-id)]
        (f state component-fn entities)))))
 
@@ -238,6 +244,27 @@
                     (mk-system-fn f))]
     (assoc-in state [:systems uid] system-fn)))
 
+(defn component-state-from-spec
+  "Returns a function that returns an updated state with component state
+   generated for the given entity-id. If no initial component state is given,
+   it will default to an empty hashmap."
+  [entity-id]
+  (fn [state spec]
+    (if (vector? spec)
+      (let [[component-id component-state] spec]
+        (-> state
+            (update-in [:entities entity-id]
+                       #(conj (or % #{}) component-id))
+            (update-in [:components component-id :entities]
+                       #(conj (or % #{}) entity-id))
+            (mk-component-state component-id entity-id component-state)))
+      (-> state
+          (update-in [:entities entity-id]
+                     #(conj (or % #{}) spec))
+          (update-in [:components spec :entities]
+                     #(conj (or % #{}) entity-id))
+          (mk-component-state spec entity-id {})))))
+
 (defn mk-entity
   "Adds entity with uid that has component-ids into state. Optionally pass
    in init state and it will be merged in
@@ -248,29 +275,20 @@
    e.g [[:moveable {:x 0 :y 0}] :controllable]
 
    Example:
-   Create an entity with id :player1 with components and subscriptions.
+   Create an entity with id :player1 with components
    (mk-entity {}
               :player1
               [:controllable
                [:collidable {:hit-radius 10}]
-               :collision-debuggable
                [:moveable {:x 0 :y 0}]])"
   [state uid components]
-  (reduce #(if (vector? %2)
-             ;; If there was a vector passed in then the
-             ;; second item is the initial component state
-             (mk-component-state (update-in %1 [:entities uid] conj (first %2))
-                                 (first %2)
-                                 uid
-                                 (second %2))
-             ;; Always initialize component state with an
-             ;; empty hashmap. If they do not have any
-             ;; component state they will not be found by
-             ;; ecs/entities-with-component
-             (mk-component-state (update-in %1 [:entities uid] conj %2)
-                                 %2
-                                 uid
-                                 {}))
+  (reduce (component-state-from-spec uid) state components))
+
+(defn rm-entity-from-component-index
+  [state entity-id components]
+  (reduce (fn [state component-id]
+            (update-in state [:components component-id :entities]
+                       #(set (remove #{entity-id} %))))
           state
           components))
 
@@ -287,4 +305,6 @@
               components)
       (reduce #(update-in %1 [:state %2] dissoc uid) $ components)
       ;; Remove the entity
-      (update-in $ [:entities] dissoc uid))))
+      (update-in $ [:entities] dissoc uid)
+      ;; Remove the entity from component index
+      (rm-entity-from-component-index $ uid components))))

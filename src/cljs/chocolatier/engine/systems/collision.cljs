@@ -86,8 +86,7 @@
   [max-entries]
   (fn [state]
     (let [;; Get only the entities that are both collidable and moveable
-          entity-ids (ecs/entities-with-multi-components (:entities state)
-                                                         [:collidable :moveable])
+          entity-ids (ecs/entities-with-multi-components state [:collidable :moveable])
           entity-states (get-component-state state entity-ids)
           ;; Get or create the spatial index
           spatial-index (get-in state spatial-index-location (rbush max-entries))]
