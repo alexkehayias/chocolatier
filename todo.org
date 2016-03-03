@@ -21,6 +21,11 @@
 - There are many places that use dynamic lookups to get things like the list of entities, components, etc that could be cached
 - If you cache, need a way to invalidate the cache
 - Shouldn't v8 be doing this already?
+* TODO Remove anonymous functions
+- [ ] Game loop creates a new anonymous function every time the game loop recurs
+- [ ] Component functions are anonymous functions
+  - Also loose ability to have the repl rebind it dynamically once it's in the game loop
+- [ ] System functions are anonymous
 * DONE Create a reverse lookup for checking entities given a component label
 CLOSED: [2016-02-27 Sat 15:48]
 - Currently, to get entities that have a component you would need to get all keys in that component's state which is not very intuitive
@@ -28,6 +33,40 @@ CLOSED: [2016-02-27 Sat 15:48]
 - There should be a way of looking up all entities for a given component
 - The index should be a set to guarantee uniqueness
 * FIX Fix all keys being captures by input system and it should only be in a certain scope
+* DONE Explore the use the entity ID to handle polymorphism?
+CLOSED: [2016-03-03 Thu 12:00]
+- Instead of entity IDs being labels they can be types
+- If they are known types then we can make component fns which are protocol methods
+- This would allow you to create per entity ID polymorphism, i.e player1, some boss, have different movement rules?
+- Would need a macro that copies all the functionality of the Keyword class so it can still be used for looking up things in the game state
+- Issues:
+  - Dispatch of implementation would be per entity so if we want all enemies to share the same implementation would need a lot of copying
+- Example:
+  #+begin_src clojure
+  (defprotocol Moveable
+    (move [this component-state context]
+      "Handle whether or not the entity should move"))
+
+  (extend-type Player1
+    Moveable
+    (move [this component-state {:keys [inbox]}]
+      (let [{:keys [pos-x pos-y move-rate direction]} component-state
+            {new-direction :direction} (:msg (get-move-change-event inbox))
+            collision? (collision-event? inbox)]
+        (let [next-direction (or new-direction direction)
+              [offset-x offset-y] (if collision?
+                                    [0 0]
+                                    (mapv #(* move-rate %)
+                                          (direction->offset next-direction)))]
+          (assoc component-state
+                 :pos-x (- pos-x offset-x)
+                 :pos-y (- pos-y offset-y)
+                 :offset-x offset-x
+                 :offset-y offset-y
+                 :move-rate move-rate
+                 :direction next-direction)))))
+  #+end_src
+
 * DONE Component state as defrecords perf improvement?
 CLOSED: [2016-02-24 Wed 13:53]
 - Could also solve the validation problem so all keys are known up front
