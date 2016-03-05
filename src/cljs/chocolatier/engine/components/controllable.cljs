@@ -127,12 +127,13 @@
                         (and (seq last-attack-action) (not (seq attack-action)))
                         (conj (ev/mk-event {:action move :direction direction}
                                            [:action entity-id]))))
-             next-state {:direction direction
-                         :input-state keyboard-input
-                         :move-action move-action
-                         :attack-action attack-action}]
+             next-state (assoc component-state
+                               :direction direction
+                               :input-state keyboard-input
+                               :move-action move-action
+                               :attack-action attack-action)]
         (if (seq events)
           [next-state events]
           next-state))
       ;; No-op
-      component-state )))
+      component-state)))

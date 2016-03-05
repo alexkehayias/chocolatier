@@ -76,8 +76,6 @@
    ;; to :meta events
    [:system :meta meta-system]
    ;; React to user input
-   ;; FIX need a way to get the input state into the context of this
-   ;; component function
    [:system :controller :controllable
     [react-to-input {:select-components [:keyboard-input]}]]
    ;; Draw tile map in background

@@ -132,24 +132,6 @@
 (defn concat-keywords [k1 k2]
   (keyword (str (name k1) "-" (name k2))))
 
-(defn select-component-states
-  [hm state entity-id select-components cached-get-component-state]
-  ;; If the component is a vector then the first is the component-id
-  ;; and the second is the entity-id. They will appear in the context
-  ;; under :<component-id>-<entity-id>
-  (into hm (map (fn mapselcomps [component]
-                  (if (vector? component)
-                    (let [[component-id entity-id] component]
-                      [(concat-keywords component-id entity-id)
-                       (cached-get-component-state state
-                                                   component-id
-                                                   entity-id)])
-                    [component
-                     (cached-get-component-state state
-                                                 component
-                                                 entity-id)])))
-        select-components))
-
 (defn get-component-context
   "Returns a hashmap of context for use with a component fn.
    Args:
@@ -158,61 +140,69 @@
    - component: A hashmap representing the component meta data
    - cached-get-component-state: A function for getting component-state from the game state.
      This allows the passing of a memoized function to cache results"
-  [state entity-id component cached-get-component-state]
-  (let [{:keys [subscriptions select-components]} component]
-    (cond-> {}
-      subscriptions (assoc :inbox
-                           (ev/get-subscribed-events
-                            state
-                            ;; Implicitely add the
-                            ;; entity ID to the end of
-                            ;; the selectors, this
-                            ;; ensures messages are
-                            ;; per entity
-                            (map #(vector % entity-id) subscriptions)))
-      select-components (select-component-states state entity-id select-components cached-get-component-state))))
+  [state entity-id component]
+  (let [{:keys [subscriptions select-components]} component
+        messages (ev/get-subscribed-events
+                  state
+                  ;; Implicitely add the
+                  ;; entity ID to the end of
+                  ;; the selectors, this
+                  ;; ensures messages are
+                  ;; per entity
+                  (map #(vector % entity-id) subscriptions))]
+    ;; Add in any selected components
+    (loop [components select-components
+           context (transient {:inbox messages})]
+      (let [component (first components)]
+        (if component
+          ;; If it was a vector then the first arg is the
+          ;; component-id the second is a specific entity-id
+          (let [next-context (if (vector? component)
+                               (let [[component entity-id] component
+                                     key (concat-keywords component entity-id)]
+                                 (assoc! context key
+                                         (get-component-state state component entity-id)))
+                               (assoc! context component
+                                       (get-component-state state component entity-id)))]
+            (recur (rest components) next-context))
+          (persistent! context))))))
 
-(defn system-next-state [state component-id]
+(defn system-next-state-and-events
+  [state component-id]
   (let [entity-ids (entities-with-component state component-id)
         component-states (get-all-component-state state component-id)
         component (get-component state component-id)
-        component-fn (:fn component)
-        cached-get-component-state (memoize get-component-state)
-        event-accum (transient [])]
-    [(assoc-in
-      state
-      [:state component-id]
-      (into {}
-            (map
-             (fn mapincompstate [entity-id]
-               (let [component-state (get component-states entity-id)
-                     context (get-component-context state
-                                                    entity-id
-                                                    component
-                                                    cached-get-component-state)
-                     next-comp-state (component-fn entity-id
-                                                   component-state
-                                                   context)]
-                 ;; If the component function returns a vector
-                 ;; then accumulate the events
-                 (if (vector? next-comp-state)
-                   (let [[next-comp-state events] next-comp-state]
-                     (doseq [e events]
-                       (conj! event-accum e))
-                     [entity-id next-comp-state])
-                   [entity-id next-comp-state]))))
-            entity-ids))
-     (persistent! event-accum)]))
+        component-fn (:fn component)]
+    (loop [entities entity-ids
+           state-accum (transient {})
+           event-accum (transient [])]
+      (let [entity-id (first entities)]
+        (if entity-id
+          (let [component-state (get component-states entity-id)
+                context (get-component-context state entity-id component)
+                next-comp-state (component-fn entity-id component-state context)
+                ;; If the component function returns a vector then there
+                ;; are events to accumulate
+                ;; HACK for some reason assoc! only mutates 8 times
+                ;; before it stops getting updated so need to pass it
+                ;; back into the loop
+                next-state (if (vector? next-comp-state)
+                             (let [[next-comp-state events] next-comp-state]
+                               (doseq [e events]
+                                 (conj! event-accum e))
+                               (assoc! state-accum entity-id next-comp-state))
+                             (assoc! state-accum entity-id next-comp-state))]
+            (recur (rest entities) next-state event-accum))
+          [(assoc-in state [:state component-id] (persistent! state-accum))
+           (persistent! event-accum)])))))
 
 (defn mk-system-fn
   "Returns a function representing a system that takes a single argument for
    game state."
   [component-id]
   (fn [state]
-    (let [[next-state events] (system-next-state state component-id)]
-      (if (seq events)
-        (ev/emit-events next-state events)
-        next-state))))
+    (let [[next-state events] (system-next-state-and-events state component-id)]
+      (ev/emit-events next-state events))))
 
 (defn mk-system
   "Add the system function to the state. Optionally the third argument

@@ -8,6 +8,6 @@
         {:keys [pos-x pos-y]} moveable
         offset [(if ^boolean (< player-pos-x pos-x) 1 -1)
                 (if ^boolean (< player-pos-y pos-y) 1 -1)]
-        event (ev/mk-event {:direction (offset->direction offset)}
+        event (ev/mk-event {:direction (get offset->direction offset)}
                            [:move-change entity-id])]
     [component-state [event]]))

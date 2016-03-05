@@ -99,12 +99,17 @@
     [next-frame (inc frame-n)]
     [(animation-fn 0) 0]))
 
+(defn get-action-event
+  "Returns the first action event from the inbox"
+  [inbox]
+  (some #(when (keyword-identical? (:event-id %) :action) %) inbox))
+
 (defn get-action
   "Returns a keyword of the first action event from the inbox and appends
    the direction"
   [inbox last-action]
   ;; TODO this doesn't handle multiple actions simultaneously
-  (if-let [event (some #(when (= (:event-id %) :action) %) inbox)]
+  (if-let [event (get-action-event inbox)]
     (let [{:keys [action direction]} (:msg event)]
       [true (keyword (str (name action) "-" (name direction)))])
     [false last-action]))
@@ -124,10 +129,6 @@
         animation-name (or next-action current-animation-name)
         animation-fn (animation-name animations)
         [frame frame-n] (incr-frame animation-fn frame-n)]
-    ;; (when (= next-action :hit-up)
-    ;;   (println "HIT UP" :next next-action :current current-animation-name :stack animation-stack :inbox-count (count inbox)))
-    ;; Sticking this in a conditional to avoid doing extra work if
-    ;; there wasn't an animation change
     (if animation-change?
       (assoc component-state
              :animation-stack (if next-action

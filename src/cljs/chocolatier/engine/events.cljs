@@ -36,11 +36,21 @@
 (defn get-subscribed-events
   "Returns a collection of events that matches the collection of
    selectors or nil if selectors-col is empty."
-  [state selectors-col]
+  [state selectors-coll]
   (let [events (get-in state queue-path)]
-    ;; Transduce is 4x faster than reduce into according to
-    ;; simple-benchmark
-    (vec (r/flatten (map (fn mapgetevents [sel] (get-in events sel)) selectors-col)))))
+    ;; Use a loop here for better performance
+    (loop [selectors selectors-coll
+           accum (transient [])]
+      (let [sel (first selectors)]
+        (if sel
+          (recur (rest selectors)
+                 (loop [evs (get-in events sel)
+                        acc accum]
+                   (let [e (first evs)]
+                     (if e
+                       (recur (rest evs) (conj! acc e))
+                       acc))))
+          (persistent! accum))))))
 
 (defn mk-event
   "Takes message and selectors and formats them for the event representation.
@@ -59,17 +69,16 @@
 (defn emit-events
   "Emits a collection of events at the same time. Returns update game state."
   [state events]
-  (if (seq events)
-    (reduce #(emit-event %1 (:msg %2) (:selectors %2)) state events)
-    state))
+  (reduce #(emit-event %1 (:msg %2) (:selectors %2)) state events))
 
 (defn batch-emit-events
   "Batch add events with the same selectors. Events should be a hashmap of id,
    collection of valid events (see mk-event). Will merge existing events map with
    events-map overwriting existing keys"
   [state selectors events-map]
-  (let [path (into queue-path selectors)]
-    (update-in state path merge events-map)))
+  (let [path (into queue-path selectors)
+        existing-events (get-in state path)]
+    (assoc-in state path (merge existing-events events-map))))
 
 (defn clear-events-queue
   "Resets event queue to an empty vector. Returns updates state."

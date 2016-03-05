@@ -19,10 +19,10 @@
    :direction direction})
 
 (defn collision-event? [inbox]
-  (some #(when (= (:event-id %) :collision) %) inbox))
+  (some #(when (keyword-identical? (:event-id %) :collision) %) inbox))
 
 (defn get-move-change-event [inbox]
-  (some #(when (= (:event-id %) :move-change) %) inbox))
+  (some #(when (keyword-identical? (:event-id %) :move-change) %) inbox))
 
 (def direction->offset
   {:up [0 1]
@@ -56,12 +56,11 @@
     (let [next-direction (or new-direction direction)
           [offset-x offset-y] (if collision?
                                 [0 0]
-                                (mapv #(* move-rate %)
-                                      (direction->offset next-direction)))]
-      (assoc component-state
-             :pos-x (- pos-x offset-x)
-             :pos-y (- pos-y offset-y)
-             :offset-x offset-x
-             :offset-y offset-y
-             :move-rate move-rate
-             :direction next-direction))))
+                                (map #(* move-rate %)
+                                     (get direction->offset next-direction)))]
+      {:pos-x (- pos-x offset-x)
+       :pos-y (- pos-y offset-y)
+       :offset-x offset-x
+       :offset-y offset-y
+       :move-rate move-rate
+       :direction next-direction})))

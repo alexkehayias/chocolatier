@@ -27,8 +27,8 @@
    - Excludes collisions where the parent-id matches the entity-id
      (can't be damaged by yourself)"
   [entity-id {:keys [id attributes]}]
-  (and (:damage attributes)
-       (not= entity-id (:from-id attributes))))
+  (and (not (keyword-identical? entity-id (:from-id attributes)))
+       (:damage attributes)))
 
 (defn handle-damage
   "Returns updated component state and collection of events.
@@ -67,23 +67,45 @@
     (update component-state :cooldown #(first (cnt/tick-cooldown %)))
     component-state))
 
+(defn get-attacks
+  "Returns a collection of valid attacks on the entity"
+  [entity-id inbox]
+  ;; Use a double nested loop to optimize performance
+  (let [col-path [:msg :collisions]]
+    (loop [events inbox
+           accum (transient [])]
+      (let [event (first events)]
+        (if event
+          (let [collisions (get-in event col-path)
+                next-accum (loop [collisions collisions
+                                  acc accum]
+                             (let [collision (first collisions)]
+                               (if collision
+                                 (let [[pos-x pos-y _ _ collision-state] collision]
+                                   (recur (rest collisions)
+                                          (if (valid-attack? entity-id collision-state)
+                                            ;; Append the position on
+                                            ;; the attributes Hashmap
+                                            ;; of :from-id :damage
+                                            ;; :type :position
+                                            (conj! acc (assoc (:attributes collision-state)
+                                                              :position [pos-x pos-y]))
+                                            acc)))
+                                 acc)))]
+            (recur (rest events) next-accum))
+          (persistent! accum))))
+    )
+  )
+
 (defn damage
   "If there are any collisions with a valid attack and the entity is not
    invinsible (can only be attacked every n frames) then handle damage
    to the entity. If hitpoints falls below 0 then emit a message to
    remove the entity from the game-state."
   [entity-id component-state {:keys [inbox moveable]}]
-  ;; TODO this needs to be optimized because it spends a lot of time
-  ;; in the for comprehension
-  ;; Replace with a double nested reduce or loop
-  (let [attacks (for [event inbox
-                      collision (get-in event [:msg :collisions])
-                      :let [collision-state (last collision)]
-                      :when (valid-attack? entity-id collision-state)]
-                  ;; Hashmap of :from-id :damage :type :position
-                  (assoc (:attributes collision-state)
-                         :position (take 2 collision)))
+  ;; Use a loop here for performance reasons
+  (let [attacks (get-attacks entity-id inbox)
         vulnerable? (not (cnt/cooldown? (:cooldown component-state)))]
     (if ^boolean (and vulnerable? (seq attacks))
-      (handle-damage entity-id component-state moveable attacks)
-      (tick-in-progress-damage component-state))))
+        (handle-damage entity-id component-state moveable attacks)
+        (tick-in-progress-damage component-state))))

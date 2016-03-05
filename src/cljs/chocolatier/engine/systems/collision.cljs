@@ -116,13 +116,29 @@
     (and (< x width)
          (< y height)
          (not (attack? attributes))
-         (not= id (:from-id attributes)))))
+         (not (keyword-identical? id (:from-id attributes))))))
 
-(defn not-self? [id item]
-  (not= id (:id (last item))))
+(defn ^boolean not-self? [id item]
+  (not (keyword-identical? id (:id (last item)))))
 
-(defn not-self-attack? [id item]
-  (not= id (-> item last :attributes :from-id)))
+(defn ^boolean not-self-attack? [id item]
+  (not (keyword-identical? id (-> item last :attributes :from-id))))
+
+(defn collision-events
+  "Returns a hashmap of all collision events by entity ID"
+  [collision-items spatial-index]
+  (loop [items collision-items
+         accum (transient {})]
+    (let [item (first items)]
+      (if item
+        (let [id (:id (last item))
+              collisions (rbush-search spatial-index item)]
+          (if (some #(and (not-self? id %) (not-self-attack? id %))
+                    collisions)
+            (recur (rest items) (assoc! accum id [(ev/mk-event {:collisions collisions}
+                                                               [:collision id])]))
+            (recur (rest items) accum)))
+        (persistent! accum)))))
 
 (defn mk-narrow-collision-system
   "Returns a function parameterized by the height and width of the game.
@@ -137,14 +153,6 @@
           ;; Remove any that are not in the viewport and exclude attacks
           items (filter (valid-collision-item? width height)
                         (rbush-all spatial-index))
-          event-pairs (for [i items
-                            :let [id (:id (last i))
-                                  collisions (rbush-search spatial-index i)]
-                            ;; Can't collide with yourself and can't
-                            ;; attack yourself
-                            :when (some #(and (not-self? id %)
-                                              (not-self-attack? id %))
-                                        collisions)]
-                        [id [(ev/mk-event {:collisions collisions}
-                                          [:collision id])]])]
-      (ev/batch-emit-events state [:collision] (into {} event-pairs)))))
+          ;; Use a loop to avoid boxing and unboxing
+          events (collision-events items spatial-index)]
+      (ev/batch-emit-events state [:collision] events))))
