@@ -64,13 +64,13 @@
    - action: the action based on the input"
   [input-state]
   (loop [out {}, input-seq (seq input-state)]
-    (if (seq input-seq)
-      (let [[k v] (first input-seq)
-            next-out (if-let [interaction (k keycode->movement)]
-                       (merge-with comp-movement out interaction)
-                       out)]
-        (recur next-out (rest input-seq)))
-      out)))
+    (let [[k v] (first input-seq)]
+      (if k
+        (let [interaction (k keycode->movement)]
+          (if interaction
+            (recur (merge-with comp-movement out interaction) (rest input-seq))
+            (recur out (rest input-seq))))
+        out))))
 
 (defn input->attack
   "Returns the first attack from the input state."
