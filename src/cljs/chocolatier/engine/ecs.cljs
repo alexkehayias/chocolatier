@@ -133,7 +133,7 @@
   (keyword (str (name k1) "-" (name k2))))
 
 (defn select-component-states
-  [hm state entity-id select-component-ids]
+  [hm state entity-id select-components cached-get-component-state]
   ;; If the component is a vector then the first is the component-id
   ;; and the second is the entity-id. They will appear in the context
   ;; under :<component-id>-<entity-id>
@@ -141,18 +141,24 @@
                   (if (vector? component)
                     (let [[component-id entity-id] component]
                       [(concat-keywords component-id entity-id)
-                       (get-component-state state
-                                            component-id
-                                            entity-id)])
+                       (cached-get-component-state state
+                                                   component-id
+                                                   entity-id)])
                     [component
-                     (get-component-state state
-                                          component
-                                          entity-id)])))
-        select-component-ids))
+                     (cached-get-component-state state
+                                                 component
+                                                 entity-id)])))
+        select-components))
 
 (defn get-component-context
-  "Returns a hashmap of context for use with a component fn."
-  [state entity-id component]
+  "Returns a hashmap of context for use with a component fn.
+   Args:
+   - state: The game state
+   - entity-id: The unique ID of the entity
+   - component: A hashmap representing the component meta data
+   - cached-get-component-state: A function for getting component-state from the game state.
+     This allows the passing of a memoized function to cache results"
+  [state entity-id component cached-get-component-state]
   (let [{:keys [subscriptions select-components]} component]
     (cond-> {}
       subscriptions (assoc :inbox
@@ -163,14 +169,15 @@
                             ;; the selectors, this
                             ;; ensures messages are
                             ;; per entity
-                            (doall (map #(vector % entity-id) subscriptions))))
-      select-components (select-component-states state entity-id select-components))))
+                            (map #(vector % entity-id) subscriptions)))
+      select-components (select-component-states state entity-id select-components cached-get-component-state))))
 
 (defn system-next-state [state component-id]
   (let [entity-ids (entities-with-component state component-id)
         component-states (get-all-component-state state component-id)
         component (get-component state component-id)
         component-fn (:fn component)
+        cached-get-component-state (memoize get-component-state)
         event-accum (transient [])]
     [(assoc-in
       state
@@ -181,7 +188,8 @@
                (let [component-state (get component-states entity-id)
                      context (get-component-context state
                                                     entity-id
-                                                    component)
+                                                    component
+                                                    cached-get-component-state)
                      next-comp-state (component-fn entity-id
                                                    component-state
                                                    context)]
