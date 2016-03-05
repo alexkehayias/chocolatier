@@ -4,18 +4,6 @@
             [chocolatier.engine.pixi :as pixi]))
 
 
-(defn include-moveable-animateable-state
-  "State parsing function. Returns a map of moveable-state and animateable-state"
-  [state component-id entity-id]
-  {:moveable-state (ecs/get-component-state state :moveable entity-id)
-   :animateable-state (ecs/get-component-state state :animateable entity-id)})
-
-(defn include-moveable-text-state
-  "State parsing function. Returns a map of with a key for moveable-state"
-  [state component-id entity-id]
-  {:moveable-state (ecs/get-component-state state :moveable entity-id)
-   :text-state (ecs/get-component-state state :text entity-id)})
-
 (defn cleanup-sprite-state
   "Removes sprite from the stage belonging to the entity and returns state"
   [state entity-id]
@@ -60,22 +48,23 @@
 (defn render-sprite
   "Renders the sprite in relation to the position of the entity and
    frame of the spritesheet deterimined by the animateable state"
-  [entity-id component-state {:keys [moveable-state animateable-state]}]
+  [entity-id component-state {:keys [moveable animateable]}]
   (let [sprite (:sprite component-state)
-        frame (:frame animateable-state)]
+        frame (:frame animateable)]
     ;; Side effects!
     ;; If there is a moveable state then update the position
-    (when (seq moveable-state) (set-position! sprite moveable-state))
+    (when (seq moveable) (set-position! sprite moveable))
     ;; If there is an animation frame then update the spritesheet frame
     (when frame (pixi/set-sprite-frame! sprite frame))
     component-state))
 
 (defn render-text
   "Renders text in relation to the position of the entity"
-  [entity-id component-state {:keys [moveable-state text-state]}]
-  (let [{:keys [text rotation]} text-state
+  [entity-id component-state context]
+  (let [{text-state :text moveable :moveable} context
+        {:keys [text rotation]} text-state
         text-obj (:text-obj component-state)]
     ;; Mutate the text object position and text
-    (when moveable-state (set-position! text-obj moveable-state))
-    (pixi/alter-obj! text-obj "text" text "rotation" rotation)
+    (when moveable (set-position! text-obj moveable))
+    (when text (pixi/alter-obj! text-obj "text" text "rotation" rotation))
     component-state))

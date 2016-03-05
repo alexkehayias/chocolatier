@@ -79,6 +79,7 @@
                       [:text-sprite text-state]
                       [:animateable animation-state]
                       [:sprite sprite-state]
+                      :keyboard-input
                       :controllable
                       [:collidable collision-state]
                       :collision-debuggable

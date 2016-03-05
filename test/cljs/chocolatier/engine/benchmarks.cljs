@@ -14,14 +14,10 @@ The benchmarks below test the performance of the game engine internals.
 Real world results are likely to be different and these currently don't test
 the performance of rendering to canvas/webgl.")
 
-(defn system-fn
-  [state f entity-ids]
-  (reduce f state entity-ids))
-
 (defn component-fn-state-change-only
   "Only updates the component state, does not emit any events"
   [eid cmp-state events]
-  (update-in cmp-state [:x] inc))
+  (update cmp-state :x inc))
 
 (defn component-fn-state-change-and-events
   "Updates the component state and emits events"
@@ -35,8 +31,7 @@ the performance of rendering to canvas/webgl.")
   (mk-game-state {}
                  [:scene :default [:s1]]
                  [:current-scene :default]
-                 [:system :s1 system-fn :c1]
-                 [:component :c1 component-fn-state-change-only]
+                 [:system :s1 :c1 component-fn-state-change-only]
                  [:entity :e1 [:c1]]))
 
 (defn many-entities
@@ -48,8 +43,7 @@ the performance of rendering to canvas/webgl.")
         args (concat [{}
                       [:scene :default [:s1]]
                       [:current-scene :default]
-                      [:component :c1 component-fn-state-change-only]
-                      [:system :s1 system-fn :c1]]
+                      [:system :s1 :c1 component-fn-state-change-only]]
                      entities)]
     (apply mk-game-state args)))
 
@@ -63,18 +57,14 @@ the performance of rendering to canvas/webgl.")
                        (range 100)))
         systems (doall
                  (map #(vector :system (keyword (str "s" %))
-                               system-fn (keyword (str "c" %)))
+                               (keyword (str "c" %))
+                               component-fn-state-change-only)
                       (range 100)))
-        components (doall
-                    (map #(vector :component (keyword (str "c" %))
-                                  component-fn-state-change-only)
-                         (range 100)))
         scene [:scene :default (doall (map #(keyword (str "s" %)) (range 100)))]
         args (concat [{}
                       scene
                       [:current-scene :default]]
                      systems
-                     components
                      entities)]
     (apply mk-game-state args)))
 

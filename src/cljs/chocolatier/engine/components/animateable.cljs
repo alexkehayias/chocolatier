@@ -5,7 +5,7 @@
   "Returns a pair of values for the x and y position of a sprite at frame-n"
   [w h frame-w frame-h col-w frame-n]
   (let [row (js/Math.floor (/ frame-n col-w))
-        col (if (> (inc frame-n) col-w)
+        col (if ^boolean (> (inc frame-n) col-w)
               (- frame-n (* row col-w))
               frame-n)
         x (* col frame-h)
@@ -120,7 +120,7 @@
   (let [{:keys [animation-stack sprite frame-n animations]} component-state
         current-animation-name (first animation-stack)
         [animation-change? next-action] (get-action inbox current-animation-name)
-        frame-n (if animation-change? 0 frame-n)
+        frame-n (if ^boolean animation-change? 0 frame-n)
         animation-name (or next-action current-animation-name)
         animation-fn (animation-name animations)
         [frame frame-n] (incr-frame animation-fn frame-n)]
@@ -137,7 +137,7 @@
                                 ;; There always needs to be an animation
                                 ;; so if the stack has only 1 item in it
                                 ;; then do not drop any items
-                                (if (> (count animation-stack) 1)
+                                (if ^boolean (> (count animation-stack) 1)
                                   (drop 1 animation-stack)
                                   animation-stack))
              :frame-n frame-n

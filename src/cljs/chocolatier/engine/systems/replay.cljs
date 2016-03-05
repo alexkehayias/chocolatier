@@ -9,13 +9,13 @@
     (let [{:keys [snapshot-counter snapshots]} (:game state)
           replay? (seq (ev/get-events state [:replay]))
           take-snapshot? (> (inc snapshot-counter) interval-n)
-          counter (if take-snapshot? 0 (inc snapshot-counter))
+          counter (if ^boolean take-snapshot? 0 (inc snapshot-counter))
           interum-state (assoc-in state [:game :snapshot-counter] counter)
           update-fn (fn [snapshots]
-                      (if (> (inc (count snapshots)) keep-copies-n)
+                      (if ^boolean (> (inc (count snapshots)) keep-copies-n)
                         (rest (conj snapshots state))
                         (conj snapshots state)))
-          updated-state (if take-snapshot?
+          updated-state (if ^boolean take-snapshot?
                           (update-in interum-state [:game :snapshots] update-fn)
                           interum-state)]
       (if replay?

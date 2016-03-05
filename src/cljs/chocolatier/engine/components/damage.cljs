@@ -21,7 +21,7 @@
    :text-fn text-fn
    :cooldown (cnt/mk-cooldown cooldown)})
 
-(defn valid-attack?
+(defn ^boolean valid-attack?
   "Returns a boolean of whether the collision is a valid attack
    - Includes collisions that have an ID that start with :attack
    - Excludes collisions where the parent-id matches the entity-id
@@ -47,7 +47,7 @@
     ;; If hitpoints falls below 1 then remove entity from the game
     ;; otherwise create an entity with a text component to display the
     ;; damage taken
-    (if destroy?
+    (if ^boolean destroy?
       [next-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
       [next-state [(ev/mk-event [:entity (keyword (gensym "damage-"))
                                  [[:moveable (mk-moveable-state pos-x pos-y 2 :up)]
@@ -63,7 +63,7 @@
 
 (defn tick-in-progress-damage
   [component-state]
-  (if (cnt/cooldown? (:cooldown component-state))
+  (if ^boolean (cnt/cooldown? (:cooldown component-state))
     (update component-state :cooldown #(first (cnt/tick-cooldown %)))
     component-state))
 
@@ -72,7 +72,10 @@
    invinsible (can only be attacked every n frames) then handle damage
    to the entity. If hitpoints falls below 0 then emit a message to
    remove the entity from the game-state."
-  [entity-id component-state {:keys [inbox move-state]}]
+  [entity-id component-state {:keys [inbox moveable]}]
+  ;; TODO this needs to be optimized because it spends a lot of time
+  ;; in the for comprehension
+  ;; Replace with a double nested reduce or loop
   (let [attacks (for [event inbox
                       collision (get-in event [:msg :collisions])
                       :let [collision-state (last collision)]
@@ -81,6 +84,6 @@
                   (assoc (:attributes collision-state)
                          :position (take 2 collision)))
         vulnerable? (not (cnt/cooldown? (:cooldown component-state)))]
-    (if (and vulnerable? (seq attacks))
-      (handle-damage entity-id component-state move-state attacks)
+    (if ^boolean (and vulnerable? (seq attacks))
+      (handle-damage entity-id component-state moveable attacks)
       (tick-in-progress-damage component-state))))

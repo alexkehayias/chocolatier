@@ -34,10 +34,10 @@
    #{:down :left} :down-left
    #{:down :right} :down-right})
 
-(defn direction? [v]
+(defn ^boolean direction? [v]
   (contains? directions v))
 
-(defn action? [v]
+(defn ^boolean action? [v]
   (contains? actions v))
 
 (defn comp-movement
@@ -79,16 +79,16 @@
   (some keycode->action (keys input-state)))
 
 (defn react-to-input
-  [entity-id component-state {:keys [input-state]}]
+  [entity-id component-state {:keys [keyboard-input]}]
   (let [last-input-state (:input-state component-state)
-        move-action (input->move input-state)
-        attack-action (input->attack input-state)
+        move-action (input->move keyboard-input)
+        attack-action (input->attack keyboard-input)
         {last-move-action :move-action
          last-attack-action :attack-action} component-state]
     ;; If the old interaction state is the same as the new
     ;; interaction or there is no interaction then no need to do
     ;; anything
-    (if-not (= last-input-state input-state)
+    (if-not (identical? last-input-state keyboard-input)
       (let [{move :action
              direction :direction} move-action
              {attack :action} attack-action
@@ -128,7 +128,7 @@
                         (conj (ev/mk-event {:action move :direction direction}
                                            [:action entity-id]))))
              next-state {:direction direction
-                         :input-state input-state
+                         :input-state keyboard-input
                          :move-action move-action
                          :attack-action attack-action}]
         (if (seq events)

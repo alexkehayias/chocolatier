@@ -12,6 +12,6 @@
   [entity-id component-state _]
   (let [{:keys [counter ttl]} component-state
         inc-counter (inc counter)]
-    (if (> inc-counter ttl)
+    (if ^boolean (> inc-counter ttl)
       [component-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
       (assoc component-state :counter inc-counter))))

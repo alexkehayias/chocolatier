@@ -17,6 +17,47 @@
   - [ ] Nicer tile map
   - [ ] Nicer sprites
   - [ ] Obligatory Flappy Bird?
+* DONE Add type hints before if statements to avoid extra checking
+CLOSED: [2016-03-03 Thu 21:41]
+(if ^boolean (pred v) ...)
+* TODO Refactor system functions
+- [X] Systems should provide the lens for component functions instead of wrapping all the component functions
+- [X] Update all the component state in one shot instead of updating the state for each entity->component
+  - Assumes there can be no inter system component state access or message passing
+- [X] Figure out how to handle events
+  Accumulate it using a transient and then emit it later
+- [X] Update mk-system with less boilerplate for creating a system and an accompanying component
+  - Component's are ALWAYS part of a system, a system does not always work on a component
+  - Avoid errors like not having a component function that is called by a system function
+  - Could present opportunities for optimization if we can guarantee the component fn is there
+  - API
+    - Custom system [:system :s1 my-system-fn]
+    - System with component [:system :s2 :c1 my-component-fn]
+- [X] Update benchmarks
+- [X] Remove mk-component-fn if it's no longer used
+- [ ] Update tests
+  - [ ] mk-system-fn
+    - [ ] Test events get emitted
+    - [ ] Test component state gets updated
+  - [ ] get-component-context
+- [X] Systems should still declare what components they work on so it's not hardcoded into the implementation
+  - What about multiple components?
+    - Example: Collision detection works on entities that have movement and collision
+  - If they don't work on a component then idiomatically use "global"
+- [X] Replace all args-fn with select-components
+  - What about when you need some global state like input?
+  - What if you need component state for a different entity?
+- [X] Replace format-fn used by the ai system
+  - Probably want a custom system instead
+  - TODO need to remove the hardcoding of the component name
+- [ ] Update action rpg example
+  - [ ] Update any systems that do anything special to implement their own system fn
+  - [ ] Delete any systems that are generic
+* TODO Refactor the ai system to something more sane
+* TODO Refactor the keyboard input system to emit events on change
+* TODO Make utils.counters 1 element js arrays for better performance
+* TODO Change any use of = or not= to identical?
+* TODO Replace usage of map/filter/for with eager implementations
 * TODO Cache dynamic lookups in the game loop
 - There are many places that use dynamic lookups to get things like the list of entities, components, etc that could be cached
 - If you cache, need a way to invalidate the cache

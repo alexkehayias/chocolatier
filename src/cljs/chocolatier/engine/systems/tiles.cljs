@@ -78,7 +78,7 @@
       (if-let [[indx tile-pos] (first tile-specs)]
         (if-not (zero? tile-pos)
           (let [map-row (js/Math.floor (/ indx map-w))
-                map-col (if (> (inc indx) map-w)
+                map-col (if ^boolean (> (inc indx) map-w)
                           (- indx (* map-row map-w))
                           indx)
                 map-x (* map-col tile-px-w)
@@ -88,7 +88,7 @@
                 ;; Tiled specifies
                 tileset-pos (dec tile-pos)
                 tileset-row (js/Math.floor (/ tileset-pos tileset-w))
-                tileset-col (if (> (inc tileset-pos) tileset-w)
+                tileset-col (if ^boolean (> (inc tileset-pos) tileset-w)
                               (- tileset-pos (* tileset-row tileset-w))
                               tileset-pos)
                 ;; Need to take the inverse of the coordinance since
@@ -124,24 +124,24 @@
                   tileheight
                   tilewidth]} tilemap
                   {:keys [imageheight imagewidth]} (first tilesets)
-           tileset-width (/ imagewidth tilewidth)
-           tileset-height (/ imageheight tileheight)
-           tileset-texture (pixi/mk-texture (-> tilesets first :image))]
+                  tileset-width (/ imagewidth tilewidth)
+                  tileset-height (/ imageheight tileheight)
+                  tileset-texture (pixi/mk-texture (-> tilesets first :image))]
       ;; Draw tiles from all layers of the tile map
       (assoc-in state [:state :tiles]
                 (loop [layers layers
-                       tiles []]
+                       tiles (transient [])]
                   (if-let [l (first layers)]
                     (recur (rest layers)
-                           (conj tiles
-                                 (create-tiles-from-spec! renderer
-                                                          stage
-                                                          tileset-texture
-                                                          width height
-                                                          tileset-width tileset-height
-                                                          tilewidth tileheight
-                                                          (:data l))))
-                    tiles))))))
+                           (conj! tiles
+                                  (create-tiles-from-spec! renderer
+                                                           stage
+                                                           tileset-texture
+                                                           width height
+                                                           tileset-width tileset-height
+                                                           tilewidth tileheight
+                                                           (:data l))))
+                    (persistent! tiles)))))))
 
 (defn load-tilemap
   "Async load a json tilemap at the url. Calls callback function with the

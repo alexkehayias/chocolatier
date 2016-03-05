@@ -1,4 +1,5 @@
-(ns chocolatier.engine.events)
+(ns chocolatier.engine.events
+  (:require [clojure.core.reducers :as r]))
 
 ;; Anyone can send a message to the event bus
 ;; The event system distributes the events to any subscribers into
@@ -36,7 +37,10 @@
   "Returns a collection of events that matches the collection of
    selectors or nil if selectors-col is empty."
   [state selectors-col]
-  (reduce #(into %1 (get-events state %2)) [] selectors-col))
+  (let [events (get-in state queue-path)]
+    ;; Transduce is 4x faster than reduce into according to
+    ;; simple-benchmark
+    (vec (r/flatten (map (fn mapgetevents [sel] (get-in events sel)) selectors-col)))))
 
 (defn mk-event
   "Takes message and selectors and formats them for the event representation.

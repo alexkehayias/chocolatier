@@ -30,11 +30,6 @@
                   [action (update spec :cooldown mk-cooldown)])
                 action-specs)))
 
-(defn include-move-state
-  "Returns a map move state of the entity"
-  [state component-id entity-id]
-  {:move-state (ecs/get-component-state state :moveable entity-id)})
-
 (defn player-attack
   "Unless the attack specified by the event is currently in cooldown
    then emit an event to create the attack. Returns updated
@@ -46,7 +41,7 @@
         cooldown (get-in component-state [action :cooldown])
         [cooldown-state cooldown?] (tick-cooldown cooldown)
         next-state (assoc-in component-state [action :cooldown] cooldown-state)]
-    (if cooldown?
+    (if ^boolean cooldown?
       next-state
       (let [uid (keyword (gensym "attack-"))
             msg [:entity
@@ -93,16 +88,16 @@
 
 (defn tick-in-progress-attack
   [component-state [action action-state]]
-  (if (cooldown? (:cooldown action-state))
+  (if ^boolean (cooldown? (:cooldown action-state))
     (update-in component-state [action :cooldown] #(first (tick-cooldown %)))
     component-state))
 
 (defn attack
   "Handles making attackes for the enemy. Must subscribe to
    the :action events for the entity."
-  [entity-id component-state {:keys [inbox move-state]}]
+  [entity-id component-state {:keys [inbox moveable]}]
   (if-let [event (get-attack-event component-state inbox)]
     ;; Dispatch to the attack handlers based on entity-id
-    (handle-attack entity-id component-state event move-state)
+    (handle-attack entity-id component-state event moveable)
     ;; Tick any in progress attack cooldowns
     (reduce tick-in-progress-attack component-state (seq component-state))))

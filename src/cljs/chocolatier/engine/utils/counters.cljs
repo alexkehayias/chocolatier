@@ -4,7 +4,7 @@
 (defn mk-cooldown [limit]
   {:counter 0 :limit limit})
 
-(defn cooldown?
+(defn ^boolean cooldown?
   "Takes a cooldown hashmap and returns a boolean if it is in cooldown"
   [{:keys [counter limit]}]
   (cond

@@ -10,11 +10,3 @@
   (let [{:keys [renderer stage]} (-> state :game :rendering-engine)]
     (pixi/render! renderer stage)
     state))
-
-(defn sprite-system
-  [state f entity-ids]
-  (reduce f state entity-ids))
-
-(defn text-sprite-system
-  [state f entity-ids]
-  (reduce f state entity-ids))

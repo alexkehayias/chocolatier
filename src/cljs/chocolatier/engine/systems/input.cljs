@@ -1,5 +1,6 @@
 (ns chocolatier.engine.systems.input
   (:require [chocolatier.utils.logging :refer [debug]]
+            [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.utils.watchers :refer [hashmap-watcher]]))
 
 
@@ -39,10 +40,15 @@
         (f))))
   (init-input!))
 
-(defn input-system
-  "Update current user input"
+;; TODO refactor this to emit events
+(defn keyboard-input-system
+  "Adds keyboard input component state to any entity that has the
+   :keyboard-input component"
   [state]
-  ;; Make sure the keyboard listener is hooked up
-  (if-let [in @*keyboard-input]
-    (assoc-in state [:game :input] in)
-    (do (init-input!) state)))
+  ;; Make sure the keyboard listener is hooked up, if not start it
+  (let [in @*keyboard-input
+        entity-ids (ecs/entities-with-component state :keyboard-input)]
+    (if in
+      (assoc-in state [:state :keyboard-input]
+                (into {} (map (fn [e] [e in])) entity-ids))
+      (do (init-input!) state))))
