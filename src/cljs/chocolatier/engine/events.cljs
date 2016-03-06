@@ -36,21 +36,24 @@
 (defn get-subscribed-events
   "Returns a collection of events that matches the collection of
    selectors or nil if selectors-col is empty."
-  [state selectors-coll]
+  [state entity-id selectors-coll]
   (let [events (get-in state queue-path)]
     ;; Use a loop here for better performance
     (loop [selectors selectors-coll
-           accum (transient [])]
+           accum (array)]
       (let [sel (first selectors)]
         (if sel
           (recur (rest selectors)
-                 (loop [evs (get-in events sel)
+                 ;; Implicitely add the entity ID to
+                 ;; the end of the selectors, this ensures messages
+                 ;; are only for the entity
+                 (loop [evs (get-in events [sel entity-id])
                         acc accum]
                    (let [e (first evs)]
                      (if e
-                       (recur (rest evs) (conj! acc e))
+                       (recur (rest evs) (do (.push acc e) acc))
                        acc))))
-          (persistent! accum))))))
+          accum)))))
 
 (defn mk-event
   "Takes message and selectors and formats them for the event representation.

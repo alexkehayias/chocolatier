@@ -122,7 +122,7 @@
 
    NOTE: The animation-stack must be a list not a vec so conj works as expected"
   [entity-id component-state {:keys [inbox]}]
-  (let [{:keys [animation-stack sprite frame-n animations]} component-state
+  (let [{:keys [animation-stack frame-n animations]} component-state
         current-animation-name (first animation-stack)
         [animation-change? next-action] (get-action inbox current-animation-name)
         frame-n (if ^boolean animation-change? 0 frame-n)
@@ -130,17 +130,20 @@
         animation-fn (animation-name animations)
         [frame frame-n] (incr-frame animation-fn frame-n)]
     (if animation-change?
-      (assoc component-state
-             :animation-stack (if next-action
-                                ;; Put the next action on the top of
-                                ;; the stack
-                                (conj animation-stack next-action)
-                                ;; There always needs to be an animation
-                                ;; so if the stack has only 1 item in it
-                                ;; then do not drop any items
-                                (if ^boolean (> (count animation-stack) 1)
-                                  (drop 1 animation-stack)
-                                  animation-stack))
-             :frame-n frame-n
-             :frame frame)
-      (assoc component-state :frame-n frame-n :frame frame))))
+      {:animations animations
+       :animation-stack (if next-action
+                          ;; Put the next action on the top of
+                          ;; the stack
+                          (conj animation-stack next-action)
+                          ;; There always needs to be an animation
+                          ;; so if the stack has only 1 item in it
+                          ;; then do not drop any items
+                          (if ^boolean (> (count animation-stack) 1)
+                              (drop 1 animation-stack)
+                              animation-stack))
+       :frame-n frame-n
+       :frame frame}
+      {:animations animations
+       :animation-stack animation-stack
+       :frame-n frame-n
+       :frame frame})))

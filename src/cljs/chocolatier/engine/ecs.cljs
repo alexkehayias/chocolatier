@@ -59,21 +59,21 @@
   (let [component-set (set component-ids)]
     ;; Iterate through all the entities and only accumulate the ones
     ;; that have all the required component IDs
-    (reduce (fn [accum [entity-id entity-component-set]]
-              (if ^boolean (subset? component-set entity-component-set)
-                (conj accum entity-id)
-                accum))
-            #{}
-            (:entities state))))
+    (loop [entities (:entities state)
+           accum (transient #{})]
+      (let [entity (first entities)]
+        (if entity
+          (let [[entity-id entity-component-set] entity]
+            (if ^boolean (subset? component-set entity-component-set)
+                (recur (rest entities) (conj! accum entity-id))
+                (recur (rest entities) accum)))
+          (persistent! accum))))))
 
 (defn get-component
+  "Returns the component meta as a hashmap of
+   :fn :subscriptions :select-components"
   [state component-id]
   (get-in state [:components component-id]))
-
-(defn get-component-fn
-  [state component-id]
-  (or (get-in state [:components component-id :fn])
-      (throw (js/Error. (str "No component function found for " component-id)))))
 
 (defn get-component-state
   "Returns a hashmap of state associated with the component for the given
@@ -90,16 +90,6 @@
   "Returns an updated hashmap with component state for the given entity"
   [state component-id entity-id val]
   (assoc-in state [:state component-id entity-id] val))
-
-(defn update-component-state-and-events
-  "Update a components state. If there are events then also add those to
-  game state."
-  ([state component-id entity-id val]
-   (mk-component-state state component-id entity-id val))
-  ([state component-id entity-id val events]
-   (-> state
-       (mk-component-state component-id entity-id val)
-       (ev/emit-events events))))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.
@@ -137,19 +127,10 @@
    Args:
    - state: The game state
    - entity-id: The unique ID of the entity
-   - component: A hashmap representing the component meta data
-   - cached-get-component-state: A function for getting component-state from the game state.
-     This allows the passing of a memoized function to cache results"
+   - component: A hashmap representing the component meta data"
   [state entity-id component]
   (let [{:keys [subscriptions select-components]} component
-        messages (ev/get-subscribed-events
-                  state
-                  ;; Implicitely add the
-                  ;; entity ID to the end of
-                  ;; the selectors, this
-                  ;; ensures messages are
-                  ;; per entity
-                  (map #(vector % entity-id) subscriptions))]
+        messages (ev/get-subscribed-events state entity-id subscriptions)]
     ;; Add in any selected components
     (loop [components select-components
            context (transient {:inbox messages})]
@@ -175,7 +156,7 @@
         component-fn (:fn component)]
     (loop [entities entity-ids
            state-accum (transient {})
-           event-accum (transient [])]
+           event-accum (array)]
       (let [entity-id (first entities)]
         (if entity-id
           (let [component-state (get component-states entity-id)
@@ -189,12 +170,12 @@
                 next-state (if (vector? next-comp-state)
                              (let [[next-comp-state events] next-comp-state]
                                (doseq [e events]
-                                 (conj! event-accum e))
+                                 (.push event-accum e))
                                (assoc! state-accum entity-id next-comp-state))
                              (assoc! state-accum entity-id next-comp-state))]
             (recur (rest entities) next-state event-accum))
           [(assoc-in state [:state component-id] (persistent! state-accum))
-           (persistent! event-accum)])))))
+           event-accum])))))
 
 (defn mk-system-fn
   "Returns a function representing a system that takes a single argument for
@@ -272,6 +253,7 @@
   (reduce (component-state-from-spec uid) state components))
 
 (defn rm-entity-from-component-index
+  "Remove the entity-id from the component entity index. Returns updated state."
   [state entity-id components]
   (reduce (fn [state component-id]
             (update-in state [:components component-id :entities]

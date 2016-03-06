@@ -130,18 +130,19 @@
       ;; Draw tiles from all layers of the tile map
       (assoc-in state [:state :tiles]
                 (loop [layers layers
-                       tiles (transient [])]
+                       tiles (array)]
                   (if-let [l (first layers)]
                     (recur (rest layers)
-                           (conj! tiles
-                                  (create-tiles-from-spec! renderer
-                                                           stage
-                                                           tileset-texture
-                                                           width height
-                                                           tileset-width tileset-height
-                                                           tilewidth tileheight
-                                                           (:data l))))
-                    (persistent! tiles)))))))
+                           (do (.push tiles
+                                     (create-tiles-from-spec! renderer
+                                                              stage
+                                                              tileset-texture
+                                                              width height
+                                                              tileset-width tileset-height
+                                                              tilewidth tileheight
+                                                              (:data l)))
+                               tiles))
+                    tiles))))))
 
 (defn load-tilemap
   "Async load a json tilemap at the url. Calls callback function with the

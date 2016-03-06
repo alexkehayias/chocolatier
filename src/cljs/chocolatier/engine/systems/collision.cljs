@@ -119,10 +119,10 @@
          (not (keyword-identical? id (:from-id attributes))))))
 
 (defn ^boolean not-self? [id item]
-  (not (keyword-identical? id (:id (last item)))))
+  (not (keyword-identical? id (:id (nth item 4)))))
 
 (defn ^boolean not-self-attack? [id item]
-  (not (keyword-identical? id (-> item last :attributes :from-id))))
+  (not (keyword-identical? id (get-in (nth item 4) [:attributes :from-id]))))
 
 (defn collision-events
   "Returns a hashmap of all collision events by entity ID"
@@ -131,7 +131,7 @@
          accum (transient {})]
     (let [item (first items)]
       (if item
-        (let [id (:id (last item))
+        (let [id (:id (nth item 4))
               collisions (rbush-search spatial-index item)]
           (if (some #(and (not-self? id %) (not-self-attack? id %))
                     collisions)

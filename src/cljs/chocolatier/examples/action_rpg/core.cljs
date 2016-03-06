@@ -72,12 +72,12 @@
     (dom/append! node (.-domElement stats-obj))
 
     ;; Setup the inspector
-    ;; (mount-inspector inspector-state inspector-app-state)
+    (mount-inspector inspector-state inspector-app-state)
 
     (game-loop state
                (fn [handler]
                  (-> handler
-                     ;; (wrap-state-inspector inspector-state inspector-app-state)
+                     (wrap-state-inspector inspector-state inspector-app-state)
                      (wrap-killswitch *running*)
                      ;; (wrap-copy-state-to-atom *state*)
                      (wrap-fps-stats stats-obj))))))

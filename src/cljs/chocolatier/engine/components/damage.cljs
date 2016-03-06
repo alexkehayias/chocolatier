@@ -26,9 +26,8 @@
    - Includes collisions that have an ID that start with :attack
    - Excludes collisions where the parent-id matches the entity-id
      (can't be damaged by yourself)"
-  [entity-id {:keys [id attributes]}]
-  (and (not (keyword-identical? entity-id (:from-id attributes)))
-       (:damage attributes)))
+  [entity-id {:keys [from-id damage]}]
+  (and (not (keyword-identical? entity-id from-id)) damage))
 
 (defn handle-damage
   "Returns updated component state and collection of events.
@@ -39,7 +38,7 @@
   ;; TODO emit action events like hit animation
   (let [{:keys [pos-x pos-y]} move-state
         text-fn (:text-fn component-state)
-        damage (reduce + (map :damage attacks))
+        damage (transduce (map :damage) + 0 attacks)
         next-state (-> component-state
                        (update :hitpoints - damage)
                        (update :cooldown #(first (cnt/tick-cooldown %))))
@@ -73,29 +72,25 @@
   ;; Use a double nested loop to optimize performance
   (let [col-path [:msg :collisions]]
     (loop [events inbox
-           accum (transient [])]
+           accum (array)]
       (let [event (first events)]
         (if event
           (let [collisions (get-in event col-path)
                 next-accum (loop [collisions collisions
+                                  i (array 0)
                                   acc accum]
-                             (let [collision (first collisions)]
+                             (let [indx (aget i 0)
+                                   collision (aget collisions indx)]
                                (if collision
-                                 (let [[pos-x pos-y _ _ collision-state] collision]
-                                   (recur (rest collisions)
-                                          (if (valid-attack? entity-id collision-state)
-                                            ;; Append the position on
-                                            ;; the attributes Hashmap
-                                            ;; of :from-id :damage
-                                            ;; :type :position
-                                            (conj! acc (assoc (:attributes collision-state)
-                                                              :position [pos-x pos-y]))
+                                 (let [{:keys [attributes]} (aget collision 4)]
+                                   (recur collisions
+                                          (do (aset i 0 (+ indx 1)) i)
+                                          (if (valid-attack? entity-id attributes)
+                                            (do (.push acc attributes) acc)
                                             acc)))
                                  acc)))]
             (recur (rest events) next-accum))
-          (persistent! accum))))
-    )
-  )
+          accum)))))
 
 (defn damage
   "If there are any collisions with a valid attack and the entity is not

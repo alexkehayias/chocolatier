@@ -39,8 +39,8 @@ The game engine implemented using a modified entity component system which organ
 Organization:
 
 1. Scene - collection of system labels to be looked up and called by the game loop (main menu, random encounter, world map, etc)
-2. System - functions that operates on a component (or not) and returns updated game state. Examples: input, rendering, collision detection
-3. Components - hold state and component function relating to a certain aspect. Polymorphism can be used to dispatch on entity IDs (or however else you want) for finer control using multimethods. Examples: moveable, user controllable, collidable, destructable
+2. System - functions that operates on a component or not and returns updated game state. Examples: input, rendering, collision detection
+3. Components - functions that return updated component state per entity and events to emit
 4. Entities - unique IDs that have a list of components to they participate in. Examples: `{:player1 [:controllable :moveable :destructable]}`
 
 ### Example
@@ -51,11 +51,6 @@ The following example implements a simple game loop, middleware, system, compone
 (ns user.test
   (:require [chocolatier.engine.ecs :as ecs]
             [chocolatier.engine.core :refer [game-loop mk-game-state]]))
-
-(defn test-system
-  "Call all the component functions and return updated game state"
-  [state component-f entity-ids]
-  (reduce component-f state entity-ids))
 
 (defn test-component-fn
   "Increment the :x value by 1"
@@ -68,8 +63,7 @@ The following example implements a simple game loop, middleware, system, compone
   []
   (mk-game-state {} [:scene :test-scene [:test-system]]
                     [:current-scene :test-scene]
-                    [:system :test-system test-system :testable]
-                    [:component :testable test-component-fn]
+                    [:system :test-system :testable test-component-fn]
                     [:entity :player1 [[:testable {:x 0 :y 0}]]]
                     [:entity :player2 [[:testable {:x 10 :y 10}]]]))
 
@@ -121,10 +115,10 @@ For example, the following component will emit a single event called `:my-event`
 Any component can subscribe to events by creating a component with a `:subscriptions` key in the options hashmap where each subscription is a vector of selectors:
 
 ```clojure
-(mk-component state :player1 [component-f {:subscriptions [[:e1] [:e2]]}])
+(mk-component state [component-f {:subscriptions [:action :movement]}])
 ```
 
-The subscribed component will receive the event in a hashmap in the `:inbox` key passed in as the third argument to the component function. Messages that are sent are available immediately to the subscriber which allows for events to be sent and received within the same frame and are therefore order dependent.
+The subscribed component will receive the event in a hashmap in the `:inbox` key in the context argument (third argument) to the component function. Messages that are sent are available immediately to the subscriber which allows for events to be sent and received within the same frame and are therefore order dependent.
 
 ## Tilemaps
 
@@ -170,11 +164,30 @@ View the tests using the devcards at `http://127.0.0.1:1223/dev`
 
 The game engine is being tested to get to 100 "game objects" with meaningful functionality, tilemaps, sound, etc at 60 FPS. Performance tuning is an ongoing process and the project is still being thoroughly optimized. ClojureScript presents challenges for optimization including garbage collection, persistent data structures, and functional paradigms that js engines may have difficulty optimizing.
 
-Where appropriate, transient state should be used when operating on large collections and hashmaps for better performance. See `chocolatier.macros` in the `clj` source directory for helpers with transient state.
+### Tips
 
-The `min` build uses advanced compilation and static function inlining which can nearly double the framerate in some instances due to the dynamic nature of the game engine internals.
+Here are some tips for optimizing performance of game loops:
 
-## Benchmarks
+- Use the Chrome dev tools to do a CPU profile and trace where time is being spent
+- Don't use `partial` or `apply` as they are slow
+- Always specify each arrity of a function instead of using `(fn [& args] ...)`
+- Don't use `multimethod`, use `cond` or `condp` and manually dispatch
+- Use `array` when you need to quickly append items to a collection (mutable)
+- Use `loop` instead of `for` or `into` with transients or arrays as the accumulator
+- Avoid boxing and unboxing i.e multiple maps/fors over a collection, use transducers, reducers or loops
+- Don't make multiple calls to get the same data, put it in a `let`
+- Avoid heavily nested closures as the lookup tree becomes very long and slow
+- Favor eager operations over lazy operations i.e `reduce` instead of `for`
+- Don't use `concat` or `mapcat` as they can be slow and generate lots of garbage
+- Don't use `last` as it will need to traverse the whole sequence, use `nth` instead if you know how many elements are in the collection
+- Don't use hashmaps as functions `({:a 1} :a)`, instead use `get` or keywords as functions
+- Always return the same type from a function (V8 can then optimize it)
+
+### Advanced Compilation
+
+The `min` build uses advanced compilation with static function inlining which can nearly substantially increase the framerate in most instances.
+
+### Benchmarks
 
 Naive frames per second benchmarks are available at `chocolatier.engine.benchmarks` for measuring the performance of the framework.
 

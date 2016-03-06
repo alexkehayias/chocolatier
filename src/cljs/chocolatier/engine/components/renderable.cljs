@@ -27,7 +27,7 @@
   (let [{:keys [pos-x pos-y]} moveable-state]
     ;; Mutate the x and y position of the sprite if there was any
     ;; move changes
-    (pixi/alter-obj! sprite "position" (js-obj "x" pos-x "y" pos-y))))
+    (aset sprite "position" (js-obj "x" pos-x "y" pos-y))))
 
 ;; TODO figure out a way to not need the stage so we can more easily
 ;; create sprite state. For example, in the attack component we must
@@ -65,6 +65,9 @@
         {:keys [text rotation]} text-state
         text-obj (:text-obj component-state)]
     ;; Mutate the text object position and text
-    (when moveable (set-position! text-obj moveable))
-    (when text (pixi/alter-obj! text-obj "text" text "rotation" rotation))
+    (when moveable
+      (set-position! text-obj moveable))
+    (when text
+      (aset text-obj "text" text)
+      (aset text-obj "rotation" rotation))
     component-state))

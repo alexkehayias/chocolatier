@@ -20,7 +20,8 @@
 * DONE Add type hints before if statements to avoid extra checking
 CLOSED: [2016-03-03 Thu 21:41]
 (if ^boolean (pred v) ...)
-* TODO Refactor system functions
+* DONE Refactor system functions
+CLOSED: [2016-03-06 Sun 15:42]
 - [X] Systems should provide the lens for component functions instead of wrapping all the component functions
 - [X] Update all the component state in one shot instead of updating the state for each entity->component
   - Assumes there can be no inter system component state access or message passing
@@ -35,11 +36,6 @@ CLOSED: [2016-03-03 Thu 21:41]
     - System with component [:system :s2 :c1 my-component-fn]
 - [X] Update benchmarks
 - [X] Remove mk-component-fn if it's no longer used
-- [ ] Update tests
-  - [ ] mk-system-fn
-    - [ ] Test events get emitted
-    - [ ] Test component state gets updated
-  - [ ] get-component-context
 - [X] Systems should still declare what components they work on so it's not hardcoded into the implementation
   - What about multiple components?
     - Example: Collision detection works on entities that have movement and collision
@@ -50,9 +46,15 @@ CLOSED: [2016-03-03 Thu 21:41]
 - [X] Replace format-fn used by the ai system
   - Probably want a custom system instead
   - TODO need to remove the hardcoding of the component name
-- [ ] Update action rpg example
-  - [ ] Update any systems that do anything special to implement their own system fn
-  - [ ] Delete any systems that are generic
+- [X] Update action rpg example
+  - [X] Update any systems that do anything special to implement their own system fn
+  - [X] Delete any systems that are generic
+- [X] Update tests
+  - [X] mk-system-fn
+    - [X] Test events get emitted
+    - [X] Test component state gets updated
+  - [X] get-component-context
+  - [X] get-subscribed-events
 * TODO Refactor the ai system to something more sane
 * TODO Refactor the keyboard input system to emit events on change
 * TODO Make utils.counters 1 element js arrays for better performance
