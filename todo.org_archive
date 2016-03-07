@@ -1704,3 +1704,287 @@ CLOSED: [2016-01-10 Sun 12:33]
   - When eliminating some enemies, end up colliding with nothing
 - [X] Determine if it's attack collision if there is a damage attribute instead of overloading the entity-id
 - [X] FIX cooldown requires a full cycle before it allows an attack
+
+* DONE Add type hints before if statements to avoid extra checking
+CLOSED: [2016-03-03 Thu 21:41]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:42
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+(if ^boolean (pred v) ...)
+
+* DONE Refactor system functions
+CLOSED: [2016-03-06 Sun 15:42]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:42
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- [X] Systems should provide the lens for component functions instead of wrapping all the component functions
+- [X] Update all the component state in one shot instead of updating the state for each entity->component
+  - Assumes there can be no inter system component state access or message passing
+- [X] Figure out how to handle events
+  Accumulate it using a transient and then emit it later
+- [X] Update mk-system with less boilerplate for creating a system and an accompanying component
+  - Component's are ALWAYS part of a system, a system does not always work on a component
+  - Avoid errors like not having a component function that is called by a system function
+  - Could present opportunities for optimization if we can guarantee the component fn is there
+  - API
+    - Custom system [:system :s1 my-system-fn]
+    - System with component [:system :s2 :c1 my-component-fn]
+- [X] Update benchmarks
+- [X] Remove mk-component-fn if it's no longer used
+- [X] Systems should still declare what components they work on so it's not hardcoded into the implementation
+  - What about multiple components?
+    - Example: Collision detection works on entities that have movement and collision
+  - If they don't work on a component then idiomatically use "global"
+- [X] Replace all args-fn with select-components
+  - What about when you need some global state like input?
+  - What if you need component state for a different entity?
+- [X] Replace format-fn used by the ai system
+  - Probably want a custom system instead
+  - TODO need to remove the hardcoding of the component name
+- [X] Update action rpg example
+  - [X] Update any systems that do anything special to implement their own system fn
+  - [X] Delete any systems that are generic
+- [X] Update tests
+  - [X] mk-system-fn
+    - [X] Test events get emitted
+    - [X] Test component state gets updated
+  - [X] get-component-context
+  - [X] get-subscribed-events
+
+* DONE Create a reverse lookup for checking entities given a component label
+CLOSED: [2016-02-27 Sat 15:48]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- Currently, to get entities that have a component you would need to get all keys in that component's state which is not very intuitive
+- There should be a way of looking up all the components an entity has
+- There should be a way of looking up all entities for a given component
+- The index should be a set to guarantee uniqueness
+
+* DONE Explore the use the entity ID to handle polymorphism?
+CLOSED: [2016-03-03 Thu 12:00]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- Instead of entity IDs being labels they can be types
+- If they are known types then we can make component fns which are protocol methods
+- This would allow you to create per entity ID polymorphism, i.e player1, some boss, have different movement rules?
+- Would need a macro that copies all the functionality of the Keyword class so it can still be used for looking up things in the game state
+- Issues:
+  - Dispatch of implementation would be per entity so if we want all enemies to share the same implementation would need a lot of copying
+- Example:
+  #+begin_src clojure
+  (defprotocol Moveable
+    (move [this component-state context]
+      "Handle whether or not the entity should move"))
+
+  (extend-type Player1
+    Moveable
+    (move [this component-state {:keys [inbox]}]
+      (let [{:keys [pos-x pos-y move-rate direction]} component-state
+            {new-direction :direction} (:msg (get-move-change-event inbox))
+            collision? (collision-event? inbox)]
+        (let [next-direction (or new-direction direction)
+              [offset-x offset-y] (if collision?
+                                    [0 0]
+                                    (mapv #(* move-rate %)
+                                          (direction->offset next-direction)))]
+          (assoc component-state
+                 :pos-x (- pos-x offset-x)
+                 :pos-y (- pos-y offset-y)
+                 :offset-x offset-x
+                 :offset-y offset-y
+                 :move-rate move-rate
+                 :direction next-direction)))))
+  #+end_src
+
+* DONE Component state as defrecords perf improvement?
+CLOSED: [2016-02-24 Wed 13:53]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- Could also solve the validation problem so all keys are known up front
+- In the benchmarks it didn't make a difference
+
+* DONE Make component state mutable
+CLOSED: [2016-02-24 Wed 16:48]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- Same benefit if you use transient or a js-obj
+- Tested in benchmarks js objects and transient hashmaps performed 40% better that persistent maps
+- In the running game engine though there was not much of a difference in the overall frame rate
+  See the flatten-state branch for more
+- [ ] Don't return a new object, return the same one so we are not creating new data structures every time
+
+* DONE Use reducer for events/get-subscribed-events
+CLOSED: [2016-02-23 Tue 04:19]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+Doesn't make any noticeable difference
+
+* DONE Move event functions out of chocolatier.systems.events and into chocolatier.events
+CLOSED: [2016-02-23 Tue 04:51]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+
+* DONE Rename ces namespace to ecs
+CLOSED: [2016-02-23 Tue 05:31]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+
+* DONE Text damage rendering to the top left corner
+CLOSED: [2016-02-14 Sun 11:03]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- :cleanup-fn is not being called when an entity is being removed from the scene
+- Can we make that automatically declared by the component instead of in the wiring up?
+
+* DONE Inspector
+CLOSED: [2016-02-23 Tue 19:46]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- Show the component states of an entity and be able to adjust it
+- Implement as dom elements
+- [X] Make game-loop take a state atom to copy state into every trip through the game loop
+- [X] Auto generate form of component state selected
+- [X] If something is changed, write the change into the game state
+  - This should happen in real time
+  - Maybe specify if you want to override the current component state with what's in the inspector ignoring game loop?
+- [X] Abstraction for adding functionality at the game loop level?
+  - This could be useful for tooling
+  - Logging
+  - Created middleware to address this
+- [X] Remove the checkouts directory when done integrating
+
+* DONE Remove text and styles from mk-text-sprite-state
+CLOSED: [2016-02-22 Mon 09:52]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+It should be only needed for the text component so there is separation from state and rendering
+
+* DONE Submit talk for Clojure West <2016-01-27 Wed>
+CLOSED: [2016-01-28 Thu 06:10]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:43
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+DEADLINE: <2016-01-28 Thu 12:00>
+** Bio:
+Alex Kehayias is the CTO at Shareablee and works on biggish data problems to help brands and publishers win the social web. Clojure and Python are his weapons of choice by day and by night. He is an active musician, tech community organizer (ClojureNYC), and helps mentor people learning to code.
+** Description:
+Alex Kehayias shares the many joys and challenges of building a game engine in a functional style using Clojure and ClojureScript. Over the course of 2+ years, Alex has been actively writing (and rewriting) a functional game engine to find the ideal combination of a quick feedback loop, testing with data, and performance. Join in the sorrows and triumphs of bringing functional programming to web-based game development for fun and zero profit!
+** Main Ideas:
+1. Game loop as a reduce call
+  Structuring the overall game loop as a reduction over a collection of functions into a data structure provides the benefits of functional purity, one way data flow, and easy testing.
+2. Entity Component Systems are a perfect match for FP
+  Breaking down games following an entity component system popularized by Scott Bilas and the Unity game engine brings the ability to describe complex behaviors with data instead of code which makes for faster iteration to help find the fun.
+3. Functional programming comes at a cost
+  Performance is always a concern in game programming and the additional usage of functional paradigms means additional overhead, but thankfully can be overcome thanks to the ClojureScript compiler and heavy reference of the core of Clojure.
+** Past talks:
+- Functional Game Engine Design @ LispNYC: https://vimeo.com/152433890
+- Clojure Panel @ ClojureNYC: http://www.meetup.com/Clojure-NYC/events/224632241/
+- Storm & Clojure: http://www.meetup.com/Clojure-NYC/events/219336391/
+- And a few other workshops as part of the ClojureScript NYC meetup group
+
+* DONE Query-like functionality for state                              :core:
+CLOSED: [2016-03-07 Mon 11:46]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:46
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- Send a query with what you want and a filter function
+- Returns a sequence
+- Resolved: components have an option to select component state that will be included in their context
+
+* DONE Protection against overflowing messages
+CLOSED: [2016-03-07 Mon 11:47]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:47
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+Throw an error if two many messages are generated. This will prevent avalanches and fail faster so it is easier to diagnose problems.
+- [ ] Limit on number of messages in an inbox
+- [ ] Limit on number of messages in the event queue
+- Ended up adding a system as the last system in the scene that wipes all messages at the end of each loop
+
+* DONE Sprite animation rendering
+CLOSED: [2016-03-07 Mon 11:48]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:48
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- Fixed timestep animation?
+  Each frame ticks the next frame in an animation
+- Action list animation?
+  This would allow the cancellation of an animation easily. Say a player is attacking and then get's hit halfway through the animation, could cancel the animation and start the hit animation
+
+* DONE Inspect protocol
+CLOSED: [2016-03-07 Mon 11:49]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:49
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+All game engine things must be inspectable, returning details about it's current state
+
+* DONE Replace usage of map/filter/for with eager implementations
+CLOSED: [2016-03-07 Mon 11:54]
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-03-07 Mon 11:54
+:ARCHIVE_FILE: ~/Dropbox/Private/Clojure/chocolatier/todo.org
+:ARCHIVE_CATEGORY: todo
+:ARCHIVE_TODO: DONE
+:END:
+- Use loops instead of for/map as they are more efficient when using transients or arrays as accumulators

@@ -1,7 +1,7 @@
 # Development Notes and TODO list
 # Date stamps are when the task was started
 # Closed stamps are when it was completed
-
+#+OPTIONS: toc:nil
 #+TODO: TODO FIX | DONE WONT-DO
 
 * TODO Initial release
@@ -17,119 +17,75 @@
   - [ ] Nicer tile map
   - [ ] Nicer sprites
   - [ ] Obligatory Flappy Bird?
-* DONE Add type hints before if statements to avoid extra checking
-CLOSED: [2016-03-03 Thu 21:41]
-(if ^boolean (pred v) ...)
-* DONE Refactor system functions
-CLOSED: [2016-03-06 Sun 15:42]
-- [X] Systems should provide the lens for component functions instead of wrapping all the component functions
-- [X] Update all the component state in one shot instead of updating the state for each entity->component
-  - Assumes there can be no inter system component state access or message passing
-- [X] Figure out how to handle events
-  Accumulate it using a transient and then emit it later
-- [X] Update mk-system with less boilerplate for creating a system and an accompanying component
-  - Component's are ALWAYS part of a system, a system does not always work on a component
-  - Avoid errors like not having a component function that is called by a system function
-  - Could present opportunities for optimization if we can guarantee the component fn is there
-  - API
-    - Custom system [:system :s1 my-system-fn]
-    - System with component [:system :s2 :c1 my-component-fn]
-- [X] Update benchmarks
-- [X] Remove mk-component-fn if it's no longer used
-- [X] Systems should still declare what components they work on so it's not hardcoded into the implementation
-  - What about multiple components?
-    - Example: Collision detection works on entities that have movement and collision
-  - If they don't work on a component then idiomatically use "global"
-- [X] Replace all args-fn with select-components
-  - What about when you need some global state like input?
-  - What if you need component state for a different entity?
-- [X] Replace format-fn used by the ai system
-  - Probably want a custom system instead
-  - TODO need to remove the hardcoding of the component name
-- [X] Update action rpg example
-  - [X] Update any systems that do anything special to implement their own system fn
-  - [X] Delete any systems that are generic
-- [X] Update tests
-  - [X] mk-system-fn
-    - [X] Test events get emitted
-    - [X] Test component state gets updated
-  - [X] get-component-context
-  - [X] get-subscribed-events
+* TODO In browser repl to eval into the game engine
+Allow the user to modify and write new code in the browser while the game is running
+** Example
+Modified snippet based on #clojurescript slack channel user escherize
+#+begin_src clojure
+(ns cljsfiddle.app
+  (:require [cljs.js :refer [eval-str empty-state js-eval]]))
+
+(defn my-eval [cljs-string]
+  (eval-str (empty-state)
+            (str "(ns cljs-user)"
+                 cljs-string)
+            'dummy-symbol
+            {:ns 'cljs.user
+             :eval js-eval
+             :def-emits-var true
+             :load (fn [& _] {:lang :clj :source "."})
+             :context :statement
+             ;; Safari support
+             :static-fns true}
+            (fn [{:keys [error value] :as x}]
+              (if error
+                (do
+                  (def *er x)
+                  (js/console.log (str error)))
+                value))))
+#+end_src
+** Ideas
+- Repl inside the game environment
+- Instead of event handlers, eval code
+- Source code in the game state so it can be viewed in the inspector
+  You never know where you'll be when you want to make that one change to see what happens
+  - Parse the source code into an AST
+  - Put the AST data in the inspector
+  - Wrap it in a type and show a codemirror widget for the source
+  - Edit the code, on submit, eval it and swap it into the state
+- Realtime collaboration of source code running in the browser
+  - On changes, send it over a socket
+  - Receive changes on a connected session
+  - Add a system for multiplayer syncing
+    - Server should be authoritative
+    - Clients synchronize with the server
+      - Latency based on the latency of the round trip to the server not to another player
+    - To avoid latency, replay state (without rendering) up to the present by keeping a buffer of snapshots of game state
+  - If source code is stored as state then it should be able to be sync'd
+  - Networking for game programming http://gafferongames.com/networking-for-game-programmers/what-every-programmer-needs-to-know-about-game-networking/
+* TODO In browser game IDE in ClojureScript
+- Inspect state
+- Alter running game state
+- Pause/rewind/fastforward
+- Code editor
+- Real time collaboration
 * TODO Refactor the ai system to something more sane
 * TODO Refactor the keyboard input system to emit events on change
 * TODO Make utils.counters 1 element js arrays for better performance
 * TODO Change any use of = or not= to identical?
-* TODO Replace usage of map/filter/for with eager implementations
 * TODO Cache dynamic lookups in the game loop
 - There are many places that use dynamic lookups to get things like the list of entities, components, etc that could be cached
 - If you cache, need a way to invalidate the cache
 - Shouldn't v8 be doing this already?
 * TODO Remove anonymous functions
+Anonymous functions are slower than def'd functions in js
 - [ ] Game loop creates a new anonymous function every time the game loop recurs
 - [ ] Component functions are anonymous functions
   - Also loose ability to have the repl rebind it dynamically once it's in the game loop
 - [ ] System functions are anonymous
-* DONE Create a reverse lookup for checking entities given a component label
-CLOSED: [2016-02-27 Sat 15:48]
-- Currently, to get entities that have a component you would need to get all keys in that component's state which is not very intuitive
-- There should be a way of looking up all the components an entity has
-- There should be a way of looking up all entities for a given component
-- The index should be a set to guarantee uniqueness
 * FIX Fix all keys being captures by input system and it should only be in a certain scope
-* DONE Explore the use the entity ID to handle polymorphism?
-CLOSED: [2016-03-03 Thu 12:00]
-- Instead of entity IDs being labels they can be types
-- If they are known types then we can make component fns which are protocol methods
-- This would allow you to create per entity ID polymorphism, i.e player1, some boss, have different movement rules?
-- Would need a macro that copies all the functionality of the Keyword class so it can still be used for looking up things in the game state
-- Issues:
-  - Dispatch of implementation would be per entity so if we want all enemies to share the same implementation would need a lot of copying
-- Example:
-  #+begin_src clojure
-  (defprotocol Moveable
-    (move [this component-state context]
-      "Handle whether or not the entity should move"))
-
-  (extend-type Player1
-    Moveable
-    (move [this component-state {:keys [inbox]}]
-      (let [{:keys [pos-x pos-y move-rate direction]} component-state
-            {new-direction :direction} (:msg (get-move-change-event inbox))
-            collision? (collision-event? inbox)]
-        (let [next-direction (or new-direction direction)
-              [offset-x offset-y] (if collision?
-                                    [0 0]
-                                    (mapv #(* move-rate %)
-                                          (direction->offset next-direction)))]
-          (assoc component-state
-                 :pos-x (- pos-x offset-x)
-                 :pos-y (- pos-y offset-y)
-                 :offset-x offset-x
-                 :offset-y offset-y
-                 :move-rate move-rate
-                 :direction next-direction)))))
-  #+end_src
-
-* DONE Component state as defrecords perf improvement?
-CLOSED: [2016-02-24 Wed 13:53]
-- Could also solve the validation problem so all keys are known up front
-- In the benchmarks it didn't make a difference
-* DONE Make component state mutable
-CLOSED: [2016-02-24 Wed 16:48]
-- Same benefit if you use transient or a js-obj
-- Tested in benchmarks js objects and transient hashmaps performed 40% better that persistent maps
-- In the running game engine though there was not much of a difference in the overall frame rate
-  See the flatten-state branch for more
-- [ ] Don't return a new object, return the same one so we are not creating new data structures every time
 * TODO Test runner for js tests via PhantomJS
 https://github.com/emezeske/lein-cljsbuild/blob/1.1.2/doc/TESTING.md
-* DONE Use reducer for events/get-subscribed-events
-CLOSED: [2016-02-23 Tue 04:19]
-Doesn't make any noticeable difference
-* DONE Move event functions out of chocolatier.systems.events and into chocolatier.events
-CLOSED: [2016-02-23 Tue 04:51]
-* DONE Rename ces namespace to ecs
-CLOSED: [2016-02-23 Tue 05:31]
 * TODO Self hosted cljs integration
 Can we get the whole library and examples bootstrapped using self compiled cljs?
 - Replumb is a library for creating your own
@@ -145,10 +101,6 @@ Can we get the whole library and examples bootstrapped using self compiled cljs?
 * TODO Add meta tags to component data for inspector to provide help text for fields
 - Example: (meta ^{:doc "yo"} {:a 1})
 - This doesn't work with the evaluation model of praline because the parent would hold the information and need to pass it to the child
-* DONE Text damage rendering to the top left corner
-CLOSED: [2016-02-14 Sun 11:03]
-- :cleanup-fn is not being called when an entity is being removed from the scene
-- Can we make that automatically declared by the component instead of in the wiring up?
 * FIX Sending out hit action event all enemy animations receive it?
 - CHECK FIRST: pixi reuses textures or frames
 - In animateable component:
@@ -156,42 +108,6 @@ CLOSED: [2016-02-14 Sun 11:03]
     (when (= next-action :hit-up)
       (println "HIT UP" next-action current-animation-name))
   - Stack should have :stand-down in it, but only has :hit-up, this means that pushing the current action down the stack is not working
-* DONE Inspector
-CLOSED: [2016-02-23 Tue 19:46]
-- Show the component states of an entity and be able to adjust it
-- Implement as dom elements
-- [X] Make game-loop take a state atom to copy state into every trip through the game loop
-- [X] Auto generate form of component state selected
-- [X] If something is changed, write the change into the game state
-  - This should happen in real time
-  - Maybe specify if you want to override the current component state with what's in the inspector ignoring game loop?
-- [X] Abstraction for adding functionality at the game loop level?
-  - This could be useful for tooling
-  - Logging
-  - Created middleware to address this
-- [X] Remove the checkouts directory when done integrating
-* DONE Remove text and styles from mk-text-sprite-state
-CLOSED: [2016-02-22 Mon 09:52]
-It should be only needed for the text component so there is separation from state and rendering
-* DONE Submit talk for Clojure West <2016-01-27 Wed>
-CLOSED: [2016-01-28 Thu 06:10]
-DEADLINE: <2016-01-28 Thu 12:00>
-** Bio:
-Alex Kehayias is the CTO at Shareablee and works on biggish data problems to help brands and publishers win the social web. Clojure and Python are his weapons of choice by day and by night. He is an active musician, tech community organizer (ClojureNYC), and helps mentor people learning to code.
-** Description:
-Alex Kehayias shares the many joys and challenges of building a game engine in a functional style using Clojure and ClojureScript. Over the course of 2+ years, Alex has been actively writing (and rewriting) a functional game engine to find the ideal combination of a quick feedback loop, testing with data, and performance. Join in the sorrows and triumphs of bringing functional programming to web-based game development for fun and zero profit!
-** Main Ideas:
-1. Game loop as a reduce call
-  Structuring the overall game loop as a reduction over a collection of functions into a data structure provides the benefits of functional purity, one way data flow, and easy testing.
-2. Entity Component Systems are a perfect match for FP
-  Breaking down games following an entity component system popularized by Scott Bilas and the Unity game engine brings the ability to describe complex behaviors with data instead of code which makes for faster iteration to help find the fun.
-3. Functional programming comes at a cost
-  Performance is always a concern in game programming and the additional usage of functional paradigms means additional overhead, but thankfully can be overcome thanks to the ClojureScript compiler and heavy reference of the core of Clojure.
-** Past talks:
-- Functional Game Engine Design @ LispNYC: https://vimeo.com/152433890
-- Clojure Panel @ ClojureNYC: http://www.meetup.com/Clojure-NYC/events/224632241/
-- Storm & Clojure: http://www.meetup.com/Clojure-NYC/events/219336391/
-- And a few other workshops as part of the ClojureScript NYC meetup group
 * TODO Rename components with -able                                 :cleanup:
 i.e animateable -> animation
 * TODO Update the sprite/text renderer component to cull if the entity is outside of the viewport
@@ -220,7 +136,7 @@ When dev-ing it's nice to not have to deal with nil errors i.e calling nil as a 
 - [ ] Events can validate event messages
 * TODO Add position offset to text component to better position text around an entity
 * TODO Test coverage
-- [ ] Core framework
+- [X] Core framework
 - [ ] Components
 - [ ] Systems
 * TODO Store entity component labels in a set instead of a list/vector for faster comparisons
@@ -324,83 +240,68 @@ Implement a tile map that checks for locations of entities that are collidable a
   - After every system take all of the changes from component entities and events and make the update in one shot
   - Uses many assoc-in
   - Should components operate on all entities at the same time? That would allow a single assoc-in to the game state from the accumulated component state that could be reduced in
-
 * TODO Use a context buffer instead of writing all to one canvas
 - This should speed up the rendering of lots of sprites
 - Example code
-        function onLoad() {
-            // init stats
-            var stats = new Stats();
-            stats.getDomElement().style.position = 'absolute';
-            stats.getDomElement().style.left = '0px';
-            stats.getDomElement().style.top = '0px';
-            document.body.appendChild( stats.getDomElement() );
-            setInterval( function () { stats.update(); }, 1000 / 60 );
+  #+begin_src js
+  function onLoad() {
+      // init stats
+      var stats = new Stats();
+      stats.getDomElement().style.position = 'absolute';
+      stats.getDomElement().style.left = '0px';
+      stats.getDomElement().style.top = '0px';
+      document.body.appendChild( stats.getDomElement() );
+      setInterval( function () { stats.update(); }, 1000 / 60 );
 
-            // cache dom elements
-            canvas = document.getElementById('my_canvas');
-            context = canvas.getContext('2d');
-            width = canvas.width;
-            height = canvas.height;
-            shipImage = document.getElementById('ship');
+      // cache dom elements
+      canvas = document.getElementById('my_canvas');
+      context = canvas.getContext('2d');
+      width = canvas.width;
+      height = canvas.height;
+      shipImage = document.getElementById('ship');
 
-            // create canvas buffer
-            canvasBuffer = document.createElement('canvas');
-            contextBuffer = canvasBuffer.getContext('2d');
-            canvasBuffer.width = 100;
-            canvasBuffer.height = 100;
-            contextBuffer.translate(50, 50); // so we can rotate about the center point
+      // create canvas buffer
+      canvasBuffer = document.createElement('canvas');
+      contextBuffer = canvasBuffer.getContext('2d');
+      canvasBuffer.width = 100;
+      canvasBuffer.height = 100;
+      contextBuffer.translate(50, 50); // so we can rotate about the center point
 
-            // create lookup table for trig functions
-            angleIncrement = Math.PI / 12;
-            lookupTable = [];
-            for (var i = 0; i < 5000; i++) {
-                lookupTable[i] = {
-                    x: Math.cos(i) * width - 150,
-                    y: Math.sin(i) * height - 150
-                };
-            }
+      // create lookup table for trig functions
+      angleIncrement = Math.PI / 12;
+      lookupTable = [];
+      for (var i = 0; i < 5000; i++) {
+          lookupTable[i] = {
+              x: Math.cos(i) * width - 150,
+              y: Math.sin(i) * height - 150
+          };
+      }
 
-            // kick off the loop
-            window.setInterval(update, 16);
-        }
+      // kick off the loop
+      window.setInterval(update, 16);
+  }
 
-        // this is called using a 16 ms interval
-        function update() {
+  // this is called using a 16 ms interval
+  function update() {
 
-            // draw transformed ship image to a canvas buffer
-            contextBuffer.clearRect(0, 0, 100, 100);
-            contextBuffer.rotate(angleIncrement);
-            contextBuffer.drawImage(shipImage, 0, 0, 50, 50);
+      // draw transformed ship image to a canvas buffer
+      contextBuffer.clearRect(0, 0, 100, 100);
+      contextBuffer.rotate(angleIncrement);
+      contextBuffer.drawImage(shipImage, 0, 0, 50, 50);
 
-            // draw 5,000 ships
-            for (var i = 0; i < 5000; i++) {
-                var lookup = lookupTable[i];
-                context.drawImage(canvasBuffer, lookup.x, lookup.y);
-            }
-        }
+      // draw 5,000 ships
+      for (var i = 0; i < 5000; i++) {
+          var lookup = lookupTable[i];
+          context.drawImage(canvasBuffer, lookup.x, lookup.y);
+      }
+  }
+  #+end_src
 * TODO Use AABBTree (Axis aligned Bounding Box Tree) for collision detection
 * TODO Make the input system emit an event
 Currently it updates it's component state but that's it. SHould send an event to avoid other components querying it directly
-
 * TODO Change mk-component to also handle subscribing to events
 * TODO Change mk-system to also register it with a scene id
-* TODO Query-like functionality for state                              :core:
-Send a query with what you want and a filter function
-Returns a sequence
 * TODO Reset the game height on screen resize                          :core:
-* TODO Protection against overflowing messages
-  Throw an error if two many messages are generated. This will prevent avalanches and fail faster so it is easier to diagnose problems.
-  - [ ] Limit on number of messages in an inbox
-  - [ ] Limit on number of messages in the event queue
-
-* TODO Change 'state' to 'game' everywhere it is passed in as an argument
-game -> :state is where the state lives, everything else is game related such as systems, components, platform, etc
-* TODO Tests [2/3] <2014-10-04 Sat>
-- [X] CES internals
-- [ ] Input system/components
-- [X] Event system
-
 * TODO Re-implement fixed timestep loop
 http://codeincomplete.com/posts/2013/12/4/javascript_game_foundations_the_game_loop/
 * TODO During movement change the players map position <2014-03-23 Sun>
@@ -413,15 +314,12 @@ This should help with the collision issues so that movement is decoupled from th
   - [ ] Tiles
   - [ ] Player
   - [ ] Monster
-
 * TODO Function to translate screen coords to map coords
-
 * TODO Entity to Tile collision detection
 - [ ] Boundary collisions (is a tile passable)
   - Check the players map position and find the nearest tile in the tile map
   - If the tile is passable then do nothing
   - If not then reset offset-x and offset-y to 0
-
 * TODO Multiple hit boxes per entity
 - Entities should have body parts (multiple hit boxes)
 - Body parts have a hitbox and are checked during collision detection
@@ -430,16 +328,8 @@ Makes a series of state changes to the game and returns the end state once all s
 Can be used for testing behavior visually and with real results
 - [ ] Record game state
 - [ ] Playback game state
-
-* TODO Sprite animation rendering
-- Fixed timestep animation?
-  Each frame ticks the next frame in an animation
-- Action list animation?
-  This would allow the cancellation of an animation easily. Say a player is attacking and then get's hit halfway through the animation, could cancel the animation and start the hit animation
 * TODO [#A] Sound system
-System that reads an entities action list and global action list and plays the sound
-* TODO Make game-loop a function that takes in args for frame rate and main function to call
+- System that takes sound events, debounces, and plays sounds
+- Use howlerjs to manage playing clips
 * TODO Draw ordering of entities to know which should be in front of what
 * TODO When moving, keep the player in the center unless the border is < 1/2 the distance to the player then allow the player to move towards it
-* TODO Inspect protocol
-All game engine things must be inspectable, returning details about it's current state
