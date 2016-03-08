@@ -37,7 +37,8 @@
   [samples-library]
   (fn [state]
     (let [;; Deduplicate any events for the exact same sounds
-          events (set (ev/get-events state [:audio]))
+          queue (get-in state ev/queue-path)
+          events (set (ev/get-events queue [:audio]))
           sample-ids (map #(get-in %1 [:msg :sample-id]) events)]
       (doseq [id sample-ids]
         (if-let [sample (get samples-library id)]

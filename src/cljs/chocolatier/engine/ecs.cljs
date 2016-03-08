@@ -126,11 +126,12 @@
   "Returns a hashmap of context for use with a component fn.
    Args:
    - state: The game state
+   - queue: The events queue
    - entity-id: The unique ID of the entity
    - component: A hashmap representing the component meta data"
-  [state entity-id component]
+  [state queue component entity-id]
   (let [{:keys [subscriptions select-components]} component
-        messages (ev/get-subscribed-events state entity-id subscriptions)]
+        messages (ev/get-subscribed-events queue entity-id subscriptions)]
     ;; Add in any selected components
     (loop [components select-components
            context (transient {:inbox messages})]
@@ -153,20 +154,18 @@
   (let [entity-ids (entities-with-component state component-id)
         component-states (get-all-component-state state component-id)
         component (get-component state component-id)
-        component-fn (:fn component)]
+        component-fn (:fn component)
+        queue (get-in state ev/queue-path)]
     (loop [entities entity-ids
            state-accum (transient {})
            event-accum (array)]
       (let [entity-id (first entities)]
         (if entity-id
           (let [component-state (get component-states entity-id)
-                context (get-component-context state entity-id component)
+                context (get-component-context state queue component entity-id)
                 next-comp-state (component-fn entity-id component-state context)
                 ;; If the component function returns a vector then there
                 ;; are events to accumulate
-                ;; HACK for some reason assoc! only mutates 8 times
-                ;; before it stops getting updated so need to pass it
-                ;; back into the loop
                 next-state (if (vector? next-comp-state)
                              (let [[next-comp-state events] next-comp-state]
                                (doseq [e events]
@@ -218,7 +217,7 @@
    it will default to an empty hashmap."
   [entity-id]
   (fn [state spec]
-    (if ^boolean (vector? spec)
+    (if (vector? spec)
       (let [[component-id component-state] spec]
         (-> state
             (update-in [:entities entity-id]

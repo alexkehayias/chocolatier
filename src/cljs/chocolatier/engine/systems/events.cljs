@@ -5,11 +5,8 @@
 (defn init-events-system
   "Adds an :events entry to the state hashmap."
   [state]
-  (-> state
-      (assoc-in ev/queue-path {})
-      (assoc-in ev/subscription-path {})))
+  (assoc-in state ev/queue-path {}))
 
-;; TODO manage subscriptions here too
 (defn event-system
   "Clear out events queue. Returns update game state."
   [state]

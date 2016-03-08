@@ -84,11 +84,12 @@
                     (ecs/mk-entity :e1 [:c1])
                     (ecs/mk-entity :e2 [:c1]))
           system-fn (get-in state [:systems :s1])
-          next-state (system-fn state)]
+          next-state (system-fn state)
+          queue (get-in next-state ev/queue-path)]
       (is (= [(ev/mk-event {:id :e1} [:c1 :e1])]
-             (js->clj (ev/get-subscribed-events next-state :e1 [:c1]))))
+             (js->clj (ev/get-subscribed-events queue :e1 [:c1]))))
       (is (= [(ev/mk-event {:id :e2} [:c1 :e2])]
-             (js->clj (ev/get-subscribed-events next-state :e2 [:c1])))))))
+             (js->clj (ev/get-subscribed-events queue :e2 [:c1])))))))
 
 (deftest test-mk-system
   ^{:key :t1}
@@ -110,6 +111,7 @@
                     (ecs/mk-entity :e1 [[:c1 {:x 0}] [:c2 {:y 0}]])
                     (ev/emit-event {:foo :bar} [:m1 :e1]))
           component (ecs/get-component state :c1)
-          context (ecs/get-component-context state :e1 component)]
+          queue (get-in state ev/queue-path)
+          context (ecs/get-component-context state queue component :e1 )]
       (is (= {:foo :bar} (-> context :inbox first :msg)))
       (is (= {:y 0} (:c2 context))))))

@@ -17,6 +17,8 @@
   - [ ] Nicer tile map
   - [ ] Nicer sprites
   - [ ] Obligatory Flappy Bird?
+* TODO Upgrade tileset
+http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
 * TODO In browser repl to eval into the game engine
 Allow the user to modify and write new code in the browser while the game is running
 ** Example

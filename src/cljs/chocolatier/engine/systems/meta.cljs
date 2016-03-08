@@ -10,6 +10,6 @@
    state. This is used for adding, removing entities or any other game
    state modifications. See core/mk-state for all available options"
   [state]
-  (if-let [events (ev/get-events state [:meta])]
-    (reduce #(mk-state %1 (:msg %2)) state events)
-    state))
+  (let [queue (get-in state ev/queue-path)
+        events (set (ev/get-events queue [:meta]))]
+    (reduce #(mk-state %1 (:msg %2)) state events)))

@@ -17,15 +17,12 @@
 
 (deftest test-get-subscribed-events
   (testing "Test getting messages an entity is subscribed to"
-    (let [state {:state
-                 {:events
-                  {:queue {:x {:e1 [{:foo :bar}]}
-                           :z {:e1 [{:baz :bat}]}
-                           :y {:e2 [{:y :x}]}}
-                   :subscriptions {:e1 [[:x :y] [:z]]}}}}]
+    (let [queue {:x {:e1 [{:foo :bar}]}
+                         :z {:e1 [{:baz :bat}]}
+                 :y {:e2 [{:y :x}]}}]
       ;; JS arrays are never equivalent when using = so we must
       ;; convert them to clj data structures before testing
-      (is (= (js->clj (ev/get-subscribed-events state :e1 [:x :z]))
+      (is (= (js->clj (ev/get-subscribed-events queue :e1 [:x :z]))
              (js->clj (array {:foo :bar} {:baz :bat})))))))
 
 (deftest test-emit-event

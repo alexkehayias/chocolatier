@@ -21,39 +21,29 @@
 (def queue-path
   [:state :events :queue])
 
-(def subscription-path
-  [:state :events :subscriptions])
-
 (defn get-events
   "Returns a collection of events or nil"
-  [state selectors]
-  (let [events (get-in state (into queue-path selectors))]
-    ;; Selectors represent a nested path of keys so if the selector is
-    ;; another map, throw an error
-    (assert (not (map? events)) (str "Invalid event selector: " selectors))
-    events))
+  [queue selectors]
+  (get-in queue selectors))
 
 (defn get-subscribed-events
-  "Returns a collection of events that matches the collection of
-   selectors or nil if selectors-col is empty."
-  [state entity-id selectors-coll]
-  (let [events (get-in state queue-path)]
-    ;; Use a loop here for better performance
-    (loop [selectors selectors-coll
-           accum (array)]
-      (let [sel (first selectors)]
-        (if sel
-          (recur (rest selectors)
-                 ;; Implicitely add the entity ID to
-                 ;; the end of the selectors, this ensures messages
-                 ;; are only for the entity
-                 (loop [evs (get-in events [sel entity-id])
-                        acc accum]
-                   (let [e (first evs)]
-                     (if e
-                       (recur (rest evs) (do (.push acc e) acc))
-                       acc))))
-          accum)))))
+  "Returns an array of events that matches the collection of selectors"
+  [queue entity-id selectors-coll]
+  (loop [selectors selectors-coll
+         accum (array)]
+    (let [sel (first selectors)]
+      (if sel
+        (recur (rest selectors)
+               ;; Implicitely add the entity ID to
+               ;; the end of the selectors, this ensures messages
+               ;; are only for the entity
+               (loop [evs (get-in queue [sel entity-id])
+                      acc accum]
+                 (let [e (first evs)]
+                   (if e
+                     (recur (rest evs) (do (.push acc e) acc))
+                     acc))))
+        accum))))
 
 (defn mk-event
   "Takes message and selectors and formats them for the event representation.
