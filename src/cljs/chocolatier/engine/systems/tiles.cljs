@@ -26,15 +26,17 @@
    of a tile."
   [tileset-texture
    width height
-   map-x map-y ;; coords on the grid i.e 0,1
-   screen-x screen-y ;; postiion on the screen
+   map-x map-y         ;; coords on the grid i.e 0,1
+   screen-x screen-y   ;; postiion on the screen
    tileset-x tileset-y ;; position on the tileset image
    & [attrs-hm]]
-  (let [sprite (pixi/mk-tiling-sprite tileset-texture width height)]
+  (let [frame (new js/PIXI.Rectangle tileset-x tileset-y width height)
+        texture (new js/PIXI.Texture (.-baseTexture tileset-texture) frame)
+        sprite (new js/PIXI.Sprite texture)]
+
+    ;; Set the position on the screen
     (set! (.-position.x sprite) screen-x)
     (set! (.-position.y sprite) screen-y)
-    (set! (.-tilePosition.x sprite) tileset-x)
-    (set! (.-tilePosition.y sprite) tileset-y)
     ;; Combine the required fields with any additional attributes
     (merge {:sprite sprite
             :height height
@@ -67,18 +69,18 @@
    tileset-w tileset-h
    tile-px-w tile-px-h
    map-spec
+   accum
    & {:keys [offset-x offset-y]
       :or {offset-x 0 offset-y 0}}]
-  (let [;; WARNING this is mutable
-        container (pixi/mk-display-object-container)
+  (let [container (pixi/mk-display-object-container)
         width-px (* map-w tile-px-w)
         height-px (* map-h tile-px-h)]
-    (loop [tile-specs (map-indexed vector map-spec)
-           tiles []]
+    (log/debug "Creating tiles from spec")
+    (loop [tile-specs (map-indexed vector map-spec)]
       (if-let [[indx tile-pos] (first tile-specs)]
         (if-not (zero? tile-pos)
           (let [map-row (js/Math.floor (/ indx map-w))
-                map-col (if ^boolean (> (inc indx) map-w)
+                map-col (if (> (inc indx) map-w)
                           (- indx (* map-row map-w))
                           indx)
                 map-x (* map-col tile-px-w)
@@ -88,27 +90,26 @@
                 ;; Tiled specifies
                 tileset-pos (dec tile-pos)
                 tileset-row (js/Math.floor (/ tileset-pos tileset-w))
-                tileset-col (if ^boolean (> (inc tileset-pos) tileset-w)
+                tileset-col (if (> (inc tileset-pos) tileset-w)
                               (- tileset-pos (* tileset-row tileset-w))
                               tileset-pos)
-                ;; Need to take the inverse of the coordinance since
-                ;; setting the tileset image x y is right aligned
-                tileset-x (- (* tileset-w tile-px-w) (* tileset-col tile-px-w))
-                tileset-y (- (* tileset-h tile-px-h) (* tileset-row tile-px-h))
+                tileset-x (* tileset-col tile-px-w)
+                tileset-y (* tileset-row tile-px-h)
                 tile (create-tile! tileset-texture
                                    tile-px-w tile-px-h
                                    map-row map-col
                                    map-x map-y
                                    tileset-x tileset-y)]
             (pixi/add-child! container (:sprite tile))
-            (recur (rest tile-specs) (conj tiles tile)))
-          (recur (rest tile-specs) tiles))
-        (do (pixi/render-from-object-container renderer
-                                               stage
-                                               container
-                                               width-px
-                                               height-px)
-            tiles)))))
+            ;; Add to the accumulator
+            (.push accum tile)
+            (recur (rest tile-specs)))
+          (recur (rest tile-specs)))
+        (pixi/render-from-object-container renderer
+                                           stage
+                                           container
+                                           width-px
+                                           height-px)))))
 
 (defn mk-tiles-from-tilemap!
   "Returns a collection of tile hashmaps according to the spec.
@@ -127,22 +128,22 @@
                   tileset-width (/ imagewidth tilewidth)
                   tileset-height (/ imageheight tileheight)
                   tileset-texture (pixi/mk-texture (-> tilesets first :image))]
+      (log/debug "Making tiles from tile map")
       ;; Draw tiles from all layers of the tile map
       (assoc-in state [:state :tiles]
                 (loop [layers layers
-                       tiles (array)]
+                       accum (array)]
                   (if-let [l (first layers)]
                     (recur (rest layers)
-                           (do (.push tiles
-                                     (create-tiles-from-spec! renderer
-                                                              stage
-                                                              tileset-texture
-                                                              width height
-                                                              tileset-width tileset-height
-                                                              tilewidth tileheight
-                                                              (:data l)))
-                               tiles))
-                    tiles))))))
+                           (create-tiles-from-spec! renderer
+                                                    stage
+                                                    tileset-texture
+                                                    width height
+                                                    tileset-width tileset-height
+                                                    tilewidth tileheight
+                                                    (:data l)
+                                                    accum))
+                    accum))))))
 
 (defn load-tilemap
   "Async load a json tilemap at the url. Calls callback function with the

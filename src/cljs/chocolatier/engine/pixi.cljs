@@ -91,6 +91,9 @@
 (defn mk-render-texture [w h]
   (new js/PIXI.RenderTexture w h))
 
+(defn mk-particle-container []
+  (new js/PIXI.ParticleContainer))
+
 (defn load-assets
   "Takes an asset loader from mk-asset-loader and loads assets using the
    callback function f"

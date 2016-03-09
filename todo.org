@@ -17,8 +17,15 @@
   - [ ] Nicer tile map
   - [ ] Nicer sprites
   - [ ] Obligatory Flappy Bird?
-* TODO Upgrade tileset
+* DONE Upgrade tileset
+CLOSED: [2016-03-08 Tue 12:21]
 http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
+* DONE Rendering tile maps with larger tilesets/maps kills perf
+CLOSED: [2016-03-09 Wed 15:32]
+* TODO Handle large tileset maps to be render only what is needed
+- Tries to render the entire tile map a a texture which is 10,000 tiles for a 1600x1600 map
+- Based on the map location, slice the tilemap array
+- Render just the tiles in the bounds of map coordinance
 * TODO In browser repl to eval into the game engine
 Allow the user to modify and write new code in the browser while the game is running
 ** Example

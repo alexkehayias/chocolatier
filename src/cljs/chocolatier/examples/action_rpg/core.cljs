@@ -90,7 +90,7 @@
   (let [;; Once the assets are loaded, load the tilemap
         audio-callback #(load-samples "/audio/samples" [:drip]
                                       (partial -start-game! node %))
-        tiles-callback #(load-tilemap "/tilemaps/snow_town_tile_map_v1.json"
+        tiles-callback #(load-tilemap "/tilemaps/pokemon_city.json"
                                       audio-callback)]
     ;; Async load all the assets and start the game on complete
 
@@ -100,7 +100,7 @@
     ;; dynamically if there is a cache miss
     (try (doto js/PIXI.loader
            (.add "bunny" "/img/bunny.png")
-           (.add "tiles" "/img/snowtiles_1.gif")
+           (.add "tiles" "/img/magiscarf_pokemon_tileset.png")
            (.add "spritesheet" "/img/test_spritesheet.png")
            (.add "fireball" "/img/fireball.png"))
          (catch js/Object e (do (warn (str e))
