@@ -32,18 +32,18 @@
 
 (defn init-state
   "Returns a hashmap of the game state"
-  [renderer stage width height tilemap sample-library]
+  [renderer stage width height tilemap loader sample-library]
   (mk-game-state
    {}
    [:renderer renderer stage]
    [:custom init-events-system]
    ;; Initial tile map
-   [:custom (mk-tiles-from-tilemap! renderer stage tilemap)]
+   [:custom (mk-tiles-from-tilemap! renderer stage loader tilemap)]
    ;; Player 1 entity
-   [:custom (create-player! stage :player1 20 20 0 0)]
+   [:custom (create-player! stage loader :player1 20 20 0 0)]
    ;; Enemies
    [:custom (fn [state]
-              (reduce #(create-enemy! %1 stage (keyword (gensym)))
+              (reduce #(create-enemy! %1 stage loader (keyword (gensym)))
                       state
                       (range 100)))]
    ;; A scene is collection of keys representing systems

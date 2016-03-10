@@ -36,10 +36,10 @@
 (defn mk-sprite-state
   "Returns a hashmap of render component state. Optionally pass in the
    sprite frame as the last argument to render to the position right away"
-  ([stage sprite-sheet-file-name]
-   {:sprite (pixi/mk-sprite! stage sprite-sheet-file-name)})
-  ([stage sprite-sheet-file-name frame]
-   {:sprite (pixi/mk-sprite! stage sprite-sheet-file-name frame)}))
+  ([stage loader img-path]
+   {:sprite (pixi/mk-sprite-from-cache! stage loader img-path)})
+  ([stage loader img-path frame]
+   {:sprite (pixi/mk-sprite-from-cache! stage loader img-path frame)}))
 
 (defn mk-text-sprite-state
   [stage text styles]

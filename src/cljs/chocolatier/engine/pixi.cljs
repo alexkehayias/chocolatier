@@ -51,17 +51,27 @@
     (set! (.-frame texture) bounds))
   sprite)
 
-(defn mk-sprite!
-  "Make a sprite object and add it to the stage.
-   Optionally pass in a third argument to set the frame of the sprite"
-  ([stage image-location]
-   (let [texture (js/PIXI.Texture.fromImage image-location)
-         sprite (js/PIXI.Sprite. texture)]
+(defn mk-sprite-from-cache!
+  "Returns a sprite that has been added to the stage. The image for the sprite
+   is loaded from the cache. If a frame is not passed in the sprite will not
+   be visible until the frame is set. See set-sprite-frame! for more info.
+
+   Args:
+   - stage: a Pixi stage object
+   - loader: a Pixi.loader object
+   - image-location: a path to the image to use for the sprite
+
+   Optional args:
+   - frame: a vector of x, y, w, h in relation to the sprite image"
+  ([stage loader image-location]
+   (mk-sprite-from-cache! stage loader image-location [0 0 0 0]))
+  ([stage loader image-location frame]
+   (let [cached-texture (.-texture (aget (.-resources loader) image-location))
+         texture (new js/PIXI.Texture (.-baseTexture cached-texture))
+         sprite (new js/PIXI.Sprite texture)]
+     (set-sprite-frame! sprite frame)
      (add-child! stage sprite)
-     sprite))
-  ([stage image-location frame]
-   (let [sprite (mk-sprite! stage image-location)]
-     (set-sprite-frame! sprite frame))))
+     sprite)))
 
 (defn circle
   [graphic x y r]
@@ -122,9 +132,9 @@
   (.clear graphic)
   graphic)
 
-(defn render-from-object-container
+(defn render-from-object-container!
   "Creates a texture from the sprites in container and renders them to the stage."
-  [renderer stage container w h]
+  [renderer stage container]
   (let [texture (.generateTexture container renderer)
         sprite (new js/PIXI.Sprite texture)]
     ;; This is a side-effect with no return value

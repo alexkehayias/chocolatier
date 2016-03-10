@@ -9,6 +9,7 @@ PIXI.Container.addChild = function(item){};
 PIXI.Container.removeChild = function(item){};
 PIXI.Container.generateTexture = function(arg){};
 
+PIXI.autoDetectRenderer = function(width, height, arg1, arg2){};
 PIXI.CanvasRenderer = function(width, height, arg1, arg2){};
 PIXI.CanvasRenderer.render = function(){};
 PIXI.WebGLRenderer = function(width, height, arg1, arg2){};
@@ -20,8 +21,10 @@ PIXI.loader = function(){};
 PIXI.loader.once = function(state, callback){};
 PIXI.loader.add = function(name, location){};
 PIXI.loader.load = function(){};
+PIXI.loader.resources = function(){};
 
 PIXI.Texture;
+PIXI.Texture.baseTexture = function (){};
 PIXI.Texture.fromImage = function (imageLocation){};
 
 PIXI.Sprite = function(texture){};
@@ -29,6 +32,8 @@ PIXI.Sprite.texture;
 PIXI.Sprite.texture.frame;
 
 PIXI.Rectangle = function(x, y, w, h){};
+
+PIXI.ParticleContainer = function(){};
 
 PIXI.extras;
 PIXI.extras.TilingSprite = function(texture, width, height){};

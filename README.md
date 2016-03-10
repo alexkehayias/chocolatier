@@ -8,6 +8,8 @@ Here's the working example game that includes tilesets, collision detection, ani
 
 ![Alt text](/../screenshots/gameplay_1.gif?raw=true "Chocolatier engine gameplay")
 
+Credit [Magiscarf](http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416) for the tiles
+
 ## Usage
 
 ### With `figwheel`

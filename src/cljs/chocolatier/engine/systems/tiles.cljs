@@ -105,18 +105,21 @@
             (.push accum tile)
             (recur (rest tile-specs)))
           (recur (rest tile-specs)))
-        (pixi/render-from-object-container renderer
-                                           stage
-                                           container
-                                           width-px
-                                           height-px)))))
+        (do (log/debug "Rendering tile map container")
+            (pixi/render-from-object-container! renderer
+                                                stage
+                                                container)
+            accum)))))
 
 (defn mk-tiles-from-tilemap!
   "Returns a collection of tile hashmaps according to the spec.
    Args:
-   - spec: a json encoded map exported from Tiled see
-     http://www.mapeditor.org/"
-  [renderer stage tilemap]
+   - renderer: The rendering engine object
+   - stage: The rendering engine stage object
+   - loader: The preloaded asset cache
+   - tilemap: A spec for the tilemap as exported from Tiled
+     See http://www.mapeditor.org/ for more"
+  [renderer stage loader tilemap]
   (fn [state]
     (let [{:keys [width
                   height
@@ -127,7 +130,11 @@
                   {:keys [imageheight imagewidth]} (first tilesets)
                   tileset-width (/ imagewidth tilewidth)
                   tileset-height (/ imageheight tileheight)
-                  tileset-texture (pixi/mk-texture (-> tilesets first :image))]
+                  ;; WARNING: This assumes there is only one tileset
+                  ;; for the map
+                  img-path (->> tilesets first :image)
+                  img (aget (.-resources loader) img-path)
+                  tileset-texture (aget img "texture")]
       (log/debug "Making tiles from tile map")
       ;; Draw tiles from all layers of the tile map
       (assoc-in state [:state :tiles]
