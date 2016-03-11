@@ -99,7 +99,7 @@
 (defn attack?
   "Returns a boolean of whether the id is an attack"
   [attributes]
-  (:damage attributes))
+  (contains? attributes :damage))
 
 (defn valid-collision-item?
   "Returns a function parameterized by the viewport height and width
@@ -111,12 +111,11 @@
    - Items whose ID starts with attack (attacks shouldn't collide with attacks)
    - Items with a from ID that is the same as the entity-id (immune to your
      own attacks)"
-  [width height]
-  (fn [[x y _ _ {:keys [id attributes]}]]
-    (and (< x width)
-         (< y height)
-         (not (attack? attributes))
-         (not (keyword-identical? id (:from-id attributes))))))
+  [[x y _ _ {:keys [id attributes]}] width height]
+  (and (< x width)
+       (< y height)
+       (not (attack? attributes))
+       (not (keyword-identical? id (:from-id attributes)))))
 
 (defn ^boolean not-self? [id item]
   (not (keyword-identical? id (:id (nth item 4)))))
@@ -126,18 +125,21 @@
 
 (defn collision-events
   "Returns a hashmap of all collision events by entity ID"
-  [collision-items spatial-index]
+  [collision-items spatial-index width height]
   (loop [items collision-items
          accum (transient {})]
     (let [item (first items)]
       (if item
-        (let [id (:id (nth item 4))
-              collisions (rbush-search spatial-index item)]
-          (if (some #(and (not-self? id %) (not-self-attack? id %))
-                    collisions)
-            (recur (rest items) (assoc! accum id [(ev/mk-event {:collisions collisions}
-                                                               [:collision id])]))
-            (recur (rest items) accum)))
+        (if (valid-collision-item? item width height)
+          (let [id (:id (nth item 4))
+                collisions (rbush-search spatial-index item)]
+            (if (some #(and (not-self? id %) (not-self-attack? id %))
+                      collisions)
+              (recur (rest items)
+                     (assoc! accum id [(ev/mk-event {:collisions collisions}
+                                                    [:collision id])]))
+              (recur (rest items) accum)))
+          (recur (rest items) accum))
         (persistent! accum)))))
 
 (defn mk-narrow-collision-system
@@ -146,13 +148,7 @@
    entities stored in the spatial index"
   [height width]
   (fn [state]
-    (let [ ;; Get only the entities that are collidable and moveable
-          spatial-index (get-in state spatial-index-location)
-          component-ids [:collidable :moveable]
-          ;; Use the spatial index for the collection of items to check
-          ;; Remove any that are not in the viewport and exclude attacks
-          items (filter (valid-collision-item? width height)
-                        (rbush-all spatial-index))
-          ;; Use a loop to avoid boxing and unboxing
-          events (collision-events items spatial-index)]
+    (let [spatial-index (get-in state spatial-index-location)
+          items (rbush-all spatial-index)
+          events (collision-events items spatial-index width height)]
       (ev/batch-emit-events state [:collision] events))))

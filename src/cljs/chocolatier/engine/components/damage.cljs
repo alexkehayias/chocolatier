@@ -4,7 +4,8 @@
             [chocolatier.engine.utils.counters :as cnt]
             [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.text :refer [mk-text-state]]
-            [chocolatier.engine.components.moveable :refer [mk-moveable-state]]))
+            [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
+            [chocolatier.engine.components.ephemeral :refer [mk-ephemeral-state]]))
 
 
 (defn mk-damage-state
@@ -50,7 +51,7 @@
       [next-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
       [next-state [(ev/mk-event [:entity (keyword (gensym "damage-"))
                                  [[:moveable (mk-moveable-state pos-x pos-y 2 :up)]
-                                  [:ephemeral {:ttl 4 :counter 0}]
+                                  [:ephemeral (mk-ephemeral-state 10)]
                                   ;; WARNING: This function has side
                                   ;; effects and should only be called
                                   ;; when needed i.e not in a let
@@ -58,11 +59,15 @@
                                   ;; not be used
                                   [:text-sprite (text-fn (str "-" damage))]
                                   [:text (mk-text-state (str "-" damage) 0.5)]]]
-                                [:meta])]])))
+                                [:meta])
+                   ;; Emit a hit action for the entity
+                   ;; (ev/mk-event {:action :hit :direction :up}
+                   ;;              [:action entity-id])
+                   ]])))
 
 (defn tick-in-progress-damage
   [component-state]
-  (if ^boolean (cnt/cooldown? (:cooldown component-state))
+  (if (cnt/cooldown? (:cooldown component-state))
     (update component-state :cooldown #(first (cnt/tick-cooldown %)))
     component-state))
 

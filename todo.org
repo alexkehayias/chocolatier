@@ -22,6 +22,12 @@ CLOSED: [2016-03-08 Tue 12:21]
 http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
 * DONE Rendering tile maps with larger tilesets/maps kills perf
 CLOSED: [2016-03-09 Wed 15:32]
+* TODO Animation should handle an action and go back to the last one
+- Example:
+  The user is hit while walking which should interupt the current walking animation and show the damage animation
+- Currently animations only change if an event is fired that is different than the current animation
+- Update animation actions to handle an argument in the message to play the last animation once it's done
+-
 * TODO Handle large tileset maps to be render only what is needed
 - Tries to render the entire tile map a a texture which is 10,000 tiles for a 1600x1600 map
 - Based on the map location, slice the tilemap array
