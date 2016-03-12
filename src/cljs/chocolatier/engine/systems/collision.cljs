@@ -5,15 +5,6 @@
             [chocolatier.engine.events :as ev]))
 
 
-(defn get-component-state
-  "Returns a collection of vectors of id, move-state, collision-state for each
-   entity-ids"
-  [state entity-ids]
-  (let [collidable-state (ecs/get-all-component-state state :collidable)
-        moveable-state (ecs/get-all-component-state state :moveable)]
-    (for [e entity-ids]
-      [e (get moveable-state e) (get collidable-state e)])))
-
 (defn rbush
   ([]
    (js/rbush))
@@ -26,21 +17,21 @@
   ([x1 y1 x2 y2 data]
    (array x1 y1 x2 y2 data)))
 
-(defn rbush-insert
+(defn rbush-insert!
   [rbush item]
   (.insert rbush item))
 
-(defn rbush-remove
+(defn rbush-bulk-insert!
+  [rbush items]
+  (.load rbush items))
+
+(defn rbush-remove!
   [rbush item]
   (.remove rbush item))
 
-(defn rbush-clear
+(defn rbush-clear!
   [rbush]
   (.clear rbush))
-
-(defn rbush-bulk-insert
-  [rbush items]
-  (.load rbush items))
 
 (defn rbush-collides?
   [rbush item]
@@ -53,6 +44,9 @@
 (defn rbush-all
   [rbush]
   (.all rbush))
+
+(def spatial-index-location
+  [:state :spatial-index])
 
 (defn entity-state->bounding-box
   "Format entity state for use with spatial index. Includes all
@@ -68,30 +62,40 @@
               ;; about who created this collidable entity
               {:id id :attributes attributes}))
 
-(defn update-spatial-index
-  [index entity-states]
-  (let [items (array)]
-    ;; YUK! This is to prevent having to call clj->js which is slow so
-    ;; we will use side effects instead
-    (doseq [[id move-state collision-state] entity-states]
-      (.push items (entity-state->bounding-box id move-state collision-state)))
-    (-> index
-        (rbush-clear)
-        (rbush-bulk-insert items))))
+(defn update-spatial-index!
+  "Returns a spatial index with all elegible entities inserted into it."
+  [state index entity-ids]
+  (let [collidable-states (ecs/get-all-component-state state :collidable)
+        moveable-states (ecs/get-all-component-state state :moveable)]
+    (loop [entities entity-ids
+           items (array)]
+      (let [entity-id (first entities)]
+        (if (nil? entity-id)
+          (rbush-bulk-insert! index items)
+          (let [move-state (get moveable-states entity-id)
+                collision-state (get collidable-states entity-id)]
+            (when (not (and (nil? move-state) (nil? collision-state)))
+              (.push items (entity-state->bounding-box entity-id
+                                                       move-state
+                                                       collision-state)))
+            (recur (rest entities) items)))))))
 
-(def spatial-index-location
-  [:state :spatial-index])
+(defn get-or-create-spatial-index
+  [state max-entries]
+  (get-in state spatial-index-location (rbush max-entries)))
 
 (defn mk-broad-collision-system
+  "Returns a system function that creates a spatial index with max-entries.
+   Only operates on entities that have the :collidable and :moveable components"
   [max-entries]
   (fn [state]
-    (let [;; Get only the entities that are both collidable and moveable
-          entity-ids (ecs/entities-with-multi-components state [:collidable :moveable])
-          entity-states (get-component-state state entity-ids)
-          ;; Get or create the spatial index
-          spatial-index (get-in state spatial-index-location (rbush max-entries))]
-      (assoc-in state spatial-index-location
-                (update-spatial-index spatial-index entity-states)))))
+    (let [entity-ids (ecs/entities-with-multi-components state [:collidable :moveable])
+          spatial-index (get-or-create-spatial-index state max-entries)]
+      ;; Clear the spatial index for the frame since we can't modify
+      ;; it once it's been inserted
+      (rbush-clear! spatial-index)
+      (update-spatial-index! state spatial-index entity-ids)
+      (assoc-in state spatial-index-location spatial-index))))
 
 (def collision-queue-path
   (conj ev/queue-path :collision))

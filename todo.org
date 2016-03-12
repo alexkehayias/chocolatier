@@ -13,10 +13,13 @@
   This can be a library, but could be useful for beginners
 - [ ] Lein template
   Everything needed with a basic setup of a game
-- [ ] Better example game
-  - [ ] Nicer tile map
-  - [ ] Nicer sprites
+- [-] Better example game
+  - [X] Nicer tile map
+  - [X] Nicer sprites
   - [ ] Obligatory Flappy Bird?
+* TODO Tile map collision
+- Add tiles to the broad/narrow collision detection?
+- Add metadata to tiles in tiled to denote whether they can be traversed
 * DONE Upgrade tileset
 CLOSED: [2016-03-08 Tue 12:21]
 http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
