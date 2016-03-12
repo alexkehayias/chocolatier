@@ -2,48 +2,9 @@
   "System for checking collisions between entities"
   (:require [chocolatier.utils.logging :as log]
             [chocolatier.engine.ecs :as ecs]
-            [chocolatier.engine.events :as ev]))
+            [chocolatier.engine.events :as ev]
+            [chocolatier.engine.rbush :as r]))
 
-
-(defn rbush
-  ([]
-   (js/rbush))
-  ([max-entries]
-   (js/rbush max-entries)))
-
-(defn rbush-item
-  ([x1 y1 x2 y2]
-   (rbush-item x1 y1 x2 y2 nil))
-  ([x1 y1 x2 y2 data]
-   (array x1 y1 x2 y2 data)))
-
-(defn rbush-insert!
-  [rbush item]
-  (.insert rbush item))
-
-(defn rbush-bulk-insert!
-  [rbush items]
-  (.load rbush items))
-
-(defn rbush-remove!
-  [rbush item]
-  (.remove rbush item))
-
-(defn rbush-clear!
-  [rbush]
-  (.clear rbush))
-
-(defn rbush-collides?
-  [rbush item]
-  (.collides rbush item))
-
-(defn rbush-search
-  [rbush item]
-  (.search rbush item))
-
-(defn rbush-all
-  [rbush]
-  (.all rbush))
 
 (def spatial-index-location
   [:state :spatial-index])
@@ -52,7 +13,7 @@
   "Format entity state for use with spatial index. Includes all
    collision component state in the metadata of the spatial tree item"
   [id {:keys [pos-x pos-y offset-x offset-y]} {:keys [height width attributes]}]
-  (rbush-item pos-x
+  (r/rbush-item pos-x
               pos-y
               ;; Adjust the width and height of the bounding box based
               ;; on where the entity will be next frame
@@ -71,7 +32,7 @@
            items (array)]
       (let [entity-id (first entities)]
         (if (nil? entity-id)
-          (rbush-bulk-insert! index items)
+          (r/rbush-bulk-insert! index items)
           (let [move-state (get moveable-states entity-id)
                 collision-state (get collidable-states entity-id)]
             (when (not (and (nil? move-state) (nil? collision-state)))
@@ -82,7 +43,7 @@
 
 (defn get-or-create-spatial-index
   [state max-entries]
-  (get-in state spatial-index-location (rbush max-entries)))
+  (get-in state spatial-index-location (r/rbush max-entries)))
 
 (defn mk-broad-collision-system
   "Returns a system function that creates a spatial index with max-entries.
@@ -93,7 +54,7 @@
           spatial-index (get-or-create-spatial-index state max-entries)]
       ;; Clear the spatial index for the frame since we can't modify
       ;; it once it's been inserted
-      (rbush-clear! spatial-index)
+      (r/rbush-clear! spatial-index)
       (update-spatial-index! state spatial-index entity-ids)
       (assoc-in state spatial-index-location spatial-index))))
 
@@ -121,11 +82,11 @@
        (not (attack? attributes))
        (not (keyword-identical? id (:from-id attributes)))))
 
-(defn ^boolean not-self? [id item]
-  (not (keyword-identical? id (:id (nth item 4)))))
+(defn self? [id item]
+  (keyword-identical? id (:id (nth item 4))))
 
-(defn ^boolean not-self-attack? [id item]
-  (not (keyword-identical? id (get-in (nth item 4) [:attributes :from-id]))))
+(defn self-attack? [id item]
+  (keyword-identical? id (get-in (nth item 4) [:attributes :from-id])))
 
 (defn collision-events
   "Returns a hashmap of all collision events by entity ID"
@@ -136,8 +97,8 @@
       (if item
         (if (valid-collision-item? item width height)
           (let [id (:id (nth item 4))
-                collisions (rbush-search spatial-index item)]
-            (if (some #(and (not-self? id %) (not-self-attack? id %))
+                collisions (r/rbush-search spatial-index item)]
+            (if (some #(not (or (self? id %) (self-attack? id %)))
                       collisions)
               (recur (rest items)
                      (assoc! accum id [(ev/mk-event {:collisions collisions}
@@ -153,6 +114,6 @@
   [height width]
   (fn [state]
     (let [spatial-index (get-in state spatial-index-location)
-          items (rbush-all spatial-index)
+          items (r/rbush-all spatial-index)
           events (collision-events items spatial-index width height)]
       (ev/batch-emit-events state [:collision] events))))
