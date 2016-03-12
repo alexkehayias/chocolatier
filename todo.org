@@ -28,6 +28,9 @@ CLOSED: [2016-03-08 Tue 12:21]
 http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
 * DONE Rendering tile maps with larger tilesets/maps kills perf
 CLOSED: [2016-03-09 Wed 15:32]
+* TODO Tilemap switching
+- [ ] Load a new tilemap into the game state
+- [ ] Update tilemap collision system
 * TODO Camera system
 - Controls where the camera is and the other systems should take that into account
 * DONE Fireball should pass through impassable tiles?

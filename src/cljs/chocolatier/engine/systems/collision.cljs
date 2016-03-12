@@ -111,7 +111,7 @@
    entities stored in the spatial index"
   [height width max-entries]
   (fn [state]
-    (let [entity-ids (ecs/entities-with-multi-components state [:collidable :moveable])
+    (let [entity-ids (ecs/entities-with-component state :collidable)
           spatial-index (get-or-create-entity-spatial-index state max-entries)
           spatial-index (index-entities! state spatial-index entity-ids)
           items (r/rtree-all spatial-index)
@@ -168,7 +168,7 @@
   ;; HACK for now since tilemaps are static, only index it once
   (let [refresh? (atom true)]
     (fn [state]
-      (let [entity-ids (ecs/entities-with-multi-components state [:collidable :moveable])
+      (let [entity-ids (ecs/entities-with-component state :collidable)
             tiles (get-in state [:state :tiles])
             spatial-index (get-or-create-tilemap-spatial-index state max-entries)
             spatial-index (if @refresh?
