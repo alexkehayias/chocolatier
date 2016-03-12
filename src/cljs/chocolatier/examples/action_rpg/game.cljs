@@ -2,8 +2,8 @@
   (:require [chocolatier.engine.core :refer [mk-game-state]]
             [chocolatier.engine.systems.input :refer [keyboard-input-system]]
             [chocolatier.engine.systems.render :refer [render-system]]
-            [chocolatier.engine.systems.collision
-             :refer [mk-broad-collision-system mk-narrow-collision-system]]
+            [chocolatier.engine.systems.collision :refer [mk-entity-collision-system
+                                                          mk-tilemap-collision-system]]
             [chocolatier.engine.systems.tiles :refer [tile-system
                                                       load-tilemap
                                                       mk-tiles-from-tilemap!]]
@@ -51,8 +51,8 @@
    [:scene :default [:keyboard-input
                      :controller
                      :ai
-                     :broad-collision
-                     :narrow-collision
+                     :entity-collision
+                     :tilemap-collision
                      :movement
                      :attack
                      :damage
@@ -96,8 +96,8 @@
    [:system :text
     :text [text {:subscriptions [:text-change]}]]
    ;; Collision detection system
-   [:system :broad-collision (mk-broad-collision-system 8)]
-   [:system :narrow-collision (mk-narrow-collision-system height width)]
+   [:system :entity-collision (mk-entity-collision-system height width 16)]
+   [:system :tilemap-collision (mk-tilemap-collision-system height width 16)]
    [:system :attack :attack [attack {:select-components [:moveable]
                                      :subscriptions [:action]}]]
    [:system :damage :damage [damage {:select-components [:moveable]

@@ -3,13 +3,33 @@
               [devcards.core :as dc :refer-macros [defcard deftest dom-node]]
               [praline.core :refer [mount-inspector
                                     inspector-state
-                                    inspector-app-state]]
+                                    inspector-app-state
+                                    handle-show-path
+                                    InspectComponent
+                                    inspect]]
               [chocolatier.utils.devcards :refer [str->markdown-code-block]]
               [chocolatier.utils.logging :refer [debug warn error]]
               [chocolatier.examples.action-rpg.game :refer [init-state]]
               [chocolatier.engine.systems.tiles :refer [load-tilemap]]
               [chocolatier.engine.systems.audio :refer [load-samples]]
               [chocolatier.engine.core :refer [game-loop]]))
+
+
+;; Extend praline to make arrays inspectable
+(extend-type array
+  InspectComponent
+  (inspect [this label key-path app-state state]
+    (let [visible (:visible @app-state)
+          child-paths (map #(conj key-path %) (range (count this)))]
+      [:div.row.gutter
+       [:div.grid.twelve
+        [:div.parent
+         {:on-click (handle-show-path (range (count this)) app-state)} label]
+        (for [[indx i] (map-indexed vector this)
+              :let [next-key-path (conj key-path indx)]
+              :when (some #{next-key-path} visible)]
+          ^{:key next-key-path}
+          [inspect i (str indx) next-key-path app-state state])]])))
 
 
 (def *state* (atom nil))
@@ -59,7 +79,7 @@
         renderer (new js/PIXI.autoDetectRenderer width height options)
         stats-obj (new js/Stats)
         state (init-state renderer stage width height tilemap loader samples-library)
-        inspector-state (inspector-state (update-in state [:state] dissoc :tiles))
+        inspector-state (inspector-state state)
         inspector-app-state (inspector-app-state)]
 
     ;; Append the canvas to the dom

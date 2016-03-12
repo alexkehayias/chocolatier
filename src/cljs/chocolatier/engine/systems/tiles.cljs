@@ -24,26 +24,37 @@
 (defn create-tile!
   "Adds a tile to the stage and returns the hashmap representation
    of a tile."
-  [tileset-texture
-   width height
-   map-x map-y         ;; coords on the grid i.e 0,1
-   screen-x screen-y   ;; postiion on the screen
-   tileset-x tileset-y ;; position on the tileset image
-   & [attrs-hm]]
-  (let [frame (new js/PIXI.Rectangle tileset-x tileset-y width height)
-        texture (new js/PIXI.Texture (.-baseTexture tileset-texture) frame)
-        sprite (new js/PIXI.Sprite texture)]
-
-    ;; Set the position on the screen
-    (set! (.-position.x sprite) screen-x)
-    (set! (.-position.y sprite) screen-y)
-    ;; Combine the required fields with any additional attributes
-    (merge {:sprite sprite
-            :height height
-            :width width
-            :map-x map-x :map-y map-y
-            :screen-x screen-x :screen-y screen-y}
-           attrs-hm)))
+  ([tileset-texture
+    width height
+    map-x map-y         ;; coords on the grid i.e 0,1
+    screen-x screen-y   ;; postiion on the screen
+    tileset-x tileset-y ;; position on the tileset image
+    ]
+   (create-tile! tileset-texture
+                 width height
+                 map-x map-y
+                 screen-x screen-y
+                 tileset-x tileset-y
+                 {}))
+  ([tileset-texture
+    width height
+    map-x map-y
+    screen-x screen-y
+    tileset-x tileset-y
+    attributes]
+   (let [frame (new js/PIXI.Rectangle tileset-x tileset-y width height)
+         texture (new js/PIXI.Texture (.-baseTexture tileset-texture) frame)
+         sprite (new js/PIXI.Sprite texture)]
+     ;; Set the position on the screen
+     (set! (.-position.x sprite) screen-x)
+     (set! (.-position.y sprite) screen-y)
+     ;; Combine the required fields with any additional attributes
+     {:sprite sprite
+      :height height
+      :width width
+      :map-x map-x :map-y map-y
+      :screen-x screen-x :screen-y screen-y
+      :attributes attributes})))
 
 (defn create-tiles-from-spec!
   "Create tiles from a map-spec, a 1 dimensional array where the
@@ -59,6 +70,7 @@
     Args:
     - map-w: number of tiles wide
     - map-h: number of tiles high
+    - tile-properties: attributes for each tile keyed by tile index
     - tile-h: pixel height of a tile
     - tile-w: pixel width of a tile
     - tileset-h: number of tiles high in the tileset
@@ -66,6 +78,7 @@
     - map-spec: a one dimensional array of integers"
   [renderer stage tileset-texture
    map-w map-h
+   tile-properties
    tileset-w tileset-h
    tile-px-w tile-px-h
    map-spec
@@ -79,7 +92,8 @@
     (loop [tile-specs (map-indexed vector map-spec)]
       (if-let [[indx tile-pos] (first tile-specs)]
         (if-not (zero? tile-pos)
-          (let [map-row (js/Math.floor (/ indx map-w))
+          (let [attributes (get tile-properties (keyword (str tile-pos)))
+                map-row (js/Math.floor (/ indx map-w))
                 map-col (if (> (inc indx) map-w)
                           (- indx (* map-row map-w))
                           indx)
@@ -99,7 +113,8 @@
                                    tile-px-w tile-px-h
                                    map-row map-col
                                    map-x map-y
-                                   tileset-x tileset-y)]
+                                   tileset-x tileset-y
+                                   attributes)]
             (pixi/add-child! container (:sprite tile))
             ;; Add to the accumulator
             (.push accum tile)
@@ -127,13 +142,16 @@
                   tilesets
                   tileheight
                   tilewidth]} tilemap
-                  {:keys [imageheight imagewidth]} (first tilesets)
+                  {:keys [image
+                          imageheight
+                          imagewidth
+                          tileproperties]} (first tilesets)
                   tileset-width (/ imagewidth tilewidth)
                   tileset-height (/ imageheight tileheight)
                   ;; WARNING: This assumes there is only one tileset
                   ;; for the map
                   img-path (->> tilesets first :image)
-                  img (aget (.-resources loader) img-path)
+                  img (aget (.-resources loader) image)
                   tileset-texture (aget img "texture")]
       (log/debug "Making tiles from tile map")
       ;; Draw tiles from all layers of the tile map
@@ -145,7 +163,9 @@
                            (create-tiles-from-spec! renderer
                                                     stage
                                                     tileset-texture
-                                                    width height
+                                                    width
+                                                    height
+                                                    tileproperties
                                                     tileset-width tileset-height
                                                     tilewidth tileheight
                                                     (:data l)

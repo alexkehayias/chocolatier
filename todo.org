@@ -17,14 +17,19 @@
   - [X] Nicer tile map
   - [X] Nicer sprites
   - [ ] Obligatory Flappy Bird?
-* TODO Tile map collision
-- Add tiles to the broad/narrow collision detection?
-- Add metadata to tiles in tiled to denote whether they can be traversed
+* DONE Tile map collision
+CLOSED: [2016-03-12 Sat 13:49]
+- [X] Add tiles to the broad/narrow collision detection?
+  Decided not to so they could be used independently of each other
+- [X] Add metadata to tiles in tiled to denote whether they can be traversed
+- [X] Updated loading tilemap to include properties from tiled in attributes
 * DONE Upgrade tileset
 CLOSED: [2016-03-08 Tue 12:21]
 http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
 * DONE Rendering tile maps with larger tilesets/maps kills perf
 CLOSED: [2016-03-09 Wed 15:32]
+* FIX Fireball should pass through impassable tiles?
+* FIX Can't move after colliding
 * TODO Animation should handle an action and go back to the last one
 - Example:
   The user is hit while walking which should interupt the current walking animation and show the damage animation

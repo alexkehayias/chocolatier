@@ -53,6 +53,29 @@
             },
          "spacing":0,
          "tileheight":16,
+         "tileproperties":
+            {
+             "2125":
+                {
+                 "impassable?":"true"
+                },
+             "2126":
+                {
+                 "impassable?":"true"
+                },
+             "2127":
+                {
+                 "impassable?":"true"
+                },
+             "2188":
+                {
+                 "impassable?":"true"
+                },
+             "2189":
+                {
+                 "impassable?":"true"
+                }
+            },
          "tilewidth":16
         }],
  "tilewidth":16,
