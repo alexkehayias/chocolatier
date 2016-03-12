@@ -21,14 +21,12 @@
    - move-state: The moveable state of the entity
    - collision-state: The collideable state of the entity"
   [entity-id
-   {:keys [pos-x pos-y offset-x offset-y]}
+   {:keys [pos-x pos-y]}
    {:keys [height width attributes]}]
-  (r/rtree-item (+ pos-x offset-x)
-                (+ pos-y offset-y)
-                ;; Adjust the width and height of the bounding box based
-                ;; on where the entity will be next frame
-                (+ pos-x width offset-x)
-                (+ pos-y height offset-y)
+  (r/rtree-item pos-x
+                pos-y
+                (+ pos-x width)
+                (+ pos-y height)
                 ;; Include the parent ID so we can pass information
                 ;; about who created this collidable entity
                 {:id entity-id :attributes attributes}))
@@ -115,10 +113,10 @@
   (fn [state]
     (let [entity-ids (ecs/entities-with-multi-components state [:collidable :moveable])
           spatial-index (get-or-create-entity-spatial-index state max-entries)
+          spatial-index (index-entities! state spatial-index entity-ids)
           items (r/rtree-all spatial-index)
           events (entity-collision-events items spatial-index width height)
           next-state (assoc-in state entity-spatial-index-location spatial-index)]
-      (index-entities! state spatial-index entity-ids)
       (ev/batch-emit-events next-state [:collision] events))))
 
 (defn get-or-create-tilemap-spatial-index
@@ -156,10 +154,13 @@
                                                collision-state)
               collisions (r/rtree-search index item)]
           (if (seq collisions)
-            (recur (rest entities)
-                   (assoc! accum entity-id
-                           [(ev/mk-event {:collisions collisions}
-                                         [:collision entity-id])]))
+            ;; Ignore items that have a damage item
+            (if (attack? (:attributes (nth item 4)))
+              (recur (rest entities) accum)
+              (recur (rest entities)
+                     (assoc! accum entity-id
+                             [(ev/mk-event {:collisions collisions}
+                                           [:collision entity-id])])))
             (recur (rest entities) accum)))))))
 
 (defn mk-tilemap-collision-system
@@ -180,7 +181,6 @@
                                              moveable-states
                                              collidable-states
                                              entity-ids)]
-
         (-> state
             (assoc-in tilemap-spatial-index-location spatial-index)
             ;; Emit all of the collision events in one shot

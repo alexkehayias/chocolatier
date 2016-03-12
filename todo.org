@@ -28,7 +28,14 @@ CLOSED: [2016-03-08 Tue 12:21]
 http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
 * DONE Rendering tile maps with larger tilesets/maps kills perf
 CLOSED: [2016-03-09 Wed 15:32]
-* FIX Fireball should pass through impassable tiles?
+* TODO Camera system
+- Controls where the camera is and the other systems should take that into account
+* DONE Fireball should pass through impassable tiles?
+CLOSED: [2016-03-12 Sat 15:27]
+* TODO Z-levels
+- If an entity is on a different z level then they should not interact
+- Collisions can take into account z level
+- Rendering should render things according to their z-level
 * FIX Can't move after colliding
 * TODO Animation should handle an action and go back to the last one
 - Example:
@@ -92,10 +99,10 @@ Modified snippet based on #clojurescript slack channel user escherize
 - Pause/rewind/fastforward
 - Code editor
 - Real time collaboration
-* TODO Refactor the ai system to something more sane
 * TODO Refactor the keyboard input system to emit events on change
 * TODO Make utils.counters 1 element js arrays for better performance
-* TODO Change any use of = or not= to identical?
+* DONE Change any use of = or not= to identical?
+CLOSED: [2016-03-12 Sat 14:24]
 * TODO Cache dynamic lookups in the game loop
 - There are many places that use dynamic lookups to get things like the list of entities, components, etc that could be cached
 - If you cache, need a way to invalidate the cache
@@ -106,7 +113,7 @@ Anonymous functions are slower than def'd functions in js
 - [ ] Component functions are anonymous functions
   - Also loose ability to have the repl rebind it dynamically once it's in the game loop
 - [ ] System functions are anonymous
-* FIX Fix all keys being captures by input system and it should only be in a certain scope
+* FIX Fix all keys being captured by input system and it should only be in a certain scope
 * TODO Test runner for js tests via PhantomJS
 https://github.com/emezeske/lein-cljsbuild/blob/1.1.2/doc/TESTING.md
 * TODO Self hosted cljs integration

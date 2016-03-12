@@ -79,23 +79,23 @@
     (loop [events inbox
            accum (array)]
       (let [event (first events)]
-        (if event
+        (if (nil? event)
+          accum
           (let [collisions (get-in event col-path)
                 next-accum (loop [collisions collisions
                                   i (array 0)
                                   acc accum]
                              (let [indx (aget i 0)
                                    collision (aget collisions indx)]
-                               (if collision
+                               (if (nil? collision)
+                                 acc
                                  (let [{:keys [attributes]} (aget collision 4)]
                                    (recur collisions
                                           (do (aset i 0 (+ indx 1)) i)
                                           (if (valid-attack? entity-id attributes)
                                             (do (.push acc attributes) acc)
-                                            acc)))
-                                 acc)))]
-            (recur (rest events) next-accum))
-          accum)))))
+                                            acc))))))]
+            (recur (rest events) next-accum)))))))
 
 (defn damage
   "If there are any collisions with a valid attack and the entity is not
