@@ -6,7 +6,7 @@
   {:text text :rotation radians})
 
 (defn get-text-change-event [inbox]
-  (some #(when (= (:event-id %) :text-change) %) inbox))
+  (some #(when (keyword-identical? (:event-id %) :text-change) %) inbox))
 
 (defn text
   "Check if there are any text events, sets the text that will be shown"
