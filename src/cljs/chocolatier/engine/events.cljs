@@ -32,18 +32,19 @@
   (loop [selectors selectors-coll
          accum (array)]
     (let [sel (first selectors)]
-      (if sel
-        (recur (rest selectors)
-               ;; Implicitely add the entity ID to
-               ;; the end of the selectors, this ensures messages
-               ;; are only for the entity
-               (loop [evs (get-in queue [sel entity-id])
-                      acc accum]
-                 (let [e (first evs)]
-                   (if e
-                     (recur (rest evs) (do (.push acc e) acc))
-                     acc))))
-        accum))))
+      (if (nil? sel)
+        accum
+        (recur
+         (rest selectors)
+         ;; Implicitely add the entity ID to
+         ;; the end of the selectors, this ensures messages
+         ;; are only for the entity
+         (loop [evs (get-in queue [sel entity-id] nil)
+                acc accum]
+           (let [e (first evs)]
+             (if (nil? e)
+               acc
+               (recur (rest evs) (do (.push acc e) acc))))))))))
 
 (defn mk-event
   "Takes message and selectors and formats them for the event representation.
@@ -54,15 +55,24 @@
 (defn emit-event
   "Enqueues an event onto the queue"
   [state msg selectors]
+  (assert (every? keyword? selectors) (str "Invalid selectors: " selectors))
   (let [event (mk-event msg selectors)
         path (into queue-path selectors)]
-    (assert (every? keyword? selectors))
     (update-in state path conj event)))
 
 (defn emit-events
   "Emits a collection of events at the same time. Returns update game state."
   [state events]
-  (reduce #(emit-event %1 (:msg %2) (:selectors %2)) state events))
+  (let [all-queues (get-in state queue-path)]
+    (assoc-in
+     state
+     queue-path
+     (loop [queues all-queues
+            events events]
+       (let [{:keys [selectors msg] :as event} (first events)]
+         (if (nil? event)
+           queues
+           (recur (update-in queues selectors conj event) (rest events))))))))
 
 (defn batch-emit-events
   "Batch add events with the same selectors. Events should be a hashmap of id,
