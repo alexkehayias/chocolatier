@@ -24,7 +24,7 @@
                                               [:stand-left 26 37 26 37 0 0 1]
                                               [:stand-right 26 37 26 37 0 0 1]
                                               [:hit-up 20 30 20 30 0 0 1])
-        move-state (mk-moveable-state pos-x pos-y 4 :down)
+        move-state (mk-moveable-state 4 :down)
         position-state (mk-position-state pos-x pos-y pos-x pos-y)
         collision-state (mk-collidable-state 26 37 nil)
         damage-state (mk-damage-state 50 5 5

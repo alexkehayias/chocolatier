@@ -8,11 +8,9 @@
    component state.
 
    Args:
-   - pos-x: the x coordinate of the screen position
-   - pos-y: the y coordinate of the screen position
    - move-rate: how many pixels the entity will move in a single frame
    - direction: the direction of the movement"
-  [pos-x pos-y move-rate direction]
+  [move-rate direction]
   {:offset-x 0 :offset-y 0
    :move-rate move-rate
    :direction direction})

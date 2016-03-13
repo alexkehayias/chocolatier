@@ -52,7 +52,7 @@
       [next-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
       [next-state [(ev/mk-event [:entity (keyword (gensym "damage-"))
                                  [[:position (mk-position-state screen-x screen-y screen-x screen-y)]
-                                  [:moveable (mk-moveable-state screen-x screen-y 2 :up)]
+                                  [:moveable (mk-moveable-state 2 :up)]
                                   [:ephemeral (mk-ephemeral-state 10)]
                                   ;; WARNING: This function has side
                                   ;; effects and should only be called

@@ -54,10 +54,7 @@
                                                      :type type})]
                   ;; Determine where the sprite goes based
                   ;; on the position of the player
-                  [:moveable (mk-moveable-state (+ screen-x 16)
-                                                (+ screen-y 24)
-                                                speed
-                                                direction)]
+                  [:moveable (mk-moveable-state speed direction)]
                   [:position (mk-position-state (+ screen-x 16)
                                                 (+ screen-y 24)
                                                 (+ screen-x 16)

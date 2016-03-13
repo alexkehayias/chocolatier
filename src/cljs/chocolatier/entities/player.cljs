@@ -55,7 +55,7 @@
                                                 [:spear-left 832 1344 64 64 5 0 8]
                                                 [:spear-right 832 1344 64 64 7 0 8])
           position-state (mk-position-state pos-x pos-y pos-x pos-y)
-          move-state (mk-moveable-state pos-x pos-y 4 :down)
+          move-state (mk-moveable-state 4 :down)
           collision-state (mk-collidable-state 64 64 nil)
           attack-state (mk-attack-state
                         [:fireball {:damage 10
