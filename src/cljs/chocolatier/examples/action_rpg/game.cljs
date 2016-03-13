@@ -26,6 +26,7 @@
             [chocolatier.engine.components.attack :refer [attack]]
             [chocolatier.engine.components.damage :refer [damage]]
             [chocolatier.engine.components.ephemeral :refer [update-ttl]]
+            [chocolatier.engine.components.position :refer [position]]
             [chocolatier.entities.player :refer [create-player!]]
             [chocolatier.entities.enemy :refer [create-enemy!]]))
 
@@ -50,10 +51,11 @@
    ;; that will be called in sequential order
    [:scene :default [:keyboard-input
                      :controller
-                     :ai
                      :entity-collision
                      :tilemap-collision
+                     :ai
                      :movement
+                     :position
                      :attack
                      :damage
                      :ttl
@@ -72,6 +74,8 @@
    [:system :events event-system]
    ;; Updates the user input from keyboard
    [:system :keyboard-input keyboard-input-system]
+   ;; Provides a map/screen position
+   [:system :position :position [position {:subscriptions [:position-change]}]]
    ;; Handles meta events like adding/removing entities by listening
    ;; to :meta events
    [:system :meta meta-system]
@@ -86,24 +90,24 @@
    [:system :audio (audio-system sample-library)]
    ;; Sprite system for altering sprites
    [:system :sprite
-    :sprite [render-sprite {:select-components [:moveable :animateable]
+    :sprite [render-sprite {:select-components [:position :animateable]
                             :cleanup-fn cleanup-sprite-state}]]
    [:system :animate :animateable [animate {:subscriptions [:action]}]]
    ;; Text sprite system for displaying text
    [:system :text-sprite
-    :text-sprite [render-text {:select-components [:text :moveable]
+    :text-sprite [render-text {:select-components [:position :text]
                                :cleanup-fn cleanup-text-state}]]
    [:system :text
     :text [text {:subscriptions [:text-change]}]]
    ;; Collision detection system
    [:system :entity-collision (mk-entity-collision-system height width 16)]
    [:system :tilemap-collision (mk-tilemap-collision-system height width 16)]
-   [:system :attack :attack [attack {:select-components [:moveable]
+   [:system :attack :attack [attack {:select-components [:position]
                                      :subscriptions [:action]}]]
-   [:system :damage :damage [damage {:select-components [:moveable]
+   [:system :damage :damage [damage {:select-components [:position]
                                      :subscriptions [:collision]}]]
    [:system :ttl :ephemeral update-ttl]
    [:system :movement :moveable [move {:subscriptions [:move-change :collision]}]]
-   [:system :ai :ai [behavior {:select-components [:moveable [:moveable :player1]]}]]
+   [:system :ai :ai [behavior {:select-components [:position [:position :player1]]}]]
    ;; Replay game state on user input
    [:system :replay (replay-system 14 50)]))

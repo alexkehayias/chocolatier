@@ -13,8 +13,7 @@
    - move-rate: how many pixels the entity will move in a single frame
    - direction: the direction of the movement"
   [pos-x pos-y move-rate direction]
-  {:pos-x pos-x :pos-y pos-y
-   :offset-x 0 :offset-y 0
+  {:offset-x 0 :offset-y 0
    :move-rate move-rate
    :direction direction})
 
@@ -50,7 +49,7 @@
   "Check if there is an input-change, collision events, and calculates the
    new position of the entity on the screen."
   [entity-id component-state {:keys [inbox]}]
-  (let [{:keys [pos-x pos-y move-rate direction]} component-state
+  (let [{:keys [move-rate direction]} component-state
         {new-direction :direction} (:msg (get-move-change-event inbox))
         collision? (collision-event? inbox)]
     (let [next-direction (or new-direction direction)
@@ -58,9 +57,15 @@
                                 [0 0]
                                 (map #(* move-rate %)
                                      (get direction->offset next-direction)))]
-      {:pos-x (- pos-x offset-x)
-       :pos-y (- pos-y offset-y)
-       :offset-x offset-x
-       :offset-y offset-y
-       :move-rate move-rate
-       :direction next-direction})))
+      ;; If there is no offset then no need to send a message
+      (if (and (zero? offset-x) (zero? offset-y))
+        {:offset-x offset-x
+         :offset-y offset-y
+         :move-rate move-rate
+         :direction next-direction})
+      [{:offset-x offset-x
+        :offset-y offset-y
+        :move-rate move-rate
+        :direction next-direction}
+       [(ev/mk-event {:offset-x offset-x :offset-y offset-y}
+                     [:position-change entity-id])]])))

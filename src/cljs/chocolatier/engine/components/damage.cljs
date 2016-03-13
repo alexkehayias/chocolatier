@@ -5,6 +5,7 @@
             [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.text :refer [mk-text-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
+            [chocolatier.engine.components.position :refer [mk-position-state]]
             [chocolatier.engine.components.ephemeral :refer [mk-ephemeral-state]]))
 
 
@@ -35,9 +36,9 @@
    - Updates :hitpoints by calculating damage factoring in defense
    - If :hitpoints falls below 1 then the entity is destroyed
    - Creates an text entity with the amount of damage taken"
-  [entity-id component-state move-state attacks]
+  [entity-id component-state position-state attacks]
   ;; TODO emit action events like hit animation
-  (let [{:keys [pos-x pos-y]} move-state
+  (let [{:keys [screen-x screen-y]} position-state
         text-fn (:text-fn component-state)
         damage (transduce (map :damage) + 0 attacks)
         next-state (-> component-state
@@ -50,7 +51,8 @@
     (if ^boolean destroy?
       [next-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
       [next-state [(ev/mk-event [:entity (keyword (gensym "damage-"))
-                                 [[:moveable (mk-moveable-state pos-x pos-y 2 :up)]
+                                 [[:position (mk-position-state screen-x screen-y screen-x screen-y)]
+                                  [:moveable (mk-moveable-state screen-x screen-y 2 :up)]
                                   [:ephemeral (mk-ephemeral-state 10)]
                                   ;; WARNING: This function has side
                                   ;; effects and should only be called
@@ -89,7 +91,7 @@
                                    collision (aget collisions indx)]
                                (if (nil? collision)
                                  acc
-                                 (let [{:keys [attributes]} (aget collision 4)]
+                                 (let [attributes (aget collision 4)]
                                    (recur collisions
                                           (do (aset i 0 (+ indx 1)) i)
                                           (if (valid-attack? entity-id attributes)
@@ -102,10 +104,10 @@
    invinsible (can only be attacked every n frames) then handle damage
    to the entity. If hitpoints falls below 0 then emit a message to
    remove the entity from the game-state."
-  [entity-id component-state {:keys [inbox moveable]}]
+  [entity-id component-state {:keys [inbox position]}]
   ;; Use a loop here for performance reasons
   (let [attacks (get-attacks entity-id inbox)
         vulnerable? (not (cnt/cooldown? (:cooldown component-state)))]
     (if ^boolean (and vulnerable? (seq attacks))
-        (handle-damage entity-id component-state moveable attacks)
+        (handle-damage entity-id component-state position attacks)
         (tick-in-progress-damage component-state))))

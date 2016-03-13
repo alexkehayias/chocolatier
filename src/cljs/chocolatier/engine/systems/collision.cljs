@@ -18,18 +18,18 @@
 
    Args:
    - id: The unique ID of the entity
-   - move-state: The moveable state of the entity
+   - position: The position state of the entity
    - collision-state: The collideable state of the entity"
   [entity-id
-   {:keys [pos-x pos-y]}
+   {:keys [screen-x screen-y]}
    {:keys [height width attributes]}]
-  (r/rtree-item pos-x
-                pos-y
-                (+ pos-x width)
-                (+ pos-y height)
+  (r/rtree-item screen-x
+                screen-y
+                (+ screen-x width)
+                (+ screen-y height)
                 ;; Include the parent ID so we can pass information
                 ;; about who created this collidable entity
-                {:id entity-id :attributes attributes}))
+                (assoc attributes :id entity-id)))
 
 (defn index-entities!
   "Returns a spatial index with all elegible entities inserted."
@@ -37,17 +37,17 @@
   ;; Always clear out before inserting items to avoid duplication
   (r/rtree-clear! index)
   (let [collidable-states (ecs/get-all-component-state state :collidable)
-        moveable-states (ecs/get-all-component-state state :moveable)]
+        position-states (ecs/get-all-component-state state :position)]
     (loop [entities entity-ids
            items (array)]
       (let [entity-id (first entities)]
         (if (nil? entity-id)
           (r/rtree-bulk-insert! index items)
-          (let [move-state (get moveable-states entity-id)
+          (let [position-state (get position-states entity-id)
                 collision-state (get collidable-states entity-id)]
-            (when (not (and (nil? move-state) (nil? collision-state)))
+            (when (not (and (nil? position-state) (nil? collision-state)))
               (.push items (entity-state->bounding-box entity-id
-                                                       move-state
+                                                       position-state
                                                        collision-state)))
             (recur (rest entities) items)))))))
 
@@ -72,17 +72,17 @@
    - Items that are an attack (attacks shouldn't collide with attacks)
    - Items with a from ID that is the same as the entity-id (immune to your
      own attacks)"
-  [[x y _ _ {:keys [id attributes]}] width height]
+  [[x y _ _ {:keys [id from-id damage]}] width height]
   (and (< x width)
        (< y height)
-       (not (attack? attributes))
-       (not (keyword-identical? id (:from-id attributes)))))
+       (not damage)
+       (not (keyword-identical? id from-id))))
 
-(defn self? [id item]
-  (keyword-identical? id (:id (nth item 4))))
+(defn self? [id attributes]
+  (keyword-identical? id (get attributes :id)))
 
-(defn self-attack? [id item]
-  (keyword-identical? id (get-in (nth item 4) [:attributes :from-id])))
+(defn self-attack? [id attributes]
+  (keyword-identical? id (get attributes :from-id)))
 
 (defn entity-collision-events
   "Returns a hashmap of all collision events by entity ID"
@@ -92,9 +92,11 @@
     (let [item (first items)]
       (if item
         (if (valid-entity-collision-item? item width height)
-          (let [id (:id (nth item 4))
+          (let [id (:id (aget item 4))
                 collisions (r/rtree-search spatial-index item)]
-            (if (some #(not (or (self? id %) (self-attack? id %)))
+            (if (some (fn [[_ _ _ _ attributes]]
+                        (not (or (self? id attributes)
+                                 (self-attack? id attributes))))
                       collisions)
               (recur (rest items)
                      (assoc! accum id [(ev/mk-event {:collisions collisions}
@@ -141,21 +143,21 @@
 
 (defn tilemap-collision-events
   "Returns a hashmap of all collision events with the tilemap"
-  [index moveable-states collidable-states entity-ids]
+  [index position-states collidable-states entity-ids]
   (loop [entities entity-ids
          accum (transient {})]
     (let [entity-id (first entities)]
       (if (nil? entity-id)
         (persistent! accum)
-        (let [move-state (get moveable-states entity-id)
+        (let [position-state (get position-states entity-id)
               collision-state (get collidable-states entity-id)
               item (entity-state->bounding-box entity-id
-                                               move-state
+                                               position-state
                                                collision-state)
               collisions (r/rtree-search index item)]
           (if (seq collisions)
             ;; Ignore items that have a damage item
-            (if (attack? (:attributes (nth item 4)))
+            (if (attack? (aget item 4))
               (recur (rest entities) accum)
               (recur (rest entities)
                      (assoc! accum entity-id
@@ -175,10 +177,10 @@
                             (do (reset! refresh? false)
                                 (index-tilemap! state spatial-index tiles))
                             spatial-index)
-            moveable-states (ecs/get-all-component-state state :moveable)
+            position-states (ecs/get-all-component-state state :position)
             collidable-states (ecs/get-all-component-state state :collidable)
             events (tilemap-collision-events spatial-index
-                                             moveable-states
+                                             position-states
                                              collidable-states
                                              entity-ids)]
         (-> state

@@ -4,7 +4,9 @@
             [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
+            [chocolatier.engine.components.position :refer [mk-position-state]]
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
+            [chocolatier.engine.components.ephemeral :refer [mk-ephemeral-state]]
             [chocolatier.engine.utils.counters :refer [mk-cooldown
                                                        tick-cooldown
                                                        cooldown?]]))
@@ -34,10 +36,10 @@
   "Unless the attack specified by the event is currently in cooldown
    then emit an event to create the attack. Returns updated
    component-state and any events if necessary"
-  [entity-id component-state event move-state]
+  [entity-id component-state event position]
   (let [{:keys [action direction]} (:msg event)
         {:keys [damage type width height ttl sprite-fn speed]} (get component-state action)
-        {:keys [pos-x pos-y]} move-state
+        {:keys [screen-x screen-y]} position
         cooldown (get-in component-state [action :cooldown])
         [cooldown-state cooldown?] (tick-cooldown cooldown)
         next-state (assoc-in component-state [action :cooldown] cooldown-state)]
@@ -52,13 +54,17 @@
                                                      :type type})]
                   ;; Determine where the sprite goes based
                   ;; on the position of the player
-                  [:moveable (mk-moveable-state (+ pos-x 16)
-                                                (+ pos-y 24)
+                  [:moveable (mk-moveable-state (+ screen-x 16)
+                                                (+ screen-y 24)
                                                 speed
                                                 direction)]
+                  [:position (mk-position-state (+ screen-x 16)
+                                                (+ screen-y 24)
+                                                (+ screen-x 16)
+                                                (+ screen-y 24))]
                   ;; Add a ttl to the attack entity so we
                   ;; don't need to handle cleaning it up!
-                  [:ephemeral {:ttl ttl :counter 0}]
+                  [:ephemeral (mk-ephemeral-state ttl)]
                   ;; Add a sprite to visualize the attack
                   ;; Sprite component state comes from
                   ;; calling a function due to needing the stage
@@ -67,15 +73,15 @@
         [next-state [e]]))))
 
 (defn enemy-attack
-  [entity-id component-state event move-state]
+  [entity-id component-state event position]
   component-state)
 
 (defn handle-attack
-  [entity-id component-state event move-state]
+  [entity-id component-state event position]
   ;; Purposely avoiding multimethods here because they are slow
   (condp keyword-identical? entity-id
-    :player1 (player-attack entity-id component-state event move-state)
-    (enemy-attack entity-id component-state event move-state)))
+    :player1 (player-attack entity-id component-state event position)
+    (enemy-attack entity-id component-state event position)))
 
 (defn get-attack-event
   "Returns the first attack event from the inbox"
@@ -95,9 +101,9 @@
 (defn attack
   "Handles making attackes for the enemy. Must subscribe to
    the :action events for the entity."
-  [entity-id component-state {:keys [inbox moveable]}]
+  [entity-id component-state {:keys [inbox position]}]
   (if-let [event (get-attack-event component-state inbox)]
     ;; Dispatch to the attack handlers based on entity-id
-    (handle-attack entity-id component-state event moveable)
+    (handle-attack entity-id component-state event position)
     ;; Tick any in progress attack cooldowns
     (reduce tick-in-progress-attack component-state (seq component-state))))

@@ -7,6 +7,7 @@
             [chocolatier.engine.components.animateable :refer [mk-animateable-state]]
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
+            [chocolatier.engine.components.position :refer [mk-position-state]]
             [chocolatier.engine.components.damage :refer [mk-damage-state]]))
 
 
@@ -24,13 +25,15 @@
                                               [:stand-right 26 37 26 37 0 0 1]
                                               [:hit-up 20 30 20 30 0 0 1])
         move-state (mk-moveable-state pos-x pos-y 4 :down)
+        position-state (mk-position-state pos-x pos-y pos-x pos-y)
         collision-state (mk-collidable-state 26 37 nil)
         damage-state (mk-damage-state 50 5 5
                                       #(mk-text-sprite-state stage % {"font" "bold 12px Arial"
                                                                "fill" "red"
                                                                "stroke" "white"
                                                                "strokeThickness" 3}))]
-    (ecs/mk-entity state uid [[:moveable move-state]
+    (ecs/mk-entity state uid [[:position position-state]
+                              [:moveable move-state]
                               [:animateable animation-state]
                               [:sprite sprite-state]
                               [:collidable collision-state]

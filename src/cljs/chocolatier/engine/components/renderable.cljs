@@ -23,11 +23,11 @@
 (defn set-position!
   "Update the screen x, y position of the sprite based on any move events
    from a component inbox. Returns the updated sprite."
-  [sprite moveable-state]
-  (let [{:keys [pos-x pos-y]} moveable-state]
+  [sprite position]
+  (let [{:keys [screen-x screen-y]} position]
     ;; Mutate the x and y position of the sprite if there was any
     ;; move changes
-    (aset sprite "position" (js-obj "x" pos-x "y" pos-y))))
+    (aset sprite "position" (js-obj "x" screen-x "y" screen-y))))
 
 ;; TODO figure out a way to not need the stage so we can more easily
 ;; create sprite state. For example, in the attack component we must
@@ -48,12 +48,11 @@
 (defn render-sprite
   "Renders the sprite in relation to the position of the entity and
    frame of the spritesheet deterimined by the animateable state"
-  [entity-id component-state {:keys [moveable animateable]}]
+  [entity-id component-state {:keys [position animateable]}]
   (let [sprite (:sprite component-state)
         frame (:frame animateable)]
     ;; Side effects!
-    ;; If there is a moveable state then update the position
-    (when (seq moveable) (set-position! sprite moveable))
+    (set-position! sprite position)
     ;; If there is an animation frame then update the spritesheet frame
     (when frame (pixi/set-sprite-frame! sprite frame))
     component-state))
@@ -61,12 +60,11 @@
 (defn render-text
   "Renders text in relation to the position of the entity"
   [entity-id component-state context]
-  (let [{text-state :text moveable :moveable} context
+  (let [{text-state :text position :position} context
         {:keys [text rotation]} text-state
         text-obj (:text-obj component-state)]
     ;; Mutate the text object position and text
-    (when moveable
-      (set-position! text-obj moveable))
+    (set-position! text-obj position)
     (when text
       (aset text-obj "text" text)
       (aset text-obj "rotation" rotation))

@@ -9,8 +9,6 @@
   [state component-id entity-id]
   {:input-state (get-in state [:game :input])})
 
-(def move-rate 4)
-
 (def keycode->movement
   {:W {:action :walk :direction :up}
    :S {:action :walk :direction :down}

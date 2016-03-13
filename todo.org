@@ -28,6 +28,14 @@ CLOSED: [2016-03-08 Tue 12:21]
 http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
 * DONE Rendering tile maps with larger tilesets/maps kills perf
 CLOSED: [2016-03-09 Wed 15:32]
+* TODO Position component
+- There should be a position component instead of overloading the move component
+- Position system should come after collision and movement
+- What can change an entities position?
+  - Movement
+  - Camera
+  - Something else?
+- Render system should cull sprites that have a position that is not on the screen
 * TODO Tilemap switching
 - [ ] Load a new tilemap into the game state
 - [ ] Update tilemap collision system

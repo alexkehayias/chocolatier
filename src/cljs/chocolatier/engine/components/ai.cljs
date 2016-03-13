@@ -3,11 +3,11 @@
             [chocolatier.engine.components.moveable :refer [offset->direction]]))
 
 (defn behavior
-  [entity-id component-state {:keys [moveable moveable-player1]}]
-  (let [{player-pos-x :pos-x player-pos-y :pos-y} moveable-player1
-        {:keys [pos-x pos-y]} moveable
-        offset [(if ^boolean (< player-pos-x pos-x) 1 -1)
-                (if ^boolean (< player-pos-y pos-y) 1 -1)]
+  [entity-id component-state {:keys [position position-player1]}]
+  (let [{player-screen-x :screen-x player-screen-y :screen-y} position-player1
+        {:keys [screen-x screen-y]} position
+        offset [(if ^boolean (< player-screen-x screen-x) 1 -1)
+                (if ^boolean (< player-screen-y screen-y) 1 -1)]
         event (ev/mk-event {:direction (get offset->direction offset)}
                            [:move-change entity-id])]
     [component-state [event]]))

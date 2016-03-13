@@ -7,7 +7,8 @@
             [chocolatier.engine.components.collidable :refer [mk-collidable-state]]
             [chocolatier.engine.components.moveable :refer [mk-moveable-state]]
             [chocolatier.engine.components.attack :refer [mk-attack-state]]
-            [chocolatier.engine.components.damage :refer [mk-damage-state]]))
+            [chocolatier.engine.components.damage :refer [mk-damage-state]]
+            [chocolatier.engine.components.position :refer [mk-position-state]]))
 
 
 (defn create-player!
@@ -53,6 +54,7 @@
                                                 [:spear-down-left 832 1344 64 64 6 0 8]
                                                 [:spear-left 832 1344 64 64 5 0 8]
                                                 [:spear-right 832 1344 64 64 7 0 8])
+          position-state (mk-position-state pos-x pos-y pos-x pos-y)
           move-state (mk-moveable-state pos-x pos-y 4 :down)
           collision-state (mk-collidable-state 64 64 nil)
           attack-state (mk-attack-state
@@ -75,7 +77,8 @@
           damage-state (mk-damage-state 100 10 10 #(mk-text-sprite-state stage % {}))]
       (ecs/mk-entity state
                      uid
-                     [[:text {:text (name uid) :rotation 0}]
+                     [[:position position-state]
+                      [:text {:text (name uid) :rotation 0}]
                       [:text-sprite text-state]
                       [:animateable animation-state]
                       [:sprite sprite-state]
