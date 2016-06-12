@@ -17,7 +17,7 @@
         :component ~vname})))
 
 (defmacro defentity
-  "A collection of components that represent all aspects of what 
+  "A collection of components that represent all aspects of what
    the entity can do. Component fields must be unique across all
    components included in the entity.
 
@@ -83,3 +83,12 @@
        (do (conj! res# ~@body)
            (recur ~step res#))
        (persistent! res#))))
+
+;; Faster get-in with no fallback
+;; https://gist.github.com/postspectacular/cdde5f63a8d9a1142b829b5a74be2317
+(defmacro get-in*
+  "Macro version of clojure.core/get-in without not-found fallback"
+  [root path]
+  (loop [r root,
+         p path]
+    (if p (recur `(get ~r ~(first p)) (next p)) r)))

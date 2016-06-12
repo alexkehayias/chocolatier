@@ -1,5 +1,6 @@
 (ns chocolatier.engine.core
-  (:require [chocolatier.engine.ecs :as ecs]))
+  (:require [chocolatier.engine.ecs :as ecs])
+  (:require-macros [chocolatier.macros :refer [get-in*]]))
 
 
 (defmulti mk-state
@@ -64,8 +65,8 @@
   ;; provides some optimization since it means we don't have to
   ;; dynamically construct the update function every time.
   (let [new-state (reduce mk-state state specs)
-        scene-id (get-in new-state ecs/scene-id-path)
-        systems (get-in new-state [:scenes scene-id])
+        scene-id (get-in* new-state [:game :scene-id])
+        systems (get-in* new-state [:scenes scene-id])
         system-fns (ecs/get-system-fns new-state systems)
         update-fn (apply comp (reverse system-fns))]
     (assoc-in new-state [:game :update-fns scene-id] update-fn)))
@@ -95,8 +96,8 @@
   "Returns the next game state. The update function for the game is stored
    in the game state as an optimization."
   [game-state]
-  (let [scene-id (get-in game-state ecs/scene-id-path)
-        update-fn (get-in game-state [:game :update-fns scene-id])]
+  (let [scene-id (get-in* game-state [:game :scene-id])
+        update-fn (get-in* game-state [:game :update-fns scene-id])]
     (update-fn game-state)))
 
 (defn game-loop

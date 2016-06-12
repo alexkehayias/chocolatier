@@ -28,6 +28,14 @@ CLOSED: [2016-03-08 Tue 12:21]
 http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
 * DONE Rendering tile maps with larger tilesets/maps kills perf
 CLOSED: [2016-03-09 Wed 15:32]
+* DONE Try using a modified ~get-in~ macro for perf improvement
+CLOSED: [2016-06-12 Sun 13:07]
+- https://gist.github.com/postspectacular/cdde5f63a8d9a1142b829b5a74be2317
+- On branch ~fget~
+- Benchmarks don't seem to show anything noticeable
+* TODO Jit compile the game engine to the most performant instructions to run the game since it is all represented in data
+- This idea came from Mattias as a comment on the game engine I presented
+- Deforrestation of the game state and simpler dispatching
 * TODO Position component
 - There should be a position component instead of overloading the move component
 - Position system should come after collision and movement

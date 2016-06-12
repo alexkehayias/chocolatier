@@ -30,6 +30,7 @@
 
   :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.1"
                                    :exclude [org.clojure/clojurescript]]
+                                  [cider/cider-nrepl "0.12.0-SNAPSHOT"]
                                   [org.clojure/tools.nrepl "0.2.12"]]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
 
@@ -37,7 +38,8 @@
 
   :cljsbuild {:builds
               [{:id "dev"
-                :source-paths ["src/cljs"
+                :source-paths ["src/clj"
+                               "src/cljs"
                                "test/cljs"]
                 :figwheel {:devcards true}
                 :compiler {:main "chocolatier.devcards"

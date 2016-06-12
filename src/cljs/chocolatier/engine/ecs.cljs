@@ -1,7 +1,8 @@
 (ns chocolatier.engine.ecs
-  (:require [chocolatier.utils.logging :as log]
-            [chocolatier.engine.events :as ev]
-            [clojure.set :refer [subset?]]))
+  (:require [clojure.set :refer [subset?]]
+            [chocolatier.utils.logging :as log]
+            [chocolatier.engine.events :as ev])
+  (:require-macros [chocolatier.macros :refer [get-in*]]))
 
 ;; Gameloop:   recursive function that calls all systems in a scene
 ;;
@@ -51,7 +52,7 @@
 (defn entities-with-component
   "Returns a set of all entity IDs that have the specified component-id"
   [state component-id]
-  (get-in state [:components component-id :entities] #{}))
+  (or (get-in* state [:components component-id :entities]) #{}))
 
 (defn entities-with-multi-components
   "Returns a set of all entity IDs that have all the specified component-ids."
@@ -73,18 +74,18 @@
   "Returns the component meta as a hashmap of
    :fn :subscriptions :select-components"
   [state component-id]
-  (get-in state [:components component-id]))
+  (get-in* state [:components component-id]))
 
 (defn get-component-state
   "Returns a hashmap of state associated with the component for the given
    entity. NOTE: As a convenience, if state is not found it returns an empty
    hashmap."
   [state component-id entity-id]
-  (get-in state [:state component-id entity-id] {}))
+  (or (get-in* state [:state component-id entity-id]) {}))
 
 (defn get-all-component-state
   [state component-id]
-  (get-in state [:state component-id]))
+  (get-in* state [:state component-id]))
 
 (defn mk-component-state
   "Returns an updated hashmap with component state for the given entity"
@@ -155,7 +156,7 @@
         component-states (get-all-component-state state component-id)
         component (get-component state component-id)
         component-fn (:fn component)
-        queue (get-in state ev/queue-path)]
+        queue (get-in* state [:state :events :queue])]
     (loop [entities entity-ids
            state-accum (transient {})
            event-accum (array)]
@@ -263,10 +264,10 @@
 (defn rm-entity
   "Remove the specified entity and return updated game state"
   [state uid]
-  (let [components (get-in state [:entities uid])]
+  (let [components (get-in* state [:entities uid])]
     (as-> state $
       ;; Call cleanup function for the component if it's there
-      (reduce #(if-let [f (get-in %1 [:components %2 :cleanup-fn])]
+      (reduce #(if-let [f (get-in* %1 [:components %2 :cleanup-fn])]
                  (f %1 uid)
                  %1)
               $

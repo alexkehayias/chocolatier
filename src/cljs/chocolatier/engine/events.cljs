@@ -1,5 +1,6 @@
 (ns chocolatier.engine.events
-  (:require [clojure.core.reducers :as r]))
+  (:require [clojure.core.reducers :as r])
+  (:require-macros [chocolatier.macros :refer [get-in*]]))
 
 ;; Anyone can send a message to the event bus
 ;; The event system distributes the events to any subscribers into
@@ -39,7 +40,7 @@
          ;; Implicitely add the entity ID to
          ;; the end of the selectors, this ensures messages
          ;; are only for the entity
-         (loop [evs (get-in queue [sel entity-id] nil)
+         (loop [evs (get-in* queue [sel entity-id])
                 acc accum]
            (let [e (first evs)]
              (if (nil? e)
@@ -63,7 +64,7 @@
 (defn emit-events
   "Emits a collection of events at the same time. Returns update game state."
   [state events]
-  (let [all-queues (get-in state queue-path)]
+  (let [all-queues (get-in* state [:state :events :queue])]
     (assoc-in
      state
      queue-path
