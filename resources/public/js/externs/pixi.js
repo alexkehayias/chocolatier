@@ -2,6 +2,7 @@ var PIXI = function(){};
 
 PIXI.Graphics = function(){};
 PIXI.Graphics.addChild = function(item){};
+PIXI.Graphics.addChildAt = function(item){};
 PIXI.Graphics.removeChild = function(item){};
 
 PIXI.Container = function(){};

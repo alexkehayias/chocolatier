@@ -92,7 +92,7 @@
     (dom/append! node (.-domElement stats-obj))
 
     ;; Setup the inspector
-    (mount-inspector inspector-state inspector-app-state)
+    ;; (mount-inspector inspector-state inspector-app-state)
 
     (game-loop state
                (fn [handler]

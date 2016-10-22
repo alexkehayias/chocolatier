@@ -13,5 +13,6 @@
   (let [{:keys [counter ttl]} component-state
         inc-counter (inc counter)]
     (if ^boolean (> inc-counter ttl)
-      [component-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
+      [component-state [(ev/mk-event {:type :entity-remove :opts {:uid entity-id}}
+                                     [:meta])]]
       (assoc component-state :counter inc-counter))))

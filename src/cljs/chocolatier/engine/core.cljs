@@ -1,5 +1,6 @@
 (ns chocolatier.engine.core
-  (:require [chocolatier.engine.ecs :as ecs]))
+  (:require [chocolatier.engine.ecs :as ecs]
+            [chocolatier.engine.systems.tiles :refer [mk-tiles-from-tilemap!]]))
 
 
 (defmulti mk-state
@@ -8,44 +9,56 @@
 
    Example:
    (mk-state {} [:component :c1 [identity]])"
-  (fn [state args] (first args)))
+  (fn [state spec]
+    (:type spec)))
 
 ;; NOTE: we apply and partial so that we can maintain the araties of
 ;; the wrapped function and maintain that the state hashmap is the
 ;; first argument so we can use the threading macro easily
 (defmethod mk-state :entity
-  [state [_ uid components]]
-  (ecs/mk-entity state uid components))
+  [state {opts :opts}]
+  (ecs/mk-entity state opts))
 
 (defmethod mk-state :entity-remove
-  [state [_ uid]]
-  (ecs/rm-entity state uid))
+  [state {opts :opts}]
+  (ecs/rm-entity state opts))
 
 (defmethod mk-state :component
   [state [_ & args]]
   (apply (partial ecs/mk-component state) args))
 
 (defmethod mk-state :system
-  [state [_ & args]]
-  (apply (partial ecs/mk-system state) args))
+  [state {opts :opts}]
+  (ecs/mk-system state opts))
 
 (defmethod mk-state :scene
-  [state [_ & args]]
-  (apply (partial ecs/mk-scene state) args))
+  [state {opts :opts}]
+  (ecs/mk-scene state opts))
 
 (defmethod mk-state :current-scene
-  [state [_ scene-id]]
-  (ecs/mk-current-scene state scene-id))
+  [state {opts :opts}]
+  (ecs/mk-current-scene state opts))
 
 (defmethod mk-state :renderer
-  [state [_ & args]]
-  (apply (partial ecs/mk-renderer state) args))
+  [state {opts :opts}]
+  (ecs/mk-renderer state opts))
 
-;; Anything labeled as custom is expected to be a function that takes
+(defmethod mk-state :tilemap
+  [state {opts :opts}]
+  (let [{:keys [renderer stage loader tilemap]} opts]
+    (mk-tiles-from-tilemap! state renderer stage loader tilemap)))
+
+(defmethod mk-state :default
+  [state kwargs]
+  (assert false (str "Could not dispatch: " kwargs)))
+
+;; Anything labeled as script is expected to be a function that takes
 ;; a single argument which is state hm
-(defmethod mk-state :custom
-  [state [_ f]]
-  (f state))
+(defmethod mk-state :script
+  [state {opts :opts}]
+  (let [f (:fn opts)]
+    (assert f "Invalid script, missing :fn in :opts in spec hashmap.")
+    (f state)))
 
 (defn mk-game-state
   "Returns a hashmap of the game state from a spec of system components

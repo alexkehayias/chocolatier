@@ -14,6 +14,10 @@
   (.addChild obj item)
   obj)
 
+(defn add-child-at! [obj item z-index]
+  (.addChildAt obj item z-index)
+  obj)
+
 (defn remove-child! [obj item]
   (.removeChild obj item)
   obj)

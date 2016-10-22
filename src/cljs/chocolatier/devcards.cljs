@@ -6,7 +6,7 @@
               ;; Tests
               [chocolatier.engine.events-test]
               [chocolatier.engine.ecs-test]
-              [chocolatier.components.animateable-test]
+              ;; [chocolatier.components.animateable-test]
 
               ;; Benchmarks
               [chocolatier.engine.benchmarks]))

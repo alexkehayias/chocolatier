@@ -1,6 +1,6 @@
 (ns chocolatier.entities.enemy
   (:require [chocolatier.utils.logging :refer [debug info warn error]]
-            [chocolatier.engine.ecs :as ecs]
+            [chocolatier.engine.core :refer [mk-state]]
             [chocolatier.engine.events :as ev]
             [chocolatier.engine.components.renderable :refer [mk-sprite-state
                                                               mk-text-sprite-state]]
@@ -29,14 +29,16 @@
         collision-state (mk-collidable-state 26 37 nil)
         damage-state (mk-damage-state 50 5 5
                                       #(mk-text-sprite-state stage % {"font" "bold 12px Arial"
-                                                               "fill" "red"
-                                                               "stroke" "white"
-                                                               "strokeThickness" 3}))]
-    (ecs/mk-entity state uid [[:position position-state]
-                              [:moveable move-state]
-                              [:animateable animation-state]
-                              [:sprite sprite-state]
-                              [:collidable collision-state]
-                              [:damage damage-state]
-                              :collision-debuggable
-                              :ai])))
+                                                                      "fill" "red"
+                                                                      "stroke" "white"
+                                                                      "strokeThickness" 3}))
+        opts {:uid uid
+              :components [{:uid :position :state position-state}
+                           {:uid :moveable :state move-state}
+                           {:uid :animateable :state animation-state}
+                           {:uid :sprite :state sprite-state}
+                           {:uid :collidable :state collision-state}
+                           {:uid :damage :state damage-state}
+                           {:uid :collision-debuggable}
+                           {:uid :ai}]} ]
+    (mk-state state {:type :entity :opts opts})))

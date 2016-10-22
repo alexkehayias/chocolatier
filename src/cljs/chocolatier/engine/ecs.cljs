@@ -24,21 +24,21 @@
 
 (defn mk-scene
   "Add or update existing scene in the game state. A scene is a
-   collection of systems. system-ids are a collection of keywords referencing
+   collection of systems. systems are a collection of keywords referencing
    a system by their unique ID."
-  [state uid system-ids]
-  (assoc-in state [:scenes uid] system-ids))
+  [state {:keys [uid systems]}]
+  (assoc-in state [:scenes uid] systems))
 
 (def scene-id-path
   [:game :scene-id])
 
 (defn mk-current-scene
   "Sets the current scene of the game"
-  [state scene-id]
+  [state {scene-id :uid}]
   (assoc-in state scene-id-path scene-id))
 
 (defn mk-renderer
-  [state renderer stage]
+  [state {:keys [renderer stage]}]
   (assoc-in state [:game :rendering-engine] {:renderer renderer :stage stage}))
 
 (defn get-system-fns
@@ -88,8 +88,8 @@
 
 (defn mk-component-state
   "Returns an updated hashmap with component state for the given entity"
-  [state component-id entity-id val]
-  (assoc-in state [:state component-id entity-id] val))
+  [state component-id entity-id init-component-state]
+  (assoc-in state [:state component-id entity-id] init-component-state))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.
@@ -109,15 +109,13 @@
    - cleanup-fn: called when removing the entity and all it's components.
      This should perform any other cleanup or side effects needed to remove
      the component and all of it's state completely"
-  [state uid fn-spec]
-  (let [opts (when (seqable? fn-spec) (second fn-spec))
-        {:keys [cleanup-fn subscriptions select-components]} opts]
-    (update-in state [:components uid]
-               merge
-               {:fn (if opts (first fn-spec) fn-spec)
-                :subscriptions subscriptions
-                :select-components select-components
-                :cleanup-fn cleanup-fn})))
+  [state uid {:keys [fn cleanup-fn subscriptions select-components]}]
+  (assert fn "Invalid component, missing :fn key.")
+  (update-in state [:components uid]
+             merge {:fn fn
+                    :subscriptions subscriptions
+                    :select-components select-components
+                    :cleanup-fn cleanup-fn}))
 
 (defn concat-keywords [k1 k2]
   (keyword (str (name k1) "-" (name k2))))
@@ -185,52 +183,31 @@
       (ev/emit-events next-state events))))
 
 (defn mk-system
-  "Add the system function to the state. Optionally the third argument
-   can be
-
-   Args:
-   - uid: The unique identifier for the system
-   - component-id: A keyword of the component-id the system works on
-
-   Optional:
-   - f: A function that takes state as the only argument and must
-     return an updated state.
-
-   Example:
-   ;; Add a system named :s1 that operates on entities that have the
-   ;; :c1 component
-   (mk-system :s1 :c1 my-component-fn)
-   ;; Add a system named :s1 that uses our own function
-   (mk-system :s1 f)"
-  ([state uid system-fn]
-   (log/debug "mk-system:" uid)
-   (assoc-in state [:systems uid] system-fn))
-  ([state uid component-id component-spec]
-   (log/debug "mk-system:" uid "component-id:" component-id)
-   (-> state
-       (assoc-in [:systems uid] (mk-system-fn component-id))
-       (mk-component component-id component-spec))))
+  "Add the system function to the state."
+  [state {:keys [component uid fn]}]
+  (if component
+    (let [component-id (:uid component)]
+      (log/debug "mk-system:" uid "that operates on component-id:" component-id)
+      (-> state
+          (assoc-in [:systems uid] (mk-system-fn component-id))
+          (mk-component component-id component)))
+    (do
+      (log/debug "mk-system:" uid)
+      (assert fn "Invalid system spec, missing :fn")
+      (assoc-in state [:systems uid] fn))))
 
 (defn component-state-from-spec
   "Returns a function that returns an updated state with component state
    generated for the given entity-id. If no initial component state is given,
    it will default to an empty hashmap."
   [entity-id]
-  (fn [state spec]
-    (if (vector? spec)
-      (let [[component-id component-state] spec]
-        (-> state
-            (update-in [:entities entity-id]
-                       #(conj (or % #{}) component-id))
-            (update-in [:components component-id :entities]
-                       #(conj (or % #{}) entity-id))
-            (mk-component-state component-id entity-id component-state)))
-      (-> state
-          (update-in [:entities entity-id]
-                     #(conj (or % #{}) spec))
-          (update-in [:components spec :entities]
-                     #(conj (or % #{}) entity-id))
-          (mk-component-state spec entity-id {})))))
+  (fn [state {component-id :uid component-state :state}]
+    (-> state
+        (update-in [:entities entity-id]
+                   #(conj (or % #{}) component-id))
+        (update-in [:components component-id :entities]
+                   #(conj (or % #{}) entity-id))
+        (mk-component-state component-id entity-id component-state))))
 
 (defn mk-entity
   "Adds entity with uid that has component-ids into state. Optionally pass
@@ -248,7 +225,7 @@
               [:controllable
                [:collidable {:hit-radius 10}]
                [:moveable {:x 0 :y 0}]])"
-  [state uid components]
+  [state {:keys [uid components]}]
   (reduce (component-state-from-spec uid) state components))
 
 (defn rm-entity-from-component-index
@@ -262,7 +239,7 @@
 
 (defn rm-entity
   "Remove the specified entity and return updated game state"
-  [state uid]
+  [state {:keys [uid]}]
   (let [components (get-in state [:entities uid])]
     (as-> state $
       ;; Call cleanup function for the component if it's there

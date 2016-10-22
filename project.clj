@@ -2,7 +2,7 @@
   :description "Chocolatier prototype"
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj" "test/cljs"]
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
 
                  ;; Web server
                  [ring "1.2.0"]
@@ -10,7 +10,7 @@
                  [enlive "1.1.1"]
 
                  ;; cljs
-                 [org.clojure/clojurescript "1.7.228"]
+                 [org.clojure/clojurescript "1.9.293"]
                  ;; DOM manipulation
                  [prismatic/dommy "1.1.0"
                   :exclude [org.clojure/clojurescript]]
@@ -19,13 +19,13 @@
                   :exclude [org.clojure/clojurescript]]
 
                  ;; Devcards
-                 [devcards "0.2.1-4"]
+                 [devcards "0.2.2"]
 
                  ;; State inspection
                  [praline "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-cljsbuild "1.1.1" :exclude [org.clojure/clojurescript]]
-            [lein-figwheel "0.5.0-1" :exclude [org.clojure/clojurescript]]
+            [lein-figwheel "0.5.8" :exclude [org.clojure/clojurescript]]
             [refactor-nrepl "1.1.0"]]
 
   :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.1"
@@ -39,7 +39,11 @@
               [{:id "dev"
                 :source-paths ["src/cljs"
                                "test/cljs"]
-                :figwheel {:devcards true}
+                :figwheel {:devcards true
+                           :autoload true
+                           :load-warninged-code true
+                           :heads-up-display true
+                           :on-jsload "chocolatier.examples.action-rpg.core/on-js-reload"}
                 :compiler {:main "chocolatier.devcards"
                            :asset-path "/js/compiled/out"
                            :output-to "resources/public/js/compiled/chocolatier.js"

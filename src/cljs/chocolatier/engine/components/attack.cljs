@@ -16,13 +16,13 @@
   "Returns a hashmap of attack component-state.
 
    Usage:
-   (mk-attack-state [:punch {:damage 10
-                             :cooldown 5
-                             :speed 5
-                             :ttl 8
-                             :type :physical
-                             :sprite-fn sprite-f}])"
-  [& action-specs]
+   (mk-attack-state [[:punch {:damage 10
+                              :cooldown 5
+                              :speed 5
+                              :ttl 8
+                              :type :physical
+                              :sprite-fn sprite-f}]])"
+  [action-specs]
   (into {} (map (fn [[action spec]]
                   (assert (= (set [:damage :cooldown :type
                                    :width :height :speed
@@ -46,26 +46,31 @@
     (if ^boolean cooldown?
       next-state
       (let [uid (keyword (gensym "attack-"))
-            msg [:entity
-                 uid
-                 [[:collidable (mk-collidable-state width height
-                                                    {:from-id entity-id
-                                                     :damage damage
-                                                     :type type})]
-                  ;; Determine where the sprite goes based
-                  ;; on the position of the player
-                  [:moveable (mk-moveable-state speed direction)]
-                  [:position (mk-position-state (+ screen-x 16)
-                                                (+ screen-y 24)
-                                                (+ screen-x 16)
-                                                (+ screen-y 24))]
-                  ;; Add a ttl to the attack entity so we
-                  ;; don't need to handle cleaning it up!
-                  [:ephemeral (mk-ephemeral-state ttl)]
-                  ;; Add a sprite to visualize the attack
-                  ;; Sprite component state comes from
-                  ;; calling a function due to needing the stage
-                  [:sprite (sprite-fn)]]]
+            collision-state (mk-collidable-state width height
+                                                 {:from-id entity-id
+                                                  :damage damage
+                                                  :type type})
+            move-state (mk-moveable-state speed direction)
+            position-state (mk-position-state (+ screen-x 16)
+                                              (+ screen-y 24)
+                                              (+ screen-x 16)
+                                              (+ screen-y 24))
+            ephemeral-state (mk-ephemeral-state ttl)
+            sprite-state (sprite-fn)
+            msg {:type :entity
+                 :opts {:uid uid
+                        :components [{:uid :collidable :state collision-state}
+                                     ;; Determine where the sprite goes based
+                                     ;; on the position of the player
+                                     {:uid :moveable :state move-state}
+                                     {:uid :position :state position-state}
+                                     ;; Add a ttl to the attack entity so we
+                                     ;; don't need to handle cleaning it up!
+                                     {:uid :ephemeral :state ephemeral-state}
+                                     ;; Add a sprite to visualize the attack
+                                     ;; Sprite component state comes from
+                                     ;; calling a function due to needing the stage
+                                     {:uid :sprite :state sprite-state}]}}
             e (ev/mk-event msg [:meta])]
         [next-state [e]]))))
 

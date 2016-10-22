@@ -49,18 +49,21 @@
     ;; otherwise create an entity with a text component to display the
     ;; damage taken
     (if ^boolean destroy?
-      [next-state [(ev/mk-event [:entity-remove entity-id] [:meta])]]
-      [next-state [(ev/mk-event [:entity (keyword (gensym "damage-"))
-                                 [[:position (mk-position-state screen-x screen-y screen-x screen-y)]
-                                  [:moveable (mk-moveable-state 2 :up)]
-                                  [:ephemeral (mk-ephemeral-state 10)]
-                                  ;; WARNING: This function has side
-                                  ;; effects and should only be called
-                                  ;; when needed i.e not in a let
-                                  ;; binding if it could potentially
-                                  ;; not be used
-                                  [:text-sprite (text-fn (str "-" damage))]
-                                  [:text (mk-text-state (str "-" damage) 0.5)]]]
+      [next-state [(ev/mk-event {:type :entity-remove
+                                 :opts {:uid entity-id}} [:meta])]]
+      [next-state [(ev/mk-event {:type :entity
+                                 :opts {:uid (keyword (gensym "damage-"))
+                                        :components [{:uid :position :state (mk-position-state screen-x screen-y screen-x screen-y)}
+                                                     {:uid :moveable :state (mk-moveable-state 2 :up)}
+
+                                                     {:uid :ephemeral :state (mk-ephemeral-state 10)}
+                                                     ;; WARNING: This function has side
+                                                     ;; effects and should only be called
+                                                     ;; when needed i.e not in a let
+                                                     ;; binding if it could potentially
+                                                     ;; not be used
+                                                     {:uid :text-sprite :state (text-fn (str "-" damage))}
+                                                     {:uid :text :state (mk-text-state (str "-" damage) 0.5)}]}}
                                 [:meta])
                    ;; Emit a hit action for the entity
                    ;; (ev/mk-event {:action :hit :direction :up}

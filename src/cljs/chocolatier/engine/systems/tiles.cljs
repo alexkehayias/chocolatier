@@ -115,7 +115,7 @@
                                    map-x map-y
                                    tileset-x tileset-y
                                    attributes)]
-            (pixi/add-child! container (:sprite tile))
+            (pixi/add-child-at! container (:sprite tile) 0)
             ;; Add to the accumulator
             (.push accum tile)
             (recur (rest tile-specs)))
@@ -129,48 +129,48 @@
 (defn mk-tiles-from-tilemap!
   "Returns a collection of tile hashmaps according to the spec.
    Args:
+   - state: The game state
    - renderer: The rendering engine object
    - stage: The rendering engine stage object
    - loader: The preloaded asset cache
    - tilemap: A spec for the tilemap as exported from Tiled
      See http://www.mapeditor.org/ for more"
-  [renderer stage loader tilemap]
-  (fn [state]
-    (let [{:keys [width
-                  height
-                  layers
-                  tilesets
-                  tileheight
-                  tilewidth]} tilemap
-                  {:keys [image
-                          imageheight
-                          imagewidth
-                          tileproperties]} (first tilesets)
-                  tileset-width (/ imagewidth tilewidth)
-                  tileset-height (/ imageheight tileheight)
-                  ;; WARNING: This assumes there is only one tileset
-                  ;; for the map
-                  img-path (->> tilesets first :image)
-                  img (aget (.-resources loader) image)
-                  tileset-texture (aget img "texture")]
-      (log/debug "Making tiles from tile map")
-      ;; Draw tiles from all layers of the tile map
-      (assoc-in state [:state :tiles]
-                (loop [layers layers
-                       accum (array)]
-                  (if-let [l (first layers)]
-                    (recur (rest layers)
-                           (create-tiles-from-spec! renderer
-                                                    stage
-                                                    tileset-texture
-                                                    width
-                                                    height
-                                                    tileproperties
-                                                    tileset-width tileset-height
-                                                    tilewidth tileheight
-                                                    (:data l)
-                                                    accum))
-                    accum))))))
+  [state renderer stage loader tilemap]
+  (let [{:keys [width
+                height
+                layers
+                tilesets
+                tileheight
+                tilewidth]} tilemap
+        {:keys [image
+                imageheight
+                imagewidth
+                tileproperties]} (first tilesets)
+        tileset-width (/ imagewidth tilewidth)
+        tileset-height (/ imageheight tileheight)
+        ;; WARNING: This assumes there is only one tileset
+        ;; for the map
+        img-path (->> tilesets first :image)
+        img (aget (.-resources loader) image)
+        tileset-texture (aget img "texture")]
+    (log/debug "Making tiles from tile map")
+    ;; Draw tiles from all layers of the tile map
+    (assoc-in state [:state :tiles]
+              (loop [layers layers
+                     accum (array)]
+                (if-let [l (first layers)]
+                  (recur (rest layers)
+                         (create-tiles-from-spec! renderer
+                                                  stage
+                                                  tileset-texture
+                                                  width
+                                                  height
+                                                  tileproperties
+                                                  tileset-width tileset-height
+                                                  tilewidth tileheight
+                                                  (:data l)
+                                                  accum))
+                  accum)))))
 
 (defn load-tilemap
   "Async load a json tilemap at the url. Calls callback function with the
