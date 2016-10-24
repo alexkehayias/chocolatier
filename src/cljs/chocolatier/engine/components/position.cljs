@@ -22,9 +22,9 @@
                                [0 0]
                                inbox)]
       ;; TODO translate map coords into screen coords
-      {:map-x (- screen-x offset-x)
-       :map-y (- screen-y offset-y)
-       :screen-x (- screen-x offset-x)
-       :screen-y (- screen-y offset-y)
-       :screen-z screen-z})
+      (mk-position-state (- screen-x offset-x)
+                         (- screen-y offset-y)
+                         (- screen-x offset-x)
+                         (- screen-y offset-y)
+                         screen-z))
     component-state))
