@@ -1,11 +1,11 @@
 (ns chocolatier.engine.components.position)
 
 
-(defrecord Position [map-x map-y screen-x screen-y])
+(defrecord Position [map-x map-y screen-x screen-y screen-z])
 
 (defn mk-position-state
-  [map-x map-y screen-x screen-y]
-  (->Position map-x map-y screen-x screen-y))
+  [map-x map-y screen-x screen-y screen-z]
+  (->Position map-x map-y screen-x screen-y screen-z))
 
 (defn position
   "Calculates the entities position on the map and on the screen. Listens
@@ -14,7 +14,7 @@
   [entity-id component-state {:keys [inbox]}]
   ;; If there are no messages then no-op
   (if (seq inbox)
-    (let [{:keys [map-x map-y screen-x screen-y]} component-state
+    (let [{:keys [map-x map-y screen-x screen-y screen-z]} component-state
           [offset-x offset-y] (reduce
                                (fn [[x y] {msg :msg}]
                                  [(+ x (:offset-x msg))
@@ -25,5 +25,6 @@
       {:map-x (- screen-x offset-x)
        :map-y (- screen-y offset-y)
        :screen-x (- screen-x offset-x)
-       :screen-y (- screen-y offset-y)})
+       :screen-y (- screen-y offset-y)
+       :screen-z screen-z})
     component-state))

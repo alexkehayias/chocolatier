@@ -55,6 +55,9 @@
     (set! (.-frame texture) bounds))
   sprite)
 
+(defn set-sprite-zindex! [sprite idx]
+  (set! (.-position.z sprite) idx))
+
 (defn mk-sprite-from-cache!
   "Returns a sprite that has been added to the stage. The image for the sprite
    is loaded from the cache. If a frame is not passed in the sprite will not
@@ -66,14 +69,16 @@
    - image-location: a path to the image to use for the sprite
 
    Optional args:
-   - frame: a vector of x, y, w, h in relation to the sprite image"
+   - frame: a vector of x, y, w, h in relation to the sprite image
+   - z-index: the z dimension when drawing the sprite"
   ([stage loader image-location]
-   (mk-sprite-from-cache! stage loader image-location [0 0 0 0]))
-  ([stage loader image-location frame]
+   (mk-sprite-from-cache! stage loader image-location [0 0 0 0] 0))
+  ([stage loader image-location frame z-index]
    (let [cached-texture (.-texture (aget (.-resources loader) image-location))
          texture (new js/PIXI.Texture (.-baseTexture cached-texture))
          sprite (new js/PIXI.Sprite texture)]
      (set-sprite-frame! sprite frame)
+     (set-sprite-zindex! sprite z-index)
      (add-child! stage sprite)
      sprite)))
 
@@ -142,7 +147,8 @@
   (let [texture (.generateTexture container renderer)
         sprite (new js/PIXI.Sprite texture)]
     ;; This is a side-effect with no return value
-    (add-child! stage sprite)))
+    (add-child! stage sprite)
+    sprite))
 
 (defn mk-text!
   "Creates a PIXI.Text object with styles.

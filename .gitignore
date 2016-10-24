@@ -20,3 +20,4 @@ pom.xml.asc
 /figwheel_server.log
 /resources/assets
 ./push-master.sh
+*.*~

@@ -115,16 +115,15 @@
                                    map-x map-y
                                    tileset-x tileset-y
                                    attributes)]
-            (pixi/add-child-at! container (:sprite tile) 0)
+            (pixi/add-child! container (:sprite tile))
             ;; Add to the accumulator
             (.push accum tile)
             (recur (rest tile-specs)))
           (recur (rest tile-specs)))
-        (do (log/debug "Rendering tile map container")
-            (pixi/render-from-object-container! renderer
-                                                stage
-                                                container)
-            accum)))))
+        (let [sprite (pixi/render-from-object-container! renderer stage container)]
+          (log/debug "Rendering tile map container")
+          (set! (.-position.z sprite) 0)
+          accum)))))
 
 (defn mk-tiles-from-tilemap!
   "Returns a collection of tile hashmaps according to the spec.

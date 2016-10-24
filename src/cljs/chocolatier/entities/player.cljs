@@ -13,8 +13,8 @@
 
 (defn create-player!
   "Create a player by initializing some component state"
-  [stage loader uid pos-x pos-y map-x map-y]
-  (info "Creating player" pos-x pos-y map-x map-y)
+  [stage loader uid pos-x pos-y pos-z map-x map-y]
+  (info "Creating player" pos-x pos-y pos-z map-x map-y)
   (let [text-state (mk-text-sprite-state stage "Player 1" {"font" "bold 12px Arial"
                                                            "stroke" "white"
                                                            "strokeThickness" 3})
@@ -52,7 +52,7 @@
                                               [:spear-down-left 832 1344 64 64 6 0 8]
                                               [:spear-left 832 1344 64 64 5 0 8]
                                               [:spear-right 832 1344 64 64 7 0 8])
-        position-state (mk-position-state pos-x pos-y pos-x pos-y)
+        position-state (mk-position-state pos-x pos-y pos-x pos-y pos-z)
         move-state (mk-moveable-state 4 :down)
         collision-state (mk-collidable-state 64 64 nil)
         attacks [[:fireball {:damage 10
@@ -65,7 +65,8 @@
                              :sprite-fn #(mk-sprite-state stage
                                                           loader
                                                           "/img/fireball.png"
-                                                          [0 0 30 30])}]
+                                                          [0 0 30 30]
+                                                          0)}]
                  [:spear {:damage 10
                           :cooldown 4
                           :type :fire

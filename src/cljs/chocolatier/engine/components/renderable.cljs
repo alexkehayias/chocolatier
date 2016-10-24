@@ -24,10 +24,10 @@
   "Update the screen x, y position of the sprite based on any move events
    from a component inbox. Returns the updated sprite."
   [sprite position]
-  (let [{:keys [screen-x screen-y]} position]
+  (let [{:keys [screen-x screen-y screen-z]} position]
     ;; Mutate the x and y position of the sprite if there was any
     ;; move changes
-    (aset sprite "position" (js-obj "x" screen-x "y" screen-y))))
+    (aset sprite "position" (js-obj "x" screen-x "y" screen-y "z" screen-z))))
 
 ;; TODO figure out a way to not need the stage so we can more easily
 ;; create sprite state. For example, in the attack component we must
@@ -38,8 +38,8 @@
    sprite frame as the last argument to render to the position right away"
   ([stage loader img-path]
    {:sprite (pixi/mk-sprite-from-cache! stage loader img-path)})
-  ([stage loader img-path frame]
-   {:sprite (pixi/mk-sprite-from-cache! stage loader img-path frame)}))
+  ([stage loader img-path frame z-index]
+   {:sprite (pixi/mk-sprite-from-cache! stage loader img-path frame z-index)}))
 
 (defn mk-text-sprite-state
   [stage text styles]

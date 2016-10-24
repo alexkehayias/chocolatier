@@ -39,7 +39,7 @@
   [entity-id component-state event position]
   (let [{:keys [action direction]} (:msg event)
         {:keys [damage type width height ttl sprite-fn speed]} (get component-state action)
-        {:keys [screen-x screen-y]} position
+        {:keys [screen-x screen-y screen-z]} position
         cooldown (get-in component-state [action :cooldown])
         [cooldown-state cooldown?] (tick-cooldown cooldown)
         next-state (assoc-in component-state [action :cooldown] cooldown-state)]
@@ -54,7 +54,8 @@
             position-state (mk-position-state (+ screen-x 16)
                                               (+ screen-y 24)
                                               (+ screen-x 16)
-                                              (+ screen-y 24))
+                                              (+ screen-y 24)
+                                              screen-z)
             ephemeral-state (mk-ephemeral-state ttl)
             sprite-state (sprite-fn)
             msg {:type :entity

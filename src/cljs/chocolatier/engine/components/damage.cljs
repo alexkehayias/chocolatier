@@ -38,7 +38,7 @@
    - Creates an text entity with the amount of damage taken"
   [entity-id component-state position-state attacks]
   ;; TODO emit action events like hit animation
-  (let [{:keys [screen-x screen-y]} position-state
+  (let [{:keys [screen-x screen-y screen-z]} position-state
         text-fn (:text-fn component-state)
         damage (transduce (map :damage) + 0 attacks)
         next-state (-> component-state
@@ -53,7 +53,7 @@
                                  :opts {:uid entity-id}} [:meta])]]
       [next-state [(ev/mk-event {:type :entity
                                  :opts {:uid (keyword (gensym "damage-"))
-                                        :components [{:uid :position :state (mk-position-state screen-x screen-y screen-x screen-y)}
+                                        :components [{:uid :position :state (mk-position-state screen-x screen-y screen-x screen-y screen-z)}
                                                      {:uid :moveable :state (mk-moveable-state 2 :up)}
 
                                                      {:uid :ephemeral :state (mk-ephemeral-state 10)}

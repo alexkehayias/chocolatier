@@ -17,6 +17,7 @@
   [state stage loader uid]
   (let [pos-x (* 1000 (js/Math.random))
         pos-y (* 1000 (js/Math.random))
+        pos-z 10
         sprite-state (mk-sprite-state stage loader "/img/bunny.png")
         animation-state (mk-animateable-state :stand-down
                                               [:stand-up 26 37 26 37 0 0 1]
@@ -25,7 +26,7 @@
                                               [:stand-right 26 37 26 37 0 0 1]
                                               [:hit-up 20 30 20 30 0 0 1])
         move-state (mk-moveable-state 4 :down)
-        position-state (mk-position-state pos-x pos-y pos-x pos-y)
+        position-state (mk-position-state pos-x pos-y pos-x pos-y pos-z)
         collision-state (mk-collidable-state 26 37 nil)
         damage-state (mk-damage-state 50 5 5
                                       #(mk-text-sprite-state stage % {"font" "bold 12px Arial"
