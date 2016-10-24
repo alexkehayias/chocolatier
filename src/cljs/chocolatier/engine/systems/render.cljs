@@ -5,10 +5,7 @@
 
 
 (defn sort-by-zindex [a b]
-  (cond
-    (< (.-position.z a) (.-position.z b)) -1
-    (> (.-position.z a) (.-position.z b)) 1
-    :else 0))
+  (- (.-position.z a) (.-position.z b)))
 
 (defn render-system
   "Renders all the changes to sprites and other Pixi objects.

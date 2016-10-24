@@ -51,11 +51,11 @@
    {:type :entity
     :opts (create-player! stage loader :player1 20 20 1000 0 0)}
    ;; Script enemy creation
-   ;; {:type :script
-   ;;  :opts {:fn (fn [state]
-   ;;               (reduce #(create-enemy! %1 stage loader (keyword (gensym "enemy ")))
-   ;;                       state
-   ;;                       (range 100)))}}
+   {:type :script
+    :opts {:fn (fn [state]
+                 (reduce #(create-enemy! %1 stage loader (keyword (gensym "enemy ")))
+                         state
+                         (range 100)))}}
    ;; A scene is collection of keys representing systems
    ;; that will be called in sequential order
    {:type :scene
