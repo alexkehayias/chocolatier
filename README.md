@@ -63,11 +63,26 @@ The following example implements a simple game loop, middleware, system, compone
 (defn init-state
   "Initial game state with our example system, component, and a few entities"
   []
-  (mk-game-state {} [:scene :test-scene [:test-system]]
-                    [:current-scene :test-scene]
-                    [:system :test-system :testable test-component-fn]
-                    [:entity :player1 [[:testable {:x 0 :y 0}]]]
-                    [:entity :player2 [[:testable {:x 10 :y 10}]]]))
+  (mk-game-state {}
+   ;; Lists which systems and what order to run them in
+   {:type :scene
+    :opts {:uid :default
+           :systems [:test-system]}}
+   ;; Sets the current scene to the above
+   {:type :current-scene
+    :opts {:uid :default}}
+   ;; Create our test system that operates on the :testable component
+   {:type :system
+    :opts {:uid :test-system
+           :component {:uid :testable
+                       :fn test-component-fn}}}
+   ;; Create an entity with some initial component state
+   {:type :entity
+    :opts {:uid :player1
+           :components [{:uid :testable :state {:x 0 :y 0}}]}
+   {:type :entity
+    :opts {:uid :player2
+           :components [{:uid :testable :state {:x 0 :y 0}}]}))
 
 (defn run-n-frames
   "Middleware to count the number of frames and return nil to indicate
