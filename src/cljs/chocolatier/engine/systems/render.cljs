@@ -12,7 +12,7 @@
 
 (defn render-system
   "Renders all the changes to sprites and other Pixi objects.
-   Draws sprites in order of their zindex."
+   Draws sprites in order of their z-index."
   [state]
   (let [{:keys [renderer stage]} (-> state :game :rendering-engine)]
     (.sort (.-children stage) sort-by-zindex)

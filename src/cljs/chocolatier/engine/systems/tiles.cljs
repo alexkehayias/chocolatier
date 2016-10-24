@@ -82,6 +82,7 @@
    tileset-w tileset-h
    tile-px-w tile-px-h
    map-spec
+   z-index
    accum
    & {:keys [offset-x offset-y]
       :or {offset-x 0 offset-y 0}}]
@@ -122,7 +123,7 @@
           (recur (rest tile-specs)))
         (let [sprite (pixi/render-from-object-container! renderer stage container)]
           (log/debug "Rendering tile map container")
-          (set! (.-position.z sprite) 0)
+          (set! (.-position.z sprite) z-index)
           accum)))))
 
 (defn mk-tiles-from-tilemap!
@@ -156,7 +157,8 @@
     ;; Draw tiles from all layers of the tile map
     (assoc-in state [:state :tiles]
               (loop [layers layers
-                     accum (array)]
+                     accum (array)
+                     z-index 0]
                 (if-let [l (first layers)]
                   (recur (rest layers)
                          (create-tiles-from-spec! renderer
@@ -168,7 +170,9 @@
                                                   tileset-width tileset-height
                                                   tilewidth tileheight
                                                   (:data l)
-                                                  accum))
+                                                  z-index
+                                                  accum)
+                         (inc z-index))
                   accum)))))
 
 (defn load-tilemap

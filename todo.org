@@ -17,11 +17,16 @@
   - [X] Nicer tile map
   - [X] Nicer sprites
   - [ ] Obligatory Flappy Bird?
-* TODO z-index for sprites
-- [ ] Draw tiles first
-- [ ] Save z-index to component state
-- Use display containers https://github.com/pixijs/pixi.js/issues/300
-* TODO Fix figwheel reloading not working for example.action_rpg
+* TODO Attack sprite-fn should be set someplace else
+Maybe add a closure around stage and loader?
+* DONE z-index for sprites
+CLOSED: [2016-10-23 Sun 18:17]
+- [X] Draw tiles first
+- [X] Save z-index to component state
+* DONE Fix figwheel reloading not working for example.action_rpg
+CLOSED: [2016-10-23 Sun 18:17]
+- FSEvents bug on OSX where the figwheel watcher was not working
+- Move directory out of Dropbox fixed the issue
 * DONE Tile map collision
 CLOSED: [2016-03-12 Sat 13:49]
 - [X] Add tiles to the broad/narrow collision detection?
