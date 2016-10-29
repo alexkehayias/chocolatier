@@ -17,6 +17,8 @@
   - [X] Nicer tile map
   - [X] Nicer sprites
   - [ ] Obligatory Flappy Bird?
+* DONE FIX failing tests after refactor
+CLOSED: [2016-10-29 Sat 11:42]
 * TODO Attack sprite-fn should be set someplace else
 Maybe add a closure around stage and loader?
 * DONE z-index for sprites
@@ -38,7 +40,8 @@ CLOSED: [2016-03-08 Tue 12:21]
 http://magiscarf.deviantart.com/art/Bunch-o-free-tiles-393827416
 * DONE Rendering tile maps with larger tilesets/maps kills perf
 CLOSED: [2016-03-09 Wed 15:32]
-* TODO Position component
+* DONE Position component
+CLOSED: [2016-10-29 Sat 11:42]
 - There should be a position component instead of overloading the move component
 - Position system should come after collision and movement
 - What can change an entities position?
@@ -53,7 +56,8 @@ CLOSED: [2016-03-09 Wed 15:32]
 - Controls where the camera is and the other systems should take that into account
 * DONE Fireball should pass through impassable tiles?
 CLOSED: [2016-03-12 Sat 15:27]
-* TODO Z-levels
+* DONE Z-levels
+CLOSED: [2016-10-29 Sat 11:42]
 - If an entity is on a different z level then they should not interact
 - Collisions can take into account z level
 - Rendering should render things according to their z-level

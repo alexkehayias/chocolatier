@@ -89,7 +89,7 @@
 (defn mk-component-state
   "Returns an updated hashmap with component state for the given entity"
   [state component-id entity-id init-component-state]
-  (assoc-in state [:state component-id entity-id] init-component-state))
+  (assoc-in state [:state component-id entity-id] (or init-component-state {})))
 
 (defn mk-component
   "Returns an updated state hashmap with the given component.

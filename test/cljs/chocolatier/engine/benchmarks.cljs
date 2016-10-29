@@ -29,21 +29,28 @@ the performance of rendering to canvas/webgl.")
   "Returns game state for a simple single system, single component, single entity"
   []
   (mk-game-state {}
-                 [:scene :default [:s1]]
-                 [:current-scene :default]
-                 [:system :s1 :c1 component-fn-state-change-only]
-                 [:entity :e1 [:c1]]))
+                 {:type :scene :opts {:uid :default :systems [:s1]}}
+                 {:type :current-scene :opts {:uid :default}}
+                 {:type :system :opts {:uid :s1
+                                       :component {:uid :c1
+                                                   :fn component-fn-state-change-only}}}
+                 {:type :entity :opts {:uid e1 :components [{:uid :c1}]}}))
 
 (defn many-entities
   "Returns game state for a simple single system, single component, single entity"
   []
   (let [entities (doall
-                  (map #(vector :entity (keyword (str "e" %)) [:c1])
-                         (range 1000)))
+                  (for [i (range 1000)]
+                    {:type :entity
+                     :opts {:uid (keyword (str "e" i))
+                            :components [{:uid :c1}]}}))
         args (concat [{}
-                      [:scene :default [:s1]]
-                      [:current-scene :default]
-                      [:system :s1 :c1 component-fn-state-change-only]]
+                      {:type :scene :opts {:uid :default :systems [:s1]}}
+                      {:type :current-scene :opts {:uid :default}}
+                      {:type :system
+                       :opts {:uid :s1
+                              :component {:uid :c1
+                                          :fn component-fn-state-change-only}}}]
                      entities)]
     (apply mk-game-state args)))
 
@@ -51,19 +58,23 @@ the performance of rendering to canvas/webgl.")
   "Returns a game state with 100 entities 100 components and 100 systems"
   []
   (let [entities (doall
-                  (map #(vector :entity (keyword (str "e" %))
-                                (doall (map (fn [n] (keyword (str "c" n)))
-                                            (range 100))))
-                       (range 100)))
+                  (for [i (range 100)]
+                    {:type :entity
+                     :opts {:uid (keyword (str "e" i))
+                            :components (doall
+                                         (for [j (range 100)]
+                                           {:uid (keyword (str "c" j))}))}}))
         systems (doall
-                 (map #(vector :system (keyword (str "s" %))
-                               (keyword (str "c" %))
-                               component-fn-state-change-only)
-                      (range 100)))
-        scene [:scene :default (doall (map #(keyword (str "s" %)) (range 100)))]
-        args (concat [{}
-                      scene
-                      [:current-scene :default]]
+                 (for [i (range 100)]
+                   {:type :system
+                    :opts {:uid (keyword (str "s" i))
+                           :component {:uid (keyword (str "c" i))
+                                       :fn component-fn-state-change-only}}}))
+        scene {:type :scene :opts {:uid :default
+                                   :systems (doall (map #(keyword (str "s" %))
+                                                        (range 100)))}}
+        current-scene {:type :current-scene :opts {:uid :default}}
+        args (concat [{} scene current-scene]
                      systems
                      entities)]
     (apply mk-game-state args)))

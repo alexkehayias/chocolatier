@@ -7,13 +7,9 @@
 
 (deftest test-get-events
   (testing "Test getting events from the queue given selectors"
-    (let [state {:state {:events {:queue {:a {:b [1 2] :c [3 4]}}}}}]
-      (is (= :error (try (ev/get-events state []) (catch js/Error e :error)))
-          "Invalid selector should throw an error")
-      (is (= :error (try (ev/get-events state [:a]) (catch js/Error e :error)))
-          "Invalid selector should throw an error")
-      (is (= (ev/get-events state [:a :b]) [1 2]))
-      (is (= (ev/get-events state [:a :c]) [3 4])))))
+    (let [queue {:a {:b [1 2] :c [3 4]}}]
+      (is (= (ev/get-events queue [:a :b]) [1 2]))
+      (is (= (ev/get-events queue [:a :c]) [3 4])))))
 
 (deftest test-get-subscribed-events
   (testing "Test getting messages an entity is subscribed to"
