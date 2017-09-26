@@ -162,7 +162,7 @@ Here's an example of a middleware that makes a running game's state queryable in
 
 Usage:
 
-```
+```clojure
 (def *state* (atom nil))
 
 (game-loop state (fn [handler]
