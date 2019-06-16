@@ -22,7 +22,10 @@
                  [devcards "0.2.2"]
 
                  ;; State inspection
-                 [praline "0.1.0-SNAPSHOT"]]
+                 [praline "0.1.0-SNAPSHOT"]
+
+                 ;; Fix for java11 figwheel compatibility issue
+                 [javax.xml.bind/jaxb-api "2.4.0-b180830.0359"]]
 
   :plugins [[lein-cljsbuild "1.1.1" :exclude [org.clojure/clojurescript]]
             [lein-figwheel "0.5.8" :exclude [org.clojure/clojurescript]]
