@@ -13,28 +13,45 @@
                  [org.clojure/clojurescript "1.9.293"]
                  ;; DOM manipulation
                  [prismatic/dommy "1.1.0"
-                  :exclude [org.clojure/clojurescript]]
+                  :exclusions [org.clojure/clojurescript]]
 
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"
-                  :exclude [org.clojure/clojurescript]]
+                  :exclusions [org.clojure/clojurescript]]
 
                  ;; Devcards
-                 [devcards "0.2.2"]
+                 [devcards "0.2.2" :exclusions [org.clojure/core.async
+                                                org.clojure/core.memoize
+                                                org.clojure/core.cache
+                                                org.clojure/tools.analyzer
+                                                org.clojure/tools.analyzer.jvm
+                                                org.clojure/data.priority-map
+                                                org.ow2.asm/asm-all]]
 
                  ;; State inspection
-                 [praline "0.1.0-SNAPSHOT"]
+                 [praline "0.1.0-SNAPSHOT" :exclusions [refactor-nrepl]]
 
                  ;; Fix for java11 figwheel compatibility issue
                  [javax.xml.bind/jaxb-api "2.4.0-b180830.0359"]]
 
-  :plugins [[lein-cljsbuild "1.1.1" :exclude [org.clojure/clojurescript]]
-            [lein-figwheel "0.5.8" :exclude [org.clojure/clojurescript]]
-            [refactor-nrepl "1.1.0"]]
+  :plugins [[lein-cljsbuild "1.1.7" :exclusions [org.clojure/clojurescript]]
+            [lein-figwheel "0.5.16" :exclusions [org.clojure/clojurescript]]
+            [cider/cider-nrepl "0.21.0"]
+            [refactor-nrepl "2.4.0"]]
 
-  :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.1"
-                                   :exclude [org.clojure/clojurescript]]
-                                  [org.clojure/tools.nrepl "0.2.12"]]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
+  :profiles {:dev {:dependencies [[nrepl "0.6.0"]
+                                  [cider/piggieback "0.4.1"
+                                   :exclusions [org.clojure/clojurescript]]
+                                  [org.clojure/tools.nrepl "0.2.13"]
+                                  [figwheel-sidecar "0.5.18"
+                                   :exclusions [org.clojure/clojurescript
+                                                org.clojure/core.async
+                                                org.clojure/data.priority-map
+                                                org.clojure/core.cache
+                                                org.clojure/core.memoize
+                                                ring/ring-core
+                                                joda-time
+                                                org.ow2.asm/asm-all]]]
+                   :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}}}
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
@@ -74,11 +91,11 @@
              :css-dirs ["resources/public/css"] ;; watch and update CSS
 
              ;; Start an nREPL server into the running figwheel process
-             :nrepl-port 8999
+             ;; :nrepl-port 8999
              ;; Need this now to get nrepl to work
-             :nrepl-middleware ["cider.nrepl/cider-middleware"
-                                "refactor-nrepl.middleware/wrap-refactor"
-                                "cemerick.piggieback/wrap-cljs-repl"]
+             ;; :nrepl-middleware ["cider.nrepl/cider-middleware"
+             ;;                    "refactor-nrepl.middleware/wrap-refactor"
+             ;;                    "cider.piggieback/wrap-cljs-repl"]
 
              ;; Server Ring Handler (optional)
              ;; if you want to embed a ring handler into the figwheel http-kit

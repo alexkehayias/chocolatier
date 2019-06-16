@@ -22,17 +22,13 @@ The following instructions will start a browser connected repl and launch the de
 
 ### With `figwheel` and emacs using `cider`
 
-The recommended setup is to connect to the `figwheel` REPL server from emacs `cider` so that you can integrate the text editor into the development workflow. This allows you to send code to the running repl for evaluation using emacs `cider-mode`.
-
-After completing step 2 from the `figwheel` instructions above, in emacs:
-
-1. Connect to the `figwheel` REPL `M-x cider-connect RET localhost RET 8999`
-2. Start ClojureScript REPL `(do (use 'figwheel-sidecar.repl-api) (cljs-repl))`
+Follow the setup instructions from `cider` documentation [here](https://github.com/bhauman/lein-figwheel/wiki/Using-the-Figwheel-REPL-within-NRepl#detailed-and-automated-setup-does-not-work-in-all-versions)
 
 ### Compiling with advanced optimizations
 
 1. Run `lein cljsbuild once min`
-2. Navigate your browser to `http://127.0.0.1:1223/min` and the game will start immediately
+2. Start figwheel `lein figwheel`
+3. Navigate your browser to `http://127.0.0.1:1223/min` and the game will start immediately
 
 ## Entity Component System
 
