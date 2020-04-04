@@ -21,3 +21,4 @@ pom.xml.asc
 /resources/assets
 ./push-master.sh
 *.*~
+.rebel_readline_history
