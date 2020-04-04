@@ -49,7 +49,7 @@
            :tilemap tilemap}}
    ;; Player 1 entity
    {:type :entity
-    :opts (create-player! stage loader :player1 20 20 1000 0 0)}
+    :opts (create-player! stage loader :player1 500 220 1000 0 0)}
    ;; Script enemy creation
    {:type :script
     :opts {:fn (fn [state]

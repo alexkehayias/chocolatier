@@ -153,7 +153,7 @@
 The example below utilizes the following systems and components:
 
 - Collision detection (using rbush for spatial indexing)
-- Keyboard input to control the player (WASD and slash to attack)
+- Keyboard input to control the player (WASD and H/M to attack)
 - Attack/damage/hitpoints/death
 - Tile background via Tiled
 - Sprite animation
@@ -165,7 +165,7 @@ The example below utilizes the following systems and components:
 (defcard "
 ## Game
 ### Instructions
-Use WASD to control the player and the forward slash key to attack.
+Use WASD to control the player, the H key to attack with spear and the M key to attack with fireballs.
 "
   (dom-node
    (fn [_ node] (restart-game! node))))
