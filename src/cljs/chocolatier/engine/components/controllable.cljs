@@ -16,7 +16,7 @@
    :D {:action :walk :direction :right}})
 
 (def keycode->action
-  {(keyword "¿") {:action :fireball}
+  {:M {:action :fireball}
    :H {:action :spear}
    :B {:action :replay}})
 

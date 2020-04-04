@@ -34,7 +34,7 @@ the performance of rendering to canvas/webgl.")
                  {:type :system :opts {:uid :s1
                                        :component {:uid :c1
                                                    :fn component-fn-state-change-only}}}
-                 {:type :entity :opts {:uid e1 :components [{:uid :c1}]}}))
+                 {:type :entity :opts {:uid :e1 :components [{:uid :c1}]}}))
 
 (defn many-entities
   "Returns game state for a simple single system, single component, single entity"
