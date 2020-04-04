@@ -34,7 +34,7 @@
                  [javax.xml.bind/jaxb-api "2.4.0-b180830.0359"]]
 
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [org.clojure/clojurescript]]
-            [lein-figwheel "0.5.16" :exclusions [org.clojure/clojurescript]]
+            [lein-figwheel "0.5.18" :exclusions [org.clojure/clojurescript]]
             [cider/cider-nrepl "0.21.0"]
             [refactor-nrepl "2.4.0"]]
 
