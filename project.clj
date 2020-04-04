@@ -2,7 +2,7 @@
   :description "Chocolatier prototype"
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj" "test/cljs"]
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.10.1"]
 
                  ;; Web server
                  [ring "1.8.0"]
