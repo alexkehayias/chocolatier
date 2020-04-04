@@ -10,7 +10,7 @@
                  [enlive "1.1.6"]
 
                  ;; cljs
-                 [org.clojure/clojurescript "1.9.293"]
+                 [org.clojure/clojurescript "1.10.597"]
                  ;; DOM manipulation
                  [prismatic/dommy "1.1.0"
                   :exclusions [org.clojure/clojurescript]]
